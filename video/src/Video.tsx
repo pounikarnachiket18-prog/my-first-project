@@ -1,6 +1,6 @@
 import React from "react";
-import { AbsoluteFill, Sequence } from "remotion";
-import { Watermark, ThumbnailCard } from "./primitives";
+import { AbsoluteFill, Audio, Sequence, interpolate, staticFile } from "remotion";
+import { Watermark, ThumbnailCard, MUSIC } from "./primitives";
 import { HookScene } from "./scenes/HookScene";
 import { SamosaScene, SAMOSA_FRAMES } from "./scenes/SamosaScene";
 import { StatementScene } from "./scenes/StatementScene";
@@ -34,7 +34,16 @@ export const Video: React.FC = () => (
     <Sequence from={THUMB} durationInFrames={OUTRO_START - THUMB}>
       <Watermark initial="h." />
     </Sequence>
-    {/* Music: drop a track in public/ and add
-        <Audio src={staticFile("track.mp3")} volume={MUSIC.audioVolume} /> */}
+    <Audio
+      src={staticFile("music.mp3")}
+      startFrom={MUSIC.audioStartFrom}
+      volume={(f) =>
+        MUSIC.audioVolume *
+        interpolate(f, [0, 15, TOTAL_FRAMES - 30, TOTAL_FRAMES], [0, 1, 1, 0], {
+          extrapolateLeft: "clamp",
+          extrapolateRight: "clamp",
+        })
+      }
+    />
   </AbsoluteFill>
 );

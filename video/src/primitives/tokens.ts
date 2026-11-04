@@ -79,7 +79,7 @@ export const MOTION = {
 export const MUSIC = {
   bpm: 120,
   audioStartFrom: 0,        // frames to trim from audio start (if track has silent intro)
-  audioVolume: 0.75,
+  audioVolume: 0.5,
 };
 
 // Derived: frames per bar at the given BPM @ 30fps (4 beats per bar)
