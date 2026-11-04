@@ -3,9 +3,9 @@ import { Composition, Still } from "remotion";
 import { Main } from "./Main";
 import { MainMobile } from "./MainMobile";
 import { ThumbnailCard } from "./primitives";
+import { TOTAL_FRAMES } from "./Video";
 
-// Adjust durationInFrames to match the sum of all your scene Sequences
-const TOTAL_FRAMES = 351; // 59 intro + 127 hook + 75 statement + 90 outro (~11.7s @ 30fps)
+const THUMB_PROPS = { brandInitial: "h.", brandName: "HypoExplained", hook: "Paisa kahan gayab ho jata hai?", tagline: "COMPLEX TOPICS, SIMPLE WORDS" };
 
 export const Root: React.FC = () => (
   <>
@@ -25,7 +25,7 @@ export const Root: React.FC = () => (
       width={1080}
       height={1920}
     />
-    <Still id="Thumb16x9" component={ThumbnailCard} width={1920} height={1080} />
-    <Still id="Thumb9x16" component={ThumbnailCard} width={1080} height={1920} />
+    <Still id="Thumb16x9" component={ThumbnailCard} defaultProps={THUMB_PROPS} width={1920} height={1080} />
+    <Still id="Thumb9x16" component={ThumbnailCard} defaultProps={THUMB_PROPS} width={1080} height={1920} />
   </>
 );
