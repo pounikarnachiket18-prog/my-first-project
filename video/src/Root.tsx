@@ -5,7 +5,7 @@ import { MainMobile } from "./MainMobile";
 import { ThumbnailCard } from "./primitives";
 
 // Adjust durationInFrames to match the sum of all your scene Sequences
-const TOTAL_FRAMES = 660; // 22s @ 30fps — UPDATE PER PROJECT
+const TOTAL_FRAMES = 351; // 59 intro + 127 hook + 75 statement + 90 outro (~11.7s @ 30fps)
 
 export const Root: React.FC = () => (
   <>
