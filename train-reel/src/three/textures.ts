@@ -1,3 +1,4 @@
+import { TH } from "../theme";
 import * as THREE from "three";
 import { random } from "remotion";
 
@@ -5,6 +6,7 @@ import { random } from "remotion";
 const cache = new Map<string, THREE.CanvasTexture>();
 
 const make = (key: string, w: number, h: number, draw: (c: CanvasRenderingContext2D, w: number, h: number) => void, repeat?: [number, number]) => {
+  key = `${TH().id}|${key}`;
   const hit = cache.get(key);
   if (hit) return hit;
   const cv = document.createElement("canvas");
@@ -39,16 +41,16 @@ export const POP = "'Poppins', 'Inter', sans-serif";
 
 export const tilesTex = (rx: number, ry: number) =>
   make(`tiles${rx}x${ry}`, 512, 512, (c, w, h) => {
-    c.fillStyle = "#E3E6EB";
+    c.fillStyle = TH().tileBase;
     c.fillRect(0, 0, w, h);
     const n = 4;
     for (let i = 0; i < n; i++)
       for (let j = 0; j < n; j++) {
-        const v = 222 + Math.floor(random(`t${i}${j}`) * 14);
-        c.fillStyle = `rgb(${v},${v + 2},${v + 6})`;
+        const v = random(`t${i}${j}`);
+        c.fillStyle = v > 0.5 ? `rgba(255,255,255,${(v - 0.5) * 0.18})` : `rgba(0,0,0,${(0.5 - v) * 0.08})`;
         c.fillRect((i * w) / n + 3, (j * h) / n + 3, w / n - 6, h / n - 6);
       }
-    c.strokeStyle = "#C3C8D1";
+    c.strokeStyle = TH().tileGrout;
     c.lineWidth = 5;
     for (let i = 0; i <= n; i++) {
       c.beginPath();
@@ -66,9 +68,9 @@ export const roofTex = (rx: number) =>
   make(`roof${rx}`, 256, 64, (c, w, h) => {
     for (let x = 0; x < w; x += 16) {
       const g = c.createLinearGradient(x, 0, x + 16, 0);
-      g.addColorStop(0, "#C7CBD3");
-      g.addColorStop(0.5, "#E9ECF1");
-      g.addColorStop(1, "#BFC4CD");
+      g.addColorStop(0, TH().roofB);
+      g.addColorStop(0.5, TH().roofA);
+      g.addColorStop(1, TH().roofB);
       c.fillStyle = g;
       c.fillRect(x, 0, 16, h);
     }
@@ -77,17 +79,17 @@ export const roofTex = (rx: number) =>
 const drawTrainSide = (c: CanvasRenderingContext2D, w: number, h: number) => {
   // upper grey
   const g = c.createLinearGradient(0, 0, 0, h);
-  g.addColorStop(0, "#AEB3BC");
-  g.addColorStop(0.08, "#D4D8DF");
-  g.addColorStop(0.5, "#C9CDD4");
+  g.addColorStop(0, TH().trainTop);
+  g.addColorStop(0.08, TH().trainUpper);
+  g.addColorStop(0.5, TH().trainUpper);
   c.fillStyle = g;
   c.fillRect(0, 0, w, h * 0.5);
   // window band
-  c.fillStyle = "#30343D";
+  c.fillStyle = TH().windowBand;
   c.fillRect(0, h * 0.2, w, h * 0.24);
   for (let i = 0; i < 12; i++) {
     const x = w * 0.1 + i * w * 0.068;
-    c.fillStyle = "#4A5363";
+    c.fillStyle = TH().windowGlass;
     rr(c, x, h * 0.22, w * 0.055, h * 0.2, 10);
     c.fill();
     c.fillStyle = "rgba(255,255,255,0.18)";
@@ -95,20 +97,20 @@ const drawTrainSide = (c: CanvasRenderingContext2D, w: number, h: number) => {
   }
   // red lower body
   const r = c.createLinearGradient(0, h * 0.5, 0, h);
-  r.addColorStop(0, "#C42430");
-  r.addColorStop(1, "#8E1720");
+  r.addColorStop(0, TH().lowerA);
+  r.addColorStop(1, TH().lowerB);
   c.fillStyle = r;
   c.fillRect(0, h * 0.5, w, h * 0.42);
   // gold stripes
-  c.fillStyle = "#E7B53E";
+  c.fillStyle = TH().stripe;
   c.fillRect(0, h * 0.545, w, h * 0.035);
   c.fillRect(0, h * 0.6, w, h * 0.015);
   // doors
   for (const dx of [0.025, 0.925]) {
-    c.strokeStyle = "#6E1018";
+    c.strokeStyle = TH().doorLine;
     c.lineWidth = 6;
     c.strokeRect(w * dx, h * 0.18, w * 0.05, h * 0.72);
-    c.fillStyle = "#30343D";
+    c.fillStyle = TH().windowBand;
     rr(c, w * dx + 14, h * 0.24, w * 0.05 - 28, h * 0.16, 6);
     c.fill();
   }
@@ -153,13 +155,13 @@ export const boardTex = () =>
   make("board", 1400, 360, (c, w, h) => {
     c.fillStyle = "#0E0F12";
     c.fillRect(0, 0, w, h);
-    c.fillStyle = "#D7DAE0";
+    c.fillStyle = TH().boardLabel;
     c.font = `600 34px ${POP}`;
     c.fillText("TRAIN NO.   TRAIN NAME", 30, 50);
     c.textAlign = "right";
     c.fillText("EXP.TIME  A/D", w - 30, 50);
     c.textAlign = "left";
-    c.fillStyle = "#FFFFFF";
+    c.fillStyle = TH().boardText;
     c.font = `400 112px 'Anton', ${POP}`;
     c.fillText(BOARD.no, 30, 170);
     c.fillText(BOARD.en, 340, 170);
@@ -172,23 +174,22 @@ export const boardTex = () =>
     c.textAlign = "right";
     c.fillText(`${BOARD.time} आ`, w - 30, 302);
     c.textAlign = "left";
-    c.fillStyle = "#9097A3";
+    c.fillStyle = TH().boardLabel;
     c.font = `600 24px ${POP}`;
     c.fillText("PLATFORM DISPLAY BOARD", 30, 340);
   });
 
 export type CardState = "normal" | "active" | "gold" | "dim";
-const CARD_STYLE: Record<CardState, { bg: string; fg: string; wave: string }> = {
-  normal: { bg: "#F2F3F6", fg: "#24272E", wave: "#3F4450" },
-  active: { bg: "#2F55E4", fg: "#FFFFFF", wave: "#DCE4FF" },
-  gold: { bg: "#C9A15A", fg: "#2E220D", wave: "#4B3814" },
-  dim: { bg: "#C9CDD5", fg: "#6B717D", wave: "#8E94A0" },
+const cardStyle = (st: CardState) => {
+  const t = TH();
+  const [bg, fg, wave] = { normal: t.cardNormal, active: t.cardActive, gold: t.cardGold, dim: t.cardDim }[st];
+  return { bg, fg, wave };
 };
 
 /** aspect: width/height of card */
 export const cardTex = (label: string, state: CardState, aspect: number) =>
   make(`card:${label}:${state}:${aspect}`, Math.round(256 * aspect), 256, (c, w, h) => {
-    const s = CARD_STYLE[state];
+    const s = cardStyle(state);
     rr(c, 4, 4, w - 8, h - 8, 34);
     c.fillStyle = s.bg;
     c.fill();
@@ -213,12 +214,12 @@ export const cardTex = (label: string, state: CardState, aspect: number) =>
 
 export const signTex = () =>
   make("sign", 1024, 300, (c, w, h) => {
-    c.fillStyle = "#F7F7F9";
+    c.fillStyle = TH().signBg;
     c.fillRect(0, 0, w, h);
-    c.strokeStyle = "#B3202A";
+    c.strokeStyle = TH().signBorder;
     c.lineWidth = 16;
     c.strokeRect(12, 12, w - 24, h - 24);
-    c.fillStyle = "#1D1F24";
+    c.fillStyle = TH().signText;
     c.textAlign = "center";
     c.font = `800 110px ${POP}`;
     c.fillText("ANNOUNCEMENT", w / 2, 140);
@@ -272,9 +273,9 @@ export const clockTex = () =>
 /** Small rendered thumbnail of the operator UI for the 3D monitor. */
 export const screenTex = () =>
   make("screen", 1024, 640, (c, w, h) => {
-    c.fillStyle = "#F4F6FA";
+    c.fillStyle = TH().uiBg;
     c.fillRect(0, 0, w, h);
-    c.fillStyle = "#1E2F8F";
+    c.fillStyle = TH().uiHeader;
     c.fillRect(0, 0, w, 46);
     c.fillStyle = "#fff";
     c.font = `700 24px ${POP}`;
@@ -298,9 +299,9 @@ export const screenTex = () =>
 export const pillTex = (text: string) =>
   make(`pill:${text}`, 512, 180, (c, w, h) => {
     rr(c, 6, 6, w - 12, h - 12, (h - 12) / 2);
-    c.fillStyle = "#2F55E4";
+    c.fillStyle = TH().pill;
     c.fill();
-    c.fillStyle = "#FFFFFF";
+    c.fillStyle = TH().cardActive[1];
     c.textAlign = "center";
     c.font = `800 92px ${POP}`;
     c.fillText(text, w / 2, h / 2 + 32);

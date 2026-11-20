@@ -3,6 +3,7 @@ import * as THREE from "three";
 import { AbsoluteFill, Audio, interpolate, Sequence, spring, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
 import { ThreeCanvas } from "@remotion/three";
 import T from "./timeline.json";
+import { setTheme, TH } from "./theme";
 import { useFontsReady } from "./three/fonts";
 import { Board, Cabin, Cam, Card3D, ClockBadge, Lights, Room, ROOM, Speaker, Station, Train, trainOffset, V3 } from "./three/Parts";
 import { drawScreen, ROW_H, ROW_Y0, SCREEN_H, SCREEN_W, ScreenState, SEQUENCE } from "./three/screenUI";
@@ -108,19 +109,19 @@ const Title: React.FC<{ f: number }> = ({ f }) => {
           top: 120,
           width: 1100,
           height: 560,
-          background: "radial-gradient(ellipse 55% 48% at 50% 50%, rgba(255,255,255,1) 35%, rgba(255,255,255,0.85) 55%, rgba(255,255,255,0) 75%)",
+          background: `radial-gradient(ellipse 55% 48% at 50% 50%, rgba(${TH().titleGlow},1) 35%, rgba(${TH().titleGlow},0.85) 55%, rgba(${TH().titleGlow},0) 75%)`,
         }}
       />
-      <div style={{ position: "relative", textAlign: "center", transform: `translateY(${(1 - a) * -40}px)`, textShadow: "0 0 12px #fff, 0 0 28px #fff, 0 0 50px #fff" }}>
-        <div style={{ fontFamily: "Poppins", fontWeight: 800, fontSize: 112, color: "#111317", letterSpacing: -2, lineHeight: 1.05 }}>Announcement</div>
-        <div style={{ fontFamily: "Poppins", fontWeight: 800, fontSize: 104, color: "#2B3FD9", letterSpacing: -2, lineHeight: 1.05 }}>ruk-ruk ke kyun?</div>
+      <div style={{ position: "relative", textAlign: "center", transform: `translateY(${(1 - a) * -40}px)`, textShadow: `0 0 12px rgb(${TH().titleGlow}), 0 0 28px rgb(${TH().titleGlow}), 0 0 50px rgb(${TH().titleGlow})` }}>
+        <div style={{ fontFamily: "Poppins", fontWeight: 800, fontSize: 112, color: TH().title1, letterSpacing: -2, lineHeight: 1.05 }}>Announcement</div>
+        <div style={{ fontFamily: "Poppins", fontWeight: 800, fontSize: 104, color: TH().title2, letterSpacing: -2, lineHeight: 1.05 }}>ruk-ruk ke kyun?</div>
       </div>
     </AbsoluteFill>
   );
 };
 
 const Flash: React.FC<{ f: number; len?: number }> = ({ f, len = 7 }) => (
-  <AbsoluteFill style={{ background: "#FFFFFF", opacity: interpolate(f, [0, len], [1, 0], { extrapolateRight: "clamp" }) }} />
+  <AbsoluteFill style={{ background: TH().bg, opacity: interpolate(f, [0, len], [1, 0], { extrapolateRight: "clamp" }) }} />
 );
 
 /* ---------------------------------------------------------- screen texture */
@@ -358,7 +359,7 @@ const CardWall: React.FC<{ f: number; appearStart: number; playStart: number; cl
         <group>
           <mesh position={[pauseGap.pos[0], pauseGap.pos[1] - 0.05, 1.06]} scale={[1, pauseP, 1]}>
             <planeGeometry args={[0.035, 0.95]} />
-            <meshBasicMaterial color="#2F55E4" toneMapped={false} />
+            <meshBasicMaterial color={TH().pill} toneMapped={false} />
           </mesh>
           <mesh position={[pauseGap.pos[0], pauseGap.pos[1] - 0.6, 1.08]} scale={pauseP}>
             <planeGeometry args={[0.62, 0.22]} />
@@ -418,8 +419,10 @@ const ShotHost: React.FC<{ id: string; from: number; dur: number }> = ({ id, fro
   return <Comp f={f} dur={dur} g={f + from} />;
 };
 
-export const Reel: React.FC = () => (
-  <AbsoluteFill style={{ background: "#E8EBF0" }}>
+export const Reel: React.FC<{ theme?: string }> = ({ theme = "default" }) => {
+  setTheme(theme);
+  return (
+  <AbsoluteFill style={{ background: TH().bg }}>
     {T.shots.map((s) => (
       <Sequence key={s.id} from={s.from} durationInFrames={s.dur} name={s.id}>
         <ShotHost id={s.id} from={s.from} dur={s.dur} />
@@ -427,4 +430,5 @@ export const Reel: React.FC = () => (
     ))}
     <Audio src={staticFile("reference-audio.m4a")} />
   </AbsoluteFill>
-);
+  );
+};

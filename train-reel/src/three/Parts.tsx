@@ -1,3 +1,4 @@
+import { TH } from "../theme";
 import React, { useLayoutEffect, useMemo } from "react";
 import * as THREE from "three";
 import { useThree } from "@react-three/fiber";
@@ -33,17 +34,17 @@ export const Cam: React.FC<{ pos: V3; target: V3; fov?: number; roll?: number }>
 
 export const Lights: React.FC = () => (
   <>
-    <color attach="background" args={["#E8EBF0"]} />
-    <fog attach="fog" args={["#E8EBF0", 30, 110]} />
-    <hemisphereLight args={["#FFFFFF", "#A9AFBB", 1.5]} />
-    <directionalLight position={[12, 22, 18]} intensity={1.9} />
+    <color attach="background" args={[TH().bg]} />
+    <fog attach="fog" args={[TH().bg, 30, 110]} />
+    <hemisphereLight args={[TH().hemiSky, TH().hemiGround, TH().hemiI]} />
+    <directionalLight position={[12, 22, 18]} intensity={TH().dirI} color={TH().dirColor} />
     <directionalLight position={[-15, 8, 10]} intensity={0.5} />
   </>
 );
 
 /* ---------------------------------------------------------------- station */
 const PLAT_Y = 1.1;
-const BLACK = "#24272D";
+
 
 export const Station: React.FC = () => {
   const tiles = tilesTex(160 / 2.4, 9 / 2.4);
@@ -54,37 +55,37 @@ export const Station: React.FC = () => {
       {/* platform */}
       <mesh position={[0, PLAT_Y / 2, 4.5]}>
         <boxGeometry args={[160, PLAT_Y, 9]} />
-        <meshStandardMaterial attach="material-0" color="#BFC4CD" />
-        <meshStandardMaterial attach="material-1" color="#BFC4CD" />
+        <meshStandardMaterial attach="material-0" color={TH().platSide} />
+        <meshStandardMaterial attach="material-1" color={TH().platSide} />
         <meshStandardMaterial attach="material-2" map={tiles} roughness={0.85} />
-        <meshStandardMaterial attach="material-3" color="#BFC4CD" />
-        <meshStandardMaterial attach="material-4" color="#BFC4CD" />
-        <meshStandardMaterial attach="material-5" color="#9EA4AF" />
+        <meshStandardMaterial attach="material-3" color={TH().platSide} />
+        <meshStandardMaterial attach="material-4" color={TH().platFront} />
+        <meshStandardMaterial attach="material-5" color={TH().platFront} />
       </mesh>
       {/* edge coping + yellow line */}
       <mesh position={[0, PLAT_Y + 0.005, 0.25]} rotation={[-Math.PI / 2, 0, 0]}>
         <planeGeometry args={[160, 0.5]} />
-        <meshStandardMaterial color="#D0D4DB" />
+        <meshStandardMaterial color={TH().coping} />
       </mesh>
       <mesh position={[0, PLAT_Y + 0.008, 0.62]} rotation={[-Math.PI / 2, 0, 0]}>
         <planeGeometry args={[160, 0.14]} />
-        <meshStandardMaterial color="#E6B526" />
+        <meshStandardMaterial color={TH().safety} />
       </mesh>
       {/* track bed + rails */}
       <mesh position={[0, 0, -3.5]} rotation={[-Math.PI / 2, 0, 0]}>
         <planeGeometry args={[160, 7]} />
-        <meshStandardMaterial color="#6E727B" />
+        <meshStandardMaterial color={TH().track} />
       </mesh>
       {[-1.15, -2.65].map((z) => (
         <mesh key={z} position={[0, 0.12, z]}>
           <boxGeometry args={[160, 0.16, 0.12]} />
-          <meshStandardMaterial color="#A4AAB4" metalness={0.5} roughness={0.4} />
+          <meshStandardMaterial color={TH().rail} metalness={0.5} roughness={0.4} />
         </mesh>
       ))}
       {/* far wall */}
       <mesh position={[0, 4, -7]}>
         <planeGeometry args={[160, 8]} />
-        <meshStandardMaterial color="#D9DCE2" />
+        <meshStandardMaterial color={TH().wall} />
       </mesh>
       {/* roof */}
       <mesh position={[0, 7.2, 1]} rotation={[Math.PI / 2, 0, 0]}>
@@ -94,27 +95,27 @@ export const Station: React.FC = () => {
       {beams.map((x) => (
         <mesh key={x} position={[x, 6.95, 1]}>
           <boxGeometry args={[0.32, 0.5, 16]} />
-          <meshStandardMaterial color={BLACK} />
+          <meshStandardMaterial color={TH().beam} />
         </mesh>
       ))}
       {[-0.6, 3.8, 7.6].map((z) => (
         <mesh key={z} position={[0, 6.7, z]}>
           <boxGeometry args={[160, 0.36, 0.3]} />
-          <meshStandardMaterial color={BLACK} />
+          <meshStandardMaterial color={TH().beam} />
         </mesh>
       ))}
       {/* overhead thin wires */}
       {[5.9, 6.2].map((y, i) => (
         <mesh key={y} position={[0, y, -1.9 + i * 0.05]} rotation={[0, 0, Math.PI / 2]}>
           <cylinderGeometry args={[0.012, 0.012, 160, 6]} />
-          <meshStandardMaterial color="#3A3D44" />
+          <meshStandardMaterial color={TH().beam} />
         </mesh>
       ))}
       {/* columns */}
       {[-60, -40, -20, 0, 20, 40, 60].map((x) => (
         <mesh key={x} position={[x + 10, (PLAT_Y + 7) / 2, 7.6]}>
           <cylinderGeometry args={[0.2, 0.2, 7 - PLAT_Y + 0.2, 16]} />
-          <meshStandardMaterial color="#CDD1D8" />
+          <meshStandardMaterial color={TH().column} />
         </mesh>
       ))}
     </group>
@@ -134,10 +135,10 @@ export const Train: React.FC<{ x: number; blur: boolean; coaches?: number }> = (
         <group key={i} position={[i * PERIOD, 0, 0]}>
           <mesh position={[0, 2.3, 0]}>
             <boxGeometry args={[COACH, 3.5, 3.0]} />
-            <meshStandardMaterial attach="material-0" color="#2A2C31" />
-            <meshStandardMaterial attach="material-1" color="#2A2C31" />
-            <meshStandardMaterial attach="material-2" color="#B5BAC3" />
-            <meshStandardMaterial attach="material-3" color="#2A2C31" />
+            <meshStandardMaterial attach="material-0" color={TH().trainEnd} />
+            <meshStandardMaterial attach="material-1" color={TH().trainEnd} />
+            <meshStandardMaterial attach="material-2" color={TH().trainRoof} />
+            <meshStandardMaterial attach="material-3" color={TH().trainEnd} />
             <meshStandardMaterial attach="material-4" map={side} roughness={0.55} />
             <meshStandardMaterial attach="material-5" map={side} roughness={0.55} />
           </mesh>
@@ -171,15 +172,15 @@ const hornGeo = (() => {
 const Horn: React.FC<{ dir: 1 | -1 }> = ({ dir }) => (
   <group rotation={[0, 0, dir === 1 ? -Math.PI / 2 - 0.22 : Math.PI / 2 + 0.22]}>
     <mesh geometry={hornGeo}>
-      <meshStandardMaterial color="#2C2F36" roughness={0.45} metalness={0.35} side={THREE.DoubleSide} />
+      <meshStandardMaterial color={TH().horn} roughness={0.45} metalness={0.35} side={THREE.DoubleSide} />
     </mesh>
     <mesh position={[0, -0.12, 0]}>
       <cylinderGeometry args={[0.2, 0.22, 0.32, 24]} />
-      <meshStandardMaterial color="#2C2F36" roughness={0.4} metalness={0.4} />
+      <meshStandardMaterial color={TH().horn} roughness={0.4} metalness={0.4} />
     </mesh>
     <mesh position={[0, 0.94, 0]} rotation={[Math.PI / 2, 0, 0]}>
       <torusGeometry args={[0.5, 0.025, 8, 40]} />
-      <meshStandardMaterial color="#3B3F47" />
+      <meshStandardMaterial color={TH().hornRim} />
     </mesh>
   </group>
 );
@@ -190,11 +191,11 @@ export const Speaker: React.FC<{ position: V3; rotY?: number }> = ({ position, r
     <group position={position} rotation={[0, rotY, 0]}>
       <mesh position={[0, rodLen / 2, 0]}>
         <cylinderGeometry args={[0.045, 0.045, rodLen, 10]} />
-        <meshStandardMaterial color={BLACK} />
+        <meshStandardMaterial color={TH().beam} />
       </mesh>
       <mesh position={[0, 0.05, 0]}>
         <boxGeometry args={[0.5, 0.16, 0.16]} />
-        <meshStandardMaterial color={BLACK} />
+        <meshStandardMaterial color={TH().beam} />
       </mesh>
       <group position={[0.2, -0.12, 0]}>
         <Horn dir={1} />
@@ -231,7 +232,7 @@ export const Board: React.FC<{ position: V3; rotY?: number }> = ({ position, rot
       {[-W / 2 + 0.4, W / 2 - 0.4].map((x) => (
         <mesh key={x} position={[x, H / 2 + (6.95 - position[1] - H / 2) / 2, 0]}>
           <cylinderGeometry args={[0.025, 0.025, 6.95 - position[1] - H / 2, 8]} />
-          <meshStandardMaterial color={BLACK} />
+          <meshStandardMaterial color={TH().beam} />
         </mesh>
       ))}
     </group>
@@ -242,8 +243,8 @@ export const Board: React.FC<{ position: V3; rotY?: number }> = ({ position, rot
 export const Cabin: React.FC = () => {
   const sign = signTex();
   const x0 = -18; // front (glass) face, facing +x
-  const glass = <meshStandardMaterial color="#CFE2EC" transparent opacity={0.22} roughness={0.05} metalness={0.1} side={THREE.DoubleSide} />;
-  const frame = "#F4F5F7";
+  const glass = <meshStandardMaterial color={TH().glass} transparent opacity={0.22} roughness={0.05} metalness={0.1} side={THREE.DoubleSide} />;
+  const frame = TH().frame;
   return (
     <group>
       {/* glass front with mullions */}
@@ -269,17 +270,17 @@ export const Cabin: React.FC = () => {
       {/* roof slab */}
       <mesh position={[x0 - 3, PLAT_Y + 3.3, 5.7]}>
         <boxGeometry args={[6.3, 0.25, 5.3]} />
-        <meshStandardMaterial color="#F6F7F9" />
+        <meshStandardMaterial color={TH().frame} />
       </mesh>
       {/* back walls */}
       <mesh position={[x0 - 6, PLAT_Y + 1.6, 5.7]} rotation={[0, Math.PI / 2, 0]}>
         <planeGeometry args={[5, 3.2]} />
-        <meshStandardMaterial color="#EEF0F3" side={THREE.DoubleSide} />
+        <meshStandardMaterial color={TH().roomWall2} side={THREE.DoubleSide} />
       </mesh>
       {/* sign over the glass front */}
       <mesh position={[x0 + 0.08, PLAT_Y + 3.95, 5.7]} rotation={[0, Math.PI / 2, 0]}>
         <boxGeometry args={[4.2, 1.2, 0.1]} />
-        <meshStandardMaterial color="#F7F7F9" />
+        <meshStandardMaterial color={TH().signBg} />
       </mesh>
       <mesh position={[x0 + 0.14, PLAT_Y + 3.95, 5.7]} rotation={[0, Math.PI / 2, 0]}>
         <planeGeometry args={[4.1, 1.2]} />
@@ -288,11 +289,11 @@ export const Cabin: React.FC = () => {
       {/* desk + mic + monitor seen inside */}
       <mesh position={[x0 - 2.5, PLAT_Y + 0.8, 7.4]}>
         <boxGeometry args={[4, 0.08, 1]} />
-        <meshStandardMaterial color="#F2F3F5" />
+        <meshStandardMaterial color={TH().desk} />
       </mesh>
       <mesh position={[x0 - 2.5, PLAT_Y + 0.4, 7.85]}>
         <boxGeometry args={[4, 0.8, 0.08]} />
-        <meshStandardMaterial color="#E1E4E9" />
+        <meshStandardMaterial color={TH().deskPanel} />
       </mesh>
       <mesh position={[x0 - 2.0, PLAT_Y + 1.15, 7.7]}>
         <boxGeometry args={[0.9, 0.55, 0.05]} />
@@ -324,21 +325,21 @@ export const Room: React.FC<{ screen: THREE.Texture; typing?: number }> = ({ scr
       </mesh>
       <mesh position={[0, 2, -2.2]}>
         <planeGeometry args={[8, 4]} />
-        <meshStandardMaterial color="#F1F2F5" />
+        <meshStandardMaterial color={TH().roomWall} />
       </mesh>
       <mesh position={[-2.6, 2, 1]} rotation={[0, Math.PI / 2, 0]}>
         <planeGeometry args={[8, 4]} />
-        <meshStandardMaterial color="#E9EBEF" />
+        <meshStandardMaterial color={TH().roomWall2} />
       </mesh>
       {/* window on left wall */}
       <mesh position={[-2.58, 2.2, 0.2]} rotation={[0, Math.PI / 2, 0]}>
         <planeGeometry args={[1.8, 1.3]} />
-        <meshBasicMaterial color="#FFFFFF" />
+        <meshBasicMaterial color={TH().bg} />
       </mesh>
       {[-0.9, 0, 0.9].map((z) => (
         <mesh key={z} position={[-2.56, 2.2, 0.2 + z]}>
           <boxGeometry args={[0.05, 1.34, 0.06]} />
-          <meshStandardMaterial color="#C8CCD3" />
+          <meshStandardMaterial color={TH().deskPanel} />
         </mesh>
       ))}
       <mesh position={[1.3, 2.55, -2.18]}>
@@ -348,16 +349,16 @@ export const Room: React.FC<{ screen: THREE.Texture; typing?: number }> = ({ scr
       {/* desk */}
       <mesh position={[0, 0.8, -1.4]}>
         <boxGeometry args={[3.4, 0.07, 1.1]} />
-        <meshStandardMaterial color="#F4F5F7" />
+        <meshStandardMaterial color={TH().desk} />
       </mesh>
       <mesh position={[0, 0.4, -1.92]}>
         <boxGeometry args={[3.4, 0.8, 0.06]} />
-        <meshStandardMaterial color="#DDE0E6" />
+        <meshStandardMaterial color={TH().deskPanel} />
       </mesh>
       {[-1.65, 1.65].map((x) => (
         <mesh key={x} position={[x, 0.4, -1.4]}>
           <boxGeometry args={[0.06, 0.8, 1.1]} />
-          <meshStandardMaterial color="#DDE0E6" />
+          <meshStandardMaterial color={TH().deskPanel} />
         </mesh>
       ))}
       {/* monitor */}
@@ -413,13 +414,13 @@ export const Room: React.FC<{ screen: THREE.Texture; typing?: number }> = ({ scr
 
 /* ------------------------------------------------------------------ hands */
 const SKIN = "#EDAA7A";
-const SLEEVE = "#2E8C86";
+
 const Hand: React.FC<{ x: number; mirror: 1 | -1; typing: number; phase: number }> = ({ x, mirror, typing, phase }) => (
   <group position={[x, 0.9, -0.98]} rotation={[0.12, -0.12 * mirror, 0]}>
     {/* sleeve */}
     <mesh position={[0.05 * mirror, 0.0, 0.28]} rotation={[Math.PI / 2 - 0.1, 0, -0.18 * mirror]}>
       <cylinderGeometry args={[0.05, 0.06, 0.4, 16]} />
-      <meshStandardMaterial color={SLEEVE} />
+      <meshStandardMaterial color={TH().sleeve} />
     </mesh>
     {/* palm */}
     <mesh position={[0, 0, 0.03]} scale={[1, 0.45, 1]}>
