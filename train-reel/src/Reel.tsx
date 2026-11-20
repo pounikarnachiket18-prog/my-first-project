@@ -4,6 +4,7 @@ import { AbsoluteFill, Audio, interpolate, Sequence, spring, staticFile, useCurr
 import { ThreeCanvas } from "@remotion/three";
 import T from "./timeline.json";
 import { setTheme, TH } from "./theme";
+import { Callout, CamState, Cursor, EqBars, FocusRing, GapBracket, KeyPops, KineticTitle, MG, PlayTrack, project, Rings, Seg, SpeedLines, TrainProgress, Wipe } from "./mg";
 import { useFontsReady } from "./three/fonts";
 import { Board, Cabin, Cam, Card3D, ClockBadge, Lights, Room, ROOM, Speaker, Station, Train, trainOffset, V3 } from "./three/Parts";
 import { drawScreen, ROW_H, ROW_Y0, SCREEN_H, SCREEN_W, ScreenState, SEQUENCE } from "./three/screenUI";
@@ -97,33 +98,6 @@ const playIdx = (f: number, start: number, on = 6, off = 3) => {
 
 const cardState = (i: number, idx: number, gold?: boolean): CardState => (i === idx ? "active" : gold ? "gold" : "normal");
 
-/* ------------------------------------------------------------------ title */
-const Title: React.FC<{ f: number }> = ({ f }) => {
-  const { fps } = useVideoConfig();
-  const a = spring({ frame: f - 2, fps, config: { damping: 14, stiffness: 160 } });
-  return (
-    <AbsoluteFill style={{ alignItems: "center", paddingTop: 250, opacity: a }}>
-      <div
-        style={{
-          position: "absolute",
-          top: 120,
-          width: 1100,
-          height: 560,
-          background: `radial-gradient(ellipse 55% 48% at 50% 50%, rgba(${TH().titleGlow},1) 35%, rgba(${TH().titleGlow},0.85) 55%, rgba(${TH().titleGlow},0) 75%)`,
-        }}
-      />
-      <div style={{ position: "relative", textAlign: "center", transform: `translateY(${(1 - a) * -40}px)`, textShadow: `0 0 12px rgb(${TH().titleGlow}), 0 0 28px rgb(${TH().titleGlow}), 0 0 50px rgb(${TH().titleGlow})` }}>
-        <div style={{ fontFamily: "Poppins", fontWeight: 800, fontSize: 112, color: TH().title1, letterSpacing: -2, lineHeight: 1.05 }}>Announcement</div>
-        <div style={{ fontFamily: "Poppins", fontWeight: 800, fontSize: 104, color: TH().title2, letterSpacing: -2, lineHeight: 1.05 }}>ruk-ruk ke kyun?</div>
-      </div>
-    </AbsoluteFill>
-  );
-};
-
-const Flash: React.FC<{ f: number; len?: number }> = ({ f, len = 7 }) => (
-  <AbsoluteFill style={{ background: TH().bg, opacity: interpolate(f, [0, len], [1, 0], { extrapolateRight: "clamp" }) }} />
-);
-
 /* ---------------------------------------------------------- screen texture */
 const useScreen = (state: ScreenState) => {
   const canvas = useMemo(() => {
@@ -149,6 +123,25 @@ const scr = (x: number, y: number, z = 0): V3 => R([(x / SCREEN_W - 0.5) * 1.04,
 /* ================================================================== SHOTS */
 type ShotProps = { f: number; dur: number; g: number };
 
+const hornL: V3 = [SPEAKER[0] - 0.95, SPEAKER[1] - 0.35, SPEAKER[2]];
+const hornR: V3 = [SPEAKER[0] + 0.95, SPEAKER[1] - 0.35, SPEAKER[2]];
+const SpeakerRings: React.FC<{ c: CamState; f: number }> = ({ c, f }) => {
+  const [lx, ly] = project(c, hornL);
+  const [rx, ry] = project(c, hornR);
+  return (
+    <>
+      <Rings x={lx} y={ly} f={f} />
+      <Rings x={rx} y={ry} f={f + 8} />
+    </>
+  );
+};
+/** screen-space box of a 3D rectangle centred at p (w x h metres, facing +z) */
+const boxOf = (c: CamState, p: V3, w: number, h: number) => {
+  const [x1, y1] = project(c, [p[0] - w / 2, p[1] + h / 2, p[2]]);
+  const [x2, y2] = project(c, [p[0] + w / 2, p[1] - h / 2, p[2]]);
+  return { x: (x1 + x2) / 2, y: (y1 + y2) / 2, w: Math.abs(x2 - x1), h: Math.abs(y2 - y1) };
+};
+
 const S01: React.FC<ShotProps> = ({ f, dur, g }) => {
   const c = camAt({ p0: [-2.6, 2.2, 10.2], t0: [1.4, 4.7, 2.4], p1: [-1.9, 2.35, 9.4], t1: [1.6, 4.7, 2.4], fov: 54 }, f, dur);
   return (
@@ -158,7 +151,9 @@ const S01: React.FC<ShotProps> = ({ f, dur, g }) => {
           <Cam {...c} />
         </StationSet>
       </Canvas3D>
-      <Title f={f} />
+      <SpeedLines f={f} amount={0.9} top={1250} bottom={1800} />
+      <SpeakerRings c={c} f={f} />
+      <KineticTitle f={f} />
     </>
   );
 };
@@ -182,56 +177,120 @@ const Emerging: React.FC<{ f: number; count?: number }> = ({ f, count = 3 }) => 
   );
 };
 
-const S02: React.FC<ShotProps> = ({ f, dur, g }) => {
-  const c = camAt({ p0: [0.4, 3.5, 9.6], t0: [0.3, 4.4, 2.6], p1: [0.2, 3.6, 8.8], t1: [0.2, 4.35, 2.6], fov: 50 }, f, dur);
+/** dashed connectors from the horn to each emerging card, with numbered tags + pause icons */
+const EmergeGraphics: React.FC<{ c: CamState; f: number; count?: number }> = ({ c, f, count = 3 }) => {
+  const [sx, sy] = project(c, [SPEAKER[0], SPEAKER[1] - 0.3, SPEAKER[2]]);
   return (
-    <Canvas3D>
-      <StationSet dist={g * 0.9} speed={0.9}>
-        <Emerging f={f} />
-        <Cam {...c} />
-      </StationSet>
-    </Canvas3D>
+    <>
+      <svg width={1080} height={1920} style={{ position: "absolute", left: 0, top: 0 }}>
+        {EMERGE.slice(0, count).map((e, i) => {
+          if (f < e.at) return null;
+          const [x, y] = project(c, [e.to[0], e.to[1] + 0.29, e.to[2]]);
+          const t = clamp((f - e.at) / 10);
+          return (
+            <g key={i}>
+              <path d={`M ${sx} ${sy} Q ${(sx + x) / 2} ${Math.min(sy, y) - 120} ${sx + (x - sx) * t} ${sy + (y - sy) * t}`} fill="none" stroke={MG.blue()} strokeWidth={5} strokeDasharray="14 12" strokeDashoffset={-f * 3} strokeLinecap="round" />
+              <g transform={`translate(${x} ${y - 30}) scale(${t})`}>
+                <circle r={30} fill={MG.blue()} />
+                <text y={12} textAnchor="middle" fontFamily="Poppins" fontWeight={800} fontSize={32} fill="#fff">
+                  {i + 1}
+                </text>
+              </g>
+            </g>
+          );
+        })}
+      </svg>
+      {EMERGE.slice(1, count).map((e, i) => {
+        const prev = EMERGE[i];
+        const [x, y] = project(c, [(prev.to[0] + prev.aspect * 0.29 + e.to[0] - e.aspect * 0.29) / 2, e.to[1] - 0.45, e.to[2]]);
+        return <GapBracket key={i} x={x} y={y} f={f} at={e.at + 6} label="" />;
+      })}
+    </>
   );
 };
 
+const S02: React.FC<ShotProps> = ({ f, dur, g }) => {
+  const c = camAt({ p0: [0.4, 3.5, 9.6], t0: [0.3, 4.4, 2.6], p1: [0.2, 3.6, 8.8], t1: [0.2, 4.35, 2.6], fov: 50 }, f, dur);
+  return (
+    <>
+      <Canvas3D>
+        <StationSet dist={g * 0.9} speed={0.9}>
+          <Emerging f={f} />
+          <Cam {...c} />
+        </StationSet>
+      </Canvas3D>
+      <SpeedLines f={f} amount={0.6} top={1300} bottom={1800} />
+      <SpeakerRings c={c} f={f} />
+      <EmergeGraphics c={c} f={f} />
+    </>
+  );
+};
+
+const CABIN_SIGN: V3 = [-17.9, 5.05, 5.7];
+
 const S03: React.FC<ShotProps> = ({ f, dur, g }) => {
   const c = camAt({ p0: [1.5, 3.4, 6.8], t0: [-8, 3.0, 3.6], p1: [-9.5, 2.9, 6.4], t1: [-18, 3.8, 5.7], fov: 55 }, f, dur, (t) => t);
+  const [x, y] = project(c, CABIN_SIGN);
   return (
-    <Canvas3D>
-      <StationSet dist={g * 0.9} speed={0.9}>
-        <Cam {...c} />
-      </StationSet>
-    </Canvas3D>
+    <>
+      <Canvas3D>
+        <StationSet dist={g * 0.9} speed={0.9}>
+          <Cam {...c} />
+        </StationSet>
+      </Canvas3D>
+      <SpeedLines f={f} amount={1} dir={1} />
+      <Callout x={Math.max(60, Math.min(700, x))} y={Math.max(400, y)} f={f} at={10} label="उद्घोषणा कक्ष" hindi dx={140} dy={-180} />
+    </>
   );
 };
 
 const S04: React.FC<ShotProps> = ({ f, dur, g }) => {
   const c = camAt({ p0: [-10.2, 4.0, 7.6], t0: [-18, 4.7, 5.7], p1: [-16.4, 2.7, 6.2], t1: [-20.5, 2.2, 7.2], fov: 52 }, f, dur, (t) => t * t);
+  const b = boxOf(c, CABIN_SIGN, 0.1, 1.2);
+  const [w] = [Math.abs(project(c, [CABIN_SIGN[0], CABIN_SIGN[1], CABIN_SIGN[2] - 2.05])[0] - project(c, [CABIN_SIGN[0], CABIN_SIGN[1], CABIN_SIGN[2] + 2.05])[0])];
   return (
-    <Canvas3D>
-      <StationSet dist={g * 0.9} speed={0.9}>
-        <Cam {...c} />
-      </StationSet>
-    </Canvas3D>
+    <>
+      <Canvas3D>
+        <StationSet dist={g * 0.9} speed={0.9}>
+          <Cam {...c} />
+        </StationSet>
+      </Canvas3D>
+      {f < 18 && <FocusRing x={b.x} y={b.y} w={w + 60} h={b.h + 60} f={f} at={0} />}
+      <SpeedLines f={f} amount={clamp((f - 14) / 10)} dir={1} />
+    </>
   );
 };
 
-const RoomShot: React.FC<{ move: Move; f: number; dur: number; screen: ScreenState; typing: number; ease?: (t: number) => number }> = ({ move, f, dur, screen, typing, ease }) => {
+const RoomShot: React.FC<{ move: Move; f: number; dur: number; screen: ScreenState; typing: number; ease?: (t: number) => number; overlay?: (c: CamState) => React.ReactNode }> = ({ move, f, dur, screen, typing, ease, overlay }) => {
   const tex = useScreen(screen);
   const c = camAt(move, f, dur, ease);
   return (
-    <Canvas3D>
-      <Lights />
-      <Room screen={tex} typing={typing} />
-      <Cam {...c} />
-    </Canvas3D>
+    <>
+      <Canvas3D>
+        <Lights />
+        <Room screen={tex} typing={typing} />
+        <Cam {...c} />
+      </Canvas3D>
+      {overlay?.(c)}
+    </>
   );
 };
 
+const MONITOR = R([0, 1.335, -1.62]);
 const S05: React.FC<ShotProps> = ({ f, dur }) => (
   <>
-    <RoomShot f={f} dur={dur} typing={0} screen={{ mode: "trains" }} move={{ p0: R([2.1, 1.85, 1.4]), t0: R([0, 1.05, -1.4]), p1: R([1.2, 1.6, 0.4]), t1: R([0, 1.12, -1.45]), fov: 50 }} />
-    <Flash f={f} />
+    <RoomShot
+      f={f}
+      dur={dur}
+      typing={0}
+      screen={{ mode: "trains" }}
+      move={{ p0: R([2.1, 1.85, 1.4]), t0: R([0, 1.05, -1.4]), p1: R([1.2, 1.6, 0.4]), t1: R([0, 1.12, -1.45]), fov: 50 }}
+      overlay={(c) => {
+        const b = boxOf(c, MONITOR, 1.08, 0.66);
+        return <FocusRing x={b.x} y={b.y} w={b.w + 50} h={b.h + 50} f={f} at={10} />;
+      }}
+    />
+    <Wipe f={f} />
   </>
 );
 
@@ -244,6 +303,10 @@ const S06: React.FC<ShotProps> = ({ f, dur }) => {
       typing={f / 2}
       screen={{ mode: "trains", sel }}
       move={{ p0: R([0.55, 1.5, -0.1]), t0: R([0, 1.2, -1.55]), p1: R([0.3, 1.42, -0.42]), t1: R([0, 1.24, -1.6]), fov: 50 }}
+      overlay={(c) => {
+        const [x, y] = project(c, scr(470, ROW_Y0 + sel * ROW_H + 30));
+        return <Cursor x={x} y={y} f={f} clicks={[44]} from={[900, 1500]} arrive={[0, 14]} />;
+      }}
     />
   );
 };
@@ -252,21 +315,28 @@ const S07: React.FC<ShotProps> = ({ f, dur }) => {
   const { fps } = useVideoConfig();
   const rowY = ROW_Y0 + ROW_H / 2;
   const badges = [
-    { text: BOARD.no, x: 300, y: rowY - 2, at: 6 },
-    { text: `PF ${BOARD.pf}`, x: 790, y: rowY - 2, at: 36 },
-    { text: BOARD.time, x: 1200, y: rowY - 2, at: 62 },
+    { text: BOARD.no, x: 300, y: rowY - 2, at: 6, label: "Train No." },
+    { text: `PF ${BOARD.pf}`, x: 790, y: rowY - 2, at: 36, label: "Platform" },
+    { text: BOARD.time, x: 1200, y: rowY - 2, at: 62, label: "Time" },
   ].map((b) => ({ ...b, s: spring({ frame: f - b.at, fps, config: { damping: 11, stiffness: 170 } }) }));
   // camera pans to each badge as it appears
   const tx = interpolate(f, [0, 14, 36, 48, 62, 76], [260, 300, 300, 790, 790, 1200], { extrapolateLeft: "clamp", extrapolateRight: "clamp", easing: inOut });
   const target = scr(tx, rowY + 20);
   const pos: V3 = [target[0] - 0.02, target[1] + 0.05, -1.619 + ROOM[2] + interpolate(f, [0, dur], [0.62, 0.55])];
   const tex = useScreen({ mode: "trains", sel: 0, badges });
+  const c: CamState = { pos, target, fov: 48 };
   return (
-    <Canvas3D>
-      <Lights />
-      <Room screen={tex} typing={f / 2} />
-      <Cam pos={pos} target={target} fov={48} />
-    </Canvas3D>
+    <>
+      <Canvas3D>
+        <Lights />
+        <Room screen={tex} typing={f / 2} />
+        <Cam {...c} />
+      </Canvas3D>
+      {badges.map((b, i) => {
+        const [x, y] = project(c, scr(b.x, b.y + 62));
+        return <Callout key={i} x={x} y={y} f={f} at={b.at + 6} label={b.label} dx={i === 2 ? -150 : 150} dy={230} color={i === 1 ? MG.red() : MG.blue()} />;
+      })}
+    </>
   );
 };
 
@@ -283,6 +353,18 @@ const S08: React.FC<ShotProps> = ({ f, dur }) => {
       typing={f < 50 ? f / 1.6 : 0}
       screen={{ mode: "trains", sel: 0, typed: { no: BOARD.no, pf: BOARD.pf, time, caret: f < 50 && f % 10 < 6 }, pressed, playing }}
       move={{ p0: R([0.75, 1.42, -0.72]), t0: R([0.3, 1.32, -1.62]), p1: R([0.5, 1.5, -0.5]), t1: R([0.2, 1.25, -1.62]), fov: 50 }}
+      overlay={(c) => {
+        const [kx, ky] = project(c, R([0, 0.87, -1.08]));
+        const [fx, fy] = project(c, scr(1300, 470));
+        const [bx, by] = project(c, scr(1330, 688));
+        return (
+          <>
+            <KeyPops x={kx} y={ky} f={f} tx={fx} ty={fy} keys={["1", "8", ":", "4", "0"].map((ch, i) => ({ ch, at: 13 + i * 7 }))} />
+            <Cursor x={bx} y={by} f={f} clicks={[54]} from={[fx + 200, fy + 300]} arrive={[40, 52]} />
+            {playing && <Rings x={bx} y={by} f={f - 60} color={MG.blue()} size={200} />}
+          </>
+        );
+      }}
     />
   );
 };
@@ -294,8 +376,32 @@ const S09: React.FC<ShotProps> = ({ f, dur }) => (
     typing={0}
     screen={{ mode: "media", playing: true }}
     move={{ p0: R([0.0, 1.36, -0.1]), t0: R([0, 1.3, -1.62]), p1: R([0.0, 1.34, -0.4]), t1: R([0, 1.32, -1.62]), fov: 50 }}
+    overlay={(c) => {
+      const [x, y] = project(c, scr(150, 140));
+      const g0 = project(c, scr(30, 172));
+      const g1 = project(c, scr(1570, 830));
+      const sweep = interpolate(f, [6, 50], [g0[1], g1[1]], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+      return (
+        <>
+          <svg width={1080} height={1920} style={{ position: "absolute", left: 0, top: 0 }}>
+            <defs>
+              <linearGradient id="sw" x1="0" x2="0" y1="0" y2="1">
+                <stop offset="0" stopColor={MG.blue()} stopOpacity={0} />
+                <stop offset="1" stopColor={MG.blue()} stopOpacity={0.35} />
+              </linearGradient>
+            </defs>
+            {f > 6 && f < 54 && <rect x={g0[0]} y={sweep - 120} width={g1[0] - g0[0]} height={120} fill="url(#sw)" />}
+            {f > 6 && f < 54 && <rect x={g0[0]} y={sweep - 4} width={g1[0] - g0[0]} height={6} fill={MG.blue()} />}
+          </svg>
+          <Callout x={x} y={y} f={f} at={4} label="24 clips" dx={120} dy={-170} color={MG.red()} />
+        </>
+      );
+    }}
   />
 );
+
+/** playback schedule (local frames) for a sequence played with playIdx(on, off) */
+const segsFor = (start: number, on: number, off: number): Seg[] => SEQUENCE.map((l, i) => ({ from: start + i * (on + off), to: start + i * (on + off) + on, gold: l === "सूरज नगर एक्सप्रेस" }));
 
 const S10: React.FC<ShotProps> = ({ f, dur }) => {
   const picked = Math.min(SEQUENCE.length, Math.max(0, Math.floor((f - 2) / 6) + 1));
@@ -308,6 +414,7 @@ const S10: React.FC<ShotProps> = ({ f, dur }) => {
       typing={0}
       screen={{ mode: "assemble", picked: f < 2 ? 0 : picked, pickFlash, play: pl.idx, gapAfter: pl.gap, playing: true }}
       move={{ p0: R([0.0, 1.33, 0.0]), t0: R([0, 1.3, -1.62]), p1: R([0.0, 1.28, -0.3]), t1: R([0, 1.27, -1.62]), fov: 50 }}
+      overlay={() => <PlayTrack f={f} segs={segsFor(66, 6, 3)} y={1640} show={clamp((f - 56) / 8)} />}
     />
   );
 };
@@ -318,12 +425,17 @@ const S11: React.FC<ShotProps> = ({ f, dur }) => {
   const speed = v0 - (v0 * 0.8 * f) / dur;
   const c = camAt({ p0: [-19.4, 2.7, 6.6], t0: [-6, 2.7, 0.5], p1: [-6, 3.3, 7.6], t1: [0.2, 4.6, 2.4], fov: 54 }, f, dur);
   return (
-    <Canvas3D>
-      <StationSet dist={dist} speed={speed}>
-        <Emerging f={f - 36} count={2} />
-        <Cam {...c} />
-      </StationSet>
-    </Canvas3D>
+    <>
+      <Canvas3D>
+        <StationSet dist={dist} speed={speed}>
+          <Emerging f={f - 36} count={2} />
+          <Cam {...c} />
+        </StationSet>
+      </Canvas3D>
+      <SpeedLines f={f} amount={clamp(speed * 1.4)} top={1150} bottom={1850} />
+      {f > 34 && <SpeakerRings c={c} f={f} />}
+      <Wipe f={f} />
+    </>
   );
 };
 
@@ -332,7 +444,6 @@ const CardWall: React.FC<{ f: number; appearStart: number; playStart: number; cl
   const pl = playIdx(f, playStart, 7, 3);
   const pill = pillTex("PAUSE");
   const pauseP = pauseAt !== undefined ? spring({ frame: f - pauseAt, fps, config: { damping: 12, stiffness: 150 } }) : 0;
-  const pauseGap = GAPS.find((gp) => gp.i === 6)!; // between train name and "platform kramank"
   return (
     <>
       {CARDS.map((c, i) => {
@@ -357,11 +468,11 @@ const CardWall: React.FC<{ f: number; appearStart: number; playStart: number; cl
         })}
       {pauseAt !== undefined && pauseP > 0.01 && (
         <group>
-          <mesh position={[pauseGap.pos[0], pauseGap.pos[1] - 0.05, 1.06]} scale={[1, pauseP, 1]}>
+          <mesh position={[PAUSE_GAP.pos[0], PAUSE_GAP.pos[1] - 0.05, 1.06]} scale={[1, pauseP, 1]}>
             <planeGeometry args={[0.035, 0.95]} />
             <meshBasicMaterial color={TH().pill} toneMapped={false} />
           </mesh>
-          <mesh position={[pauseGap.pos[0], pauseGap.pos[1] - 0.6, 1.08]} scale={pauseP}>
+          <mesh position={[PAUSE_GAP.pos[0], PAUSE_GAP.pos[1] - 0.6, 1.08]} scale={pauseP}>
             <planeGeometry args={[0.62, 0.22]} />
             <meshBasicMaterial map={pill} transparent toneMapped={false} />
           </mesh>
@@ -370,28 +481,48 @@ const CardWall: React.FC<{ f: number; appearStart: number; playStart: number; cl
     </>
   );
 };
+const PAUSE_GAP = GAPS.find((gp) => gp.i === 6)!; // between train name and "platform kramank"
+
+/** equaliser over whichever card is playing */
+const ActiveEq: React.FC<{ c: CamState; f: number; playStart: number }> = ({ c, f, playStart }) => {
+  const pl = playIdx(f, playStart, 7, 3);
+  if (pl.idx < 0) return null;
+  const card = CARDS[pl.idx];
+  const [x, y] = project(c, [card.pos[0], card.pos[1] + card.h / 2 + 0.05, card.pos[2]]);
+  return <EqBars x={x} y={y} f={f} on />;
+};
 
 const S12: React.FC<ShotProps> = ({ f, dur }) => {
   const c = camAt({ p0: [-0.6, 2.95, 10.4], t0: [0.0, 2.95, 0.8], p1: [0.6, 2.95, 9.6], t1: [0.2, 2.95, 0.8], fov: 50 }, f, dur, (t) => t);
   return (
-    <Canvas3D>
-      <StationSet dist={f * 0.45 + 12} speed={0.45}>
-        <CardWall f={f} appearStart={0} playStart={42} clocks={[60, 112]} />
-        <Cam {...c} />
-      </StationSet>
-    </Canvas3D>
+    <>
+      <Canvas3D>
+        <StationSet dist={f * 0.45 + 12} speed={0.45}>
+          <CardWall f={f} appearStart={0} playStart={42} clocks={[60, 112]} />
+          <Cam {...c} />
+        </StationSet>
+      </Canvas3D>
+      <SpeedLines f={f} amount={0.5} top={1250} bottom={1500} />
+      <ActiveEq c={c} f={f} playStart={42} />
+      <PlayTrack f={f} segs={segsFor(42, 7, 3)} y={1660} show={clamp((f - 34) / 8)} />
+    </>
   );
 };
 
 const S13: React.FC<ShotProps> = ({ f, dur }) => {
   const c = camAt({ p0: [-1.6, 3.15, 5.0], t0: [-1.2, 3.0, 1.0], p1: [-0.6, 3.0, 4.3], t1: [-0.7, 2.85, 1.0], fov: 50 }, f, dur);
+  const b = boxOf(c, [PAUSE_GAP.pos[0], PAUSE_GAP.pos[1] - 0.2, 1.06], 0.5, 1.4);
   return (
-    <Canvas3D>
-      <StationSet dist={f * 0.35 + 70} speed={0.35}>
-        <CardWall f={f + 60} appearStart={0} playStart={60} pauseAt={60 + 62} />
-        <Cam {...c} />
-      </StationSet>
-    </Canvas3D>
+    <>
+      <Canvas3D>
+        <StationSet dist={f * 0.35 + 70} speed={0.35}>
+          <CardWall f={f + 60} appearStart={0} playStart={60} pauseAt={60 + 62} />
+          <Cam {...c} />
+        </StationSet>
+      </Canvas3D>
+      <ActiveEq c={c} f={f + 60} playStart={60} />
+      <FocusRing x={b.x} y={b.y} w={b.w + 40} h={b.h + 40} f={f} at={64} color={MG.blue()} />
+    </>
   );
 };
 
@@ -404,7 +535,10 @@ const S14: React.FC<ShotProps> = ({ f, dur, g }) => {
           <Cam {...c} />
         </StationSet>
       </Canvas3D>
-      <Title f={f + 6} />
+      <SpeedLines f={f} amount={0.9} top={1250} bottom={1800} />
+      <SpeakerRings c={c} f={f} />
+      <KineticTitle f={f + 16} />
+      <Wipe f={f} len={8} />
     </>
   );
 };
@@ -419,16 +553,22 @@ const ShotHost: React.FC<{ id: string; from: number; dur: number }> = ({ id, fro
   return <Comp f={f} dur={dur} g={f + from} />;
 };
 
-export const Reel: React.FC<{ theme?: string }> = ({ theme = "default" }) => {
+const Progress: React.FC = () => {
+  const g = useCurrentFrame();
+  return <TrainProgress g={g} total={T.total} />;
+};
+
+export const Reel: React.FC<{ theme?: string }> = ({ theme = "classic" }) => {
   setTheme(theme);
   return (
-  <AbsoluteFill style={{ background: TH().bg }}>
-    {T.shots.map((s) => (
-      <Sequence key={s.id} from={s.from} durationInFrames={s.dur} name={s.id}>
-        <ShotHost id={s.id} from={s.from} dur={s.dur} />
-      </Sequence>
-    ))}
-    <Audio src={staticFile("reference-audio.m4a")} />
-  </AbsoluteFill>
+    <AbsoluteFill style={{ background: TH().bg }}>
+      {T.shots.map((s) => (
+        <Sequence key={s.id} from={s.from} durationInFrames={s.dur} name={s.id}>
+          <ShotHost id={s.id} from={s.from} dur={s.dur} />
+        </Sequence>
+      ))}
+      <Progress />
+      <Audio src={staticFile("reference-audio.m4a")} />
+    </AbsoluteFill>
   );
 };
