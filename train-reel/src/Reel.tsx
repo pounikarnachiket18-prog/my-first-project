@@ -6,6 +6,7 @@ import T from "./timeline.json";
 import { setTheme, TH } from "./theme";
 import { Callout, CamState, Cursor, EqBars, FocusRing, GapBracket, KeyPops, KineticTitle, MG, PlayTrack, project, Rings, Seg, SpeedLines, TrainProgress, Wipe } from "./mg";
 import { useFontsReady } from "./three/fonts";
+import { Crowd } from "./three/Crowd";
 import { Board, Cabin, Cam, Card3D, ClockBadge, Lights, Room, ROOM, Speaker, Station, Train, trainLength, trainOffset, V3 } from "./three/Parts";
 import { drawScreen, ROW_H, ROW_Y0, SCREEN_H, SCREEN_W, ScreenState, SEQUENCE } from "./three/screenUI";
 import { BOARD, CardState, pillTex } from "./three/textures";
@@ -51,6 +52,7 @@ export const StationSet: React.FC<{ dist: number; speed: number; trainX?: number
     <Board position={BOARD_POS} />
     <Board position={[-40, 4.7, 3.0]} />
     <Cabin />
+    <Crowd />
     <Train x={trainX ?? trainOffset(dist)} blur={speed > 0.22} nose={nose} />
     {children}
   </>

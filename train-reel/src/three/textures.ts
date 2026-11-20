@@ -326,3 +326,31 @@ export const pillTex = (text: string) =>
     c.font = `800 92px ${POP}`;
     c.fillText(text, w / 2, h / 2 + 32);
   });
+
+/** Shop signboard: big Hindi line + small English line. */
+export const shopSignTex = (hi: string, en: string, bg: string, fg: string) =>
+  make(`shop:${hi}:${bg}`, 1024, 300, (c, w, h) => {
+    c.fillStyle = bg;
+    c.fillRect(0, 0, w, h);
+    c.strokeStyle = fg;
+    c.lineWidth = 10;
+    c.strokeRect(14, 14, w - 28, h - 28);
+    c.fillStyle = fg;
+    c.textAlign = "center";
+    c.font = `700 130px ${HINDI}`;
+    c.fillText(hi, w / 2, 160, w - 60);
+    c.font = `800 58px ${POP}`;
+    c.fillText(en, w / 2, 250, w - 60);
+  });
+
+/** Striped canvas awning. */
+export const awningTex = (a: string, b: string) =>
+  make(`awning:${a}:${b}`, 512, 128, (c, w, h) => {
+    for (let i = 0; i < 8; i++) {
+      c.fillStyle = i % 2 ? b : a;
+      c.fillRect((i * w) / 8, 0, w / 8, h);
+    }
+    // scalloped edge shading
+    c.fillStyle = "rgba(0,0,0,0.12)";
+    c.fillRect(0, h * 0.82, w, h * 0.18);
+  });
