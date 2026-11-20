@@ -4,22 +4,27 @@
   "description": "Reel: why Indian railway announcements come in pauses (Remotion motion graphics)",
   "scripts": {
     "start": "remotion studio",
-    "audio": "python3 scripts/make_audio.py",
-    "render": "remotion render Reel out/train-announcement-reel.mp4",
-    "thumb": "remotion still Reel out/thumb.png --frame=232"
+    "render": "remotion render Reel out/train-announcement-reel.mp4 --codec=h264 --crf=18",
+    "thumb": "remotion still Reel out/thumb.png --frame=45"
   },
   "dependencies": {
     "@fontsource/anton": "5.1.1",
+    "@fontsource/hind": "^5.1.1",
     "@fontsource/inter": "5.1.1",
     "@fontsource/noto-sans-bengali": "^5.1.1",
     "@fontsource/noto-sans-devanagari": "5.1.1",
     "@fontsource/noto-sans-tamil": "^5.1.1",
     "@fontsource/noto-sans-telugu": "^5.1.1",
+    "@fontsource/poppins": "^5.1.1",
     "@fontsource/vt323": "5.1.1",
+    "@react-three/fiber": "^9.1.2",
     "@remotion/cli": "4.0.469",
+    "@remotion/three": "^4.0.469",
+    "@types/three": "^0.170.0",
     "react": "19.0.0",
     "react-dom": "19.0.0",
-    "remotion": "4.0.469"
+    "remotion": "4.0.469",
+    "three": "^0.170.0"
   },
   "devDependencies": {
     "@types/react": "19.0.0",

@@ -1,33 +1,42 @@
-# Reel: Why Indian train announcements come in pauses
+# Reel: Why Indian train announcements come in pauses (3D)
 
-A 1080×1920, 88-second vertical reel made entirely of code-drawn motion graphics
-(Remotion + React/SVG) with a soundtrack synthesised from scratch in Python.
+A 1080×1920, 32.5-second vertical reel built as a real 3D scene with Remotion,
+three.js and React Three Fiber. Its visual style follows the reference reel: a clean white
+station, a red train with motion blur, horn speakers, a hanging LED board, the
+announcement room and floating Hindi clip cards. The reference reel's audio is used unchanged
+(`public/reference-audio.m4a`). Shots are timed to the reference's beats.
 
-## 14 scenes
-| # | Scene | What animates |
-|---|-------|---------------|
-| 1 | Hook | Train pulls into a night platform, chime rings from a loudspeaker, LED board: "यात्रीगण कृपया ध्यान दें…" |
-| 2 | Title | Train crosses behind "come in PAUSES?" |
-| 3 | Listen closely | "Gaadi sankhya… 1… 2… 9… 5… 1" with a waveform that has real silent gaps |
-| 4 | The secret | Mic crossed out → announcement computer sends out a library of clips |
-| 5 | Recorded once | Tape machine records, the audio ribbon is cut into clips that drop into a library |
-| 6 | How does it know? | Live train data flies into the announcement template |
-| 7 | How it's built | Clips are stitched into a sentence and a playhead plays it back, gaps included |
-| 8 | Why not full sentences? | Combinations add up to "MILLIONS" vs a few thousand clips |
-| 9 | Digit by digit | 10 digit clips cover every train number; short digits are easier to hear over noise |
-| 10 | Why it sounds robotic | Pitch contour: one smooth line vs jumps at every joint |
-| 11 | Languages | Split-flap board and cards for Hindi, English, Marathi, Tamil, Bengali, Telugu |
-| 12 | Every station | Network of stations pulsing from a central clip library |
-| 13 | It works | 24×7, the same clear voice, easy updates, low cost |
-| 14 | Outro | Horn, train departs, CTA |
+## 14 shots
+| # | Time | Shot |
+|---|------|------|
+| 1 | 0–3.0s | Horn speakers and LED board, train rushing past, title "Announcement ruk-ruk ke kyun?" |
+| 2 | 3.0–4.8s | Clip cards pop out of the speaker: गाड़ी संख्या · एक · दो |
+| 3 | 4.8–6.0s | Camera flies down the platform |
+| 4 | 6.0–7.0s | उद्घोषणा कक्ष / ANNOUNCEMENT cabin, push through the glass |
+| 5 | 7.0–8.0s | Inside the control room: desk, gooseneck mic, monitor, hands |
+| 6 | 8.0–10.0s | Operator screen: train list, row 12846 selected, fingers typing |
+| 7 | 10.0–13.0s | Values pop up: 12846 → PF 3 → 18:40 |
+| 8 | 13.0–16.0s | Time typed into the form, ANNOUNCE pressed, status "Playing" |
+| 9 | 16.0–18.0s | Media tab: the library of 24 pre-recorded Hindi clips |
+| 10 | 18.0–22.2s | Clips picked into the announcement sequence and played with gaps |
+| 11 | 22.2–24.5s | Back on the platform, train arrives, cards emerge from the speaker |
+| 12 | 24.5–28.5s | Wall of clip cards over the moving train, played in order, with timers in the gaps |
+| 13 | 28.5–31.5s | Close-up, blue PAUSE marker in the gap between two clips |
+| 14 | 31.5–32.5s | Horns, board and title again |
+
+Train *12846 Suraj Nagar Exp* and every name on the operator screen are fictional.
+
+## Files
+- `src/Reel.tsx`: shot list, camera moves, card and train timing
+- `src/three/Parts.tsx`: 3D models (station, endless train, horns, board, cabin, room, hands, cards)
+- `src/three/textures.ts`: canvas-drawn textures (train livery and blur, tiles, LED board, cards)
+- `src/three/screenUI.ts`: operator software drawn live onto the monitor
+- `src/timeline.json`: shot start frames and lengths
 
 ## Commands
 ```bash
 npm i
-pip install numpy scipy
-npm run audio    # writes public/soundtrack.wav (synced to src/timeline.json)
 npm start        # Remotion Studio preview
 npm run render   # out/train-announcement-reel.mp4
 ```
-All timings live in `src/timeline.json`. Both the scenes and the audio script read from it,
-so changing a timing there moves the picture and the sound together (re-run `npm run audio`).
+Rendering uses WebGL through SwiftShader (`--gl=swangle`, set in `remotion.config.ts`), so it works without a GPU.

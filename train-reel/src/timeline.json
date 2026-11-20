@@ -1,265 +1,76 @@
 {
  "fps": 30,
- "total": 2655,
- "scenes": [
+ "total": 975,
+ "shots": [
   {
-   "id": "hook",
+   "id": "s01",
    "from": 0,
-   "dur": 150
+   "dur": 90
   },
   {
-   "id": "title",
-   "from": 150,
+   "id": "s02",
+   "from": 90,
+   "dur": 54
+  },
+  {
+   "id": "s03",
+   "from": 144,
+   "dur": 36
+  },
+  {
+   "id": "s04",
+   "from": 180,
+   "dur": 30
+  },
+  {
+   "id": "s05",
+   "from": 210,
+   "dur": 30
+  },
+  {
+   "id": "s06",
+   "from": 240,
+   "dur": 60
+  },
+  {
+   "id": "s07",
+   "from": 300,
+   "dur": 90
+  },
+  {
+   "id": "s08",
+   "from": 390,
+   "dur": 90
+  },
+  {
+   "id": "s09",
+   "from": 480,
+   "dur": 60
+  },
+  {
+   "id": "s10",
+   "from": 540,
+   "dur": 127
+  },
+  {
+   "id": "s11",
+   "from": 667,
+   "dur": 68
+  },
+  {
+   "id": "s12",
+   "from": 735,
    "dur": 120
   },
   {
-   "id": "pauses",
-   "from": 270,
-   "dur": 180
+   "id": "s13",
+   "from": 855,
+   "dur": 90
   },
   {
-   "id": "reveal",
-   "from": 450,
-   "dur": 210
-  },
-  {
-   "id": "studio",
-   "from": 660,
-   "dur": 165
-  },
-  {
-   "id": "data",
-   "from": 825,
-   "dur": 180
-  },
-  {
-   "id": "stitch",
-   "from": 1005,
-   "dur": 330
-  },
-  {
-   "id": "math",
-   "from": 1335,
-   "dur": 270
-  },
-  {
-   "id": "digits",
-   "from": 1605,
-   "dur": 210
-  },
-  {
-   "id": "pitch",
-   "from": 1815,
-   "dur": 165
-  },
-  {
-   "id": "lang",
-   "from": 1980,
-   "dur": 180
-  },
-  {
-   "id": "stations",
-   "from": 2160,
-   "dur": 150
-  },
-  {
-   "id": "pros",
-   "from": 2310,
-   "dur": 165
-  },
-  {
-   "id": "outro",
-   "from": 2475,
-   "dur": 180
+   "id": "s14",
+   "from": 945,
+   "dur": 30
   }
- ],
- "hook": {
-  "chime": 2,
-  "trainIn": [
-   0,
-   78
-  ],
-  "words": [
-   88,
-   106,
-   124
-  ]
- },
- "pauses": {
-  "label": 8,
-  "digits": [
-   34,
-   52,
-   70,
-   88,
-   106
-  ],
-  "brackets": 122,
-  "cap1": 128,
-  "cap2": 150
- },
- "reveal": {
-  "slash": 30,
-  "computer": 70,
-  "tilesStart": 92,
-  "tileStep": 3,
-  "cap": 150
- },
- "stitch": {
-  "blocksStart": 30,
-  "blockStep": 13,
-  "playStart": 182,
-  "gap": 4,
-  "cap": 182,
-  "blocks": [
-   {
-    "text": "Yatrigan, kripya dhyan dein",
-    "kind": "phrase",
-    "play": 16,
-    "syl": 9
-   },
-   {
-    "text": "Gaadi sankhya",
-    "kind": "phrase",
-    "play": 10,
-    "syl": 5
-   },
-   {
-    "text": "1",
-    "kind": "num",
-    "play": 5,
-    "syl": 1
-   },
-   {
-    "text": "2",
-    "kind": "num",
-    "play": 5,
-    "syl": 1
-   },
-   {
-    "text": "9",
-    "kind": "num",
-    "play": 5,
-    "syl": 1
-   },
-   {
-    "text": "5",
-    "kind": "num",
-    "play": 5,
-    "syl": 1
-   },
-   {
-    "text": "1",
-    "kind": "num",
-    "play": 5,
-    "syl": 1
-   },
-   {
-    "text": "Rajdhani Express",
-    "kind": "name",
-    "play": 12,
-    "syl": 6
-   },
-   {
-    "text": "platform sankhya",
-    "kind": "phrase",
-    "play": 10,
-    "syl": 5
-   },
-   {
-    "text": "3",
-    "kind": "num",
-    "play": 5,
-    "syl": 1
-   },
-   {
-    "text": "par aa rahi hai",
-    "kind": "phrase",
-    "play": 12,
-    "syl": 5
-   }
-  ]
- },
- "math": {
-  "lines": [
-   18,
-   40,
-   62,
-   84,
-   106
-  ],
-  "equals": 132,
-  "counter": [
-   136,
-   186
-  ],
-  "vs": 200
- },
- "digits": {
-  "strike": 34,
-  "good": 48,
-  "r1": 78,
-  "r2": 138
- },
- "lang": {
-  "cards": [
-   16,
-   36,
-   56,
-   76,
-   96,
-   116
-  ],
-  "cap": 128
- },
- "outro": {
-  "words": [
-   8,
-   34,
-   52,
-   70,
-   88
-  ],
-  "depart": 30,
-  "cta": 122,
-  "chime": 120
- },
- "title": {
-  "l1": 6,
-  "l2": 20,
-  "l3": 40
- },
- "studio": {
-  "reel": 8,
-  "cut": 72,
-  "clips": 84,
-  "cap": 112
- },
- "data": {
-  "feed": 10,
-  "slots": [
-   62,
-   84,
-   106
-  ],
-  "cap": 128
- },
- "pitch": {
-  "draw": 14,
-  "joints": 72,
-  "cap": 104
- },
- "stations": {
-  "dots": 8,
-  "cap": 70
- },
- "pros": {
-  "items": [
-   18,
-   42,
-   66,
-   90
-  ],
-  "cap": 118
- }
+ ]
 }
