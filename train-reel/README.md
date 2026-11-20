@@ -19,7 +19,7 @@ announcement room and floating Hindi clip cards. The reference reel's audio is u
 | 8 | 13.0–16.0s | Time typed into the form, ANNOUNCE pressed, status "Playing" |
 | 9 | 16.0–18.0s | Media tab: the library of 24 pre-recorded Hindi clips |
 | 10 | 18.0–22.2s | Clips picked into the announcement sequence and played with gaps |
-| 11 | 22.2–24.5s | Back on the platform, train arrives, cards emerge from the speaker |
+| 11 | 22.2–24.5s | Back on the platform, the Vande Bharat-style nose glides in, cards emerge from the speaker |
 | 12 | 24.5–28.5s | Wall of clip cards over the moving train, played in order, with timers in the gaps |
 | 13 | 28.5–31.5s | Close-up, blue PAUSE marker in the gap between two clips |
 | 14 | 31.5–32.5s | Horns, board and title again |

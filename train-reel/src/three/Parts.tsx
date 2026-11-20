@@ -127,34 +127,119 @@ const COACH = 22;
 const GAP = 0.6;
 export const PERIOD = COACH + GAP;
 
-export const Train: React.FC<{ x: number; blur: boolean; coaches?: number }> = ({ x, blur, coaches = 8 }) => {
+/* Aerodynamic nose (side profile extruded across the body width, rounded by bevel). */
+const NOSE_LEN = 6.6;
+const noseGeo = (() => {
+  const s = new THREE.Shape();
+  s.moveTo(0, 0.9);
+  s.lineTo(4.9, 0.9);
+  s.quadraticCurveTo(6.25, 0.95, 6.3, 1.35);
+  s.bezierCurveTo(6.2, 2.2, 3.7, 3.4, 0.9, 3.45);
+  s.lineTo(0, 3.45);
+  s.lineTo(0, 0.9);
+  const g = new THREE.ExtrudeGeometry(s, { depth: 2.4, bevelEnabled: true, bevelThickness: 0.3, bevelSize: 0.3, bevelSegments: 8, curveSegments: 32 });
+  g.translate(0, 0, -1.2);
+  return g;
+})();
+const bandGeo = (() => {
+  const s = new THREE.Shape();
+  s.moveTo(0, 0.9);
+  s.lineTo(4.9, 0.9);
+  s.quadraticCurveTo(6.25, 0.95, 6.3, 1.35);
+  s.lineTo(6.27, 1.62);
+  s.lineTo(0, 1.62);
+  s.lineTo(0, 0.9);
+  const g = new THREE.ExtrudeGeometry(s, { depth: 2.42, bevelEnabled: true, bevelThickness: 0.302, bevelSize: 0.302, bevelSegments: 8, curveSegments: 24 });
+  g.translate(0, 0, -1.21);
+  return g;
+})();
+const stripeGeo = (() => {
+  const s = new THREE.Shape();
+  s.moveTo(0, 1.78);
+  s.lineTo(6.12, 1.78);
+  s.lineTo(6.05, 1.88);
+  s.lineTo(0, 1.88);
+  s.lineTo(0, 1.78);
+  const g = new THREE.ExtrudeGeometry(s, { depth: 2.42, bevelEnabled: true, bevelThickness: 0.302, bevelSize: 0.302, bevelSegments: 8 });
+  g.translate(0, 0, -1.21);
+  return g;
+})();
+
+const Nose: React.FC<{ x: number }> = ({ x }) => {
+  const t = TH();
+  return (
+    <group position={[x, 0, 0]}>
+      <mesh geometry={noseGeo}>
+        <meshStandardMaterial color={t.trainUpper} roughness={0.35} metalness={0.15} />
+      </mesh>
+      <mesh geometry={bandGeo}>
+        <meshStandardMaterial color={t.lowerA} roughness={0.4} />
+      </mesh>
+      <mesh geometry={stripeGeo}>
+        <meshStandardMaterial color={t.stripe} roughness={0.4} />
+      </mesh>
+      {/* raked windshield */}
+      <mesh position={[4.95, 2.95, 0]} rotation={[0, 0, -0.62]}>
+        <boxGeometry args={[1.9, 0.05, 2.35]} />
+        <meshStandardMaterial color={t.windowBand} roughness={0.15} metalness={0.6} />
+      </mesh>
+      {/* headlights */}
+      {[-0.85, 0.85].map((z) => (
+        <mesh key={z} position={[6.52, 1.45, z]}>
+          <boxGeometry args={[0.08, 0.14, 0.5]} />
+          <meshBasicMaterial color="#FFF7D6" toneMapped={false} />
+        </mesh>
+      ))}
+      {/* side skirt under nose */}
+      <mesh position={[2.6, 0.48, 0]}>
+        <boxGeometry args={[5.2, 0.3, 2.7]} />
+        <meshStandardMaterial color={t.trainEnd} />
+      </mesh>
+    </group>
+  );
+};
+
+/** Vande Bharat-style EMU. `nose` adds the aerodynamic driving car at the front (+x end). */
+export const Train: React.FC<{ x: number; blur: boolean; coaches?: number; nose?: boolean }> = ({ x, blur, coaches = 8, nose = false }) => {
   const side = trainTex(blur);
+  const t = TH();
   return (
     <group position={[x, 0, -1.9]}>
       {new Array(coaches).fill(0).map((_, i) => (
         <group key={i} position={[i * PERIOD, 0, 0]}>
-          <mesh position={[0, 2.3, 0]}>
-            <boxGeometry args={[COACH, 3.5, 3.0]} />
-            <meshStandardMaterial attach="material-0" color={TH().trainEnd} />
-            <meshStandardMaterial attach="material-1" color={TH().trainEnd} />
-            <meshStandardMaterial attach="material-2" color={TH().trainRoof} />
-            <meshStandardMaterial attach="material-3" color={TH().trainEnd} />
-            <meshStandardMaterial attach="material-4" map={side} roughness={0.55} />
-            <meshStandardMaterial attach="material-5" map={side} roughness={0.55} />
+          {/* body */}
+          <mesh position={[0, 2.1, 0]}>
+            <boxGeometry args={[COACH, 3.0, 3.0]} />
+            <meshStandardMaterial attach="material-0" color={t.trainEnd} />
+            <meshStandardMaterial attach="material-1" color={t.trainEnd} />
+            <meshStandardMaterial attach="material-2" color={t.trainRoof} />
+            <meshStandardMaterial attach="material-3" color={t.trainEnd} />
+            <meshStandardMaterial attach="material-4" map={side} roughness={0.4} />
+            <meshStandardMaterial attach="material-5" map={side} roughness={0.4} />
           </mesh>
-          <mesh position={[0, 0.42, 0]}>
-            <boxGeometry args={[COACH - 2, 0.35, 2.4]} />
-            <meshStandardMaterial color="#1F2125" />
+          {/* rounded roof */}
+          <mesh position={[0, 3.6, 0]} rotation={[0, 0, Math.PI / 2]} scale={[0.3, 1, 1]}>
+            <cylinderGeometry args={[1.5, 1.5, COACH, 40, 1, false]} />
+            <meshStandardMaterial color={t.trainRoof} roughness={0.4} />
           </mesh>
-          <mesh position={[COACH / 2 + GAP / 2, 2.3, 0]}>
-            <boxGeometry args={[GAP, 3.0, 2.2]} />
-            <meshStandardMaterial color="#1A1B1F" />
+          {/* skirt over the bogies */}
+          <mesh position={[0, 0.47, 0]}>
+            <boxGeometry args={[COACH - 0.6, 0.28, 2.85]} />
+            <meshStandardMaterial color={t.trainEnd} />
+          </mesh>
+          {/* gangway bellows */}
+          <mesh position={[COACH / 2 + GAP / 2, 2.2, 0]}>
+            <boxGeometry args={[GAP + 0.05, 2.6, 2.5]} />
+            <meshStandardMaterial color="#59606C" />
           </mesh>
         </group>
       ))}
+      {nose && <Nose x={(coaches - 1) * PERIOD + COACH / 2} />}
     </group>
   );
 };
+export const NOSE_TIP = NOSE_LEN;
+export const trainLength = (coaches = 8) => (coaches - 1) * PERIOD + COACH / 2 + NOSE_LEN;
 
 /** Endless train: identical coaches let us wrap the offset for any speed. */
 export const trainOffset = (dist: number, base = -90) => base + (((dist % PERIOD) + PERIOD) % PERIOD);

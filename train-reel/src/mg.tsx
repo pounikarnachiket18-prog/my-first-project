@@ -356,15 +356,17 @@ export const TrainProgress: React.FC<{ g: number; total: number }> = ({ g, total
       {new Array(31).fill(0).map((_, i) => (
         <rect key={i} x={x0 + i * 30} y={y + 5} width={12} height={4} fill={MG.ink()} opacity={0.25} />
       ))}
-      <g transform={`translate(${x - 82} ${y - 30})`}>
-        <rect x={0} y={4} width={36} height={22} rx={4} fill={MG.blue()} />
-        <rect x={40} y={4} width={42} height={22} rx={6} fill={MG.blue()} />
-        <rect x={0} y={14} width={82} height={4} fill={MG.cream()} />
-        <path d="M70 4 L82 12 L82 26 L70 26 Z" fill={MG.red()} />
-        <circle cx={82} cy={16} r={3} fill={MG.gold()} />
-        {[8, 26, 50, 70].map((cx) => (
-          <circle key={cx} cx={cx} cy={29} r={4} fill={MG.ink()} />
-        ))}
+      <g transform={`translate(${x - 96} ${y - 30})`}>
+        {/* Vande Bharat-style: white body, dark windows, navy band, sloped nose */}
+        <rect x={0} y={4} width={44} height={22} rx={6} fill="#F7F9FB" stroke="#9AA6B8" strokeWidth={1.5} />
+        <path d="M48 4 L74 4 Q96 10 98 24 L98 26 L48 26 Z" fill="#F7F9FB" stroke="#9AA6B8" strokeWidth={1.5} />
+        <rect x={3} y={8} width={38} height={6} rx={3} fill="#16202E" />
+        <rect x={51} y={8} width={22} height={6} rx={3} fill="#16202E" />
+        <path d="M76 6 Q88 9 92 17 L80 17 Z" fill="#16202E" />
+        <rect x={0} y={18} width={44} height={7} fill="#1E3E95" />
+        <path d="M48 18 L97 18 L98 25 L48 25 Z" fill="#1E3E95" />
+        <rect x={0} y={16} width={96} height={1.6} fill="#3FA9F5" />
+        <circle cx={96} cy={21} r={2.4} fill="#FFF7D6" />
       </g>
     </svg>
   );

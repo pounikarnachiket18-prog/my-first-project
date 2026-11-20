@@ -76,51 +76,61 @@ export const roofTex = (rx: number) =>
     }
   }, [rx, 1]);
 
+/** Vande Bharat-style EMU side: white body, continuous tinted windows, sky-blue pinstripe, navy lower band. */
 const drawTrainSide = (c: CanvasRenderingContext2D, w: number, h: number) => {
-  // upper grey
+  const t = TH();
   const g = c.createLinearGradient(0, 0, 0, h);
-  g.addColorStop(0, TH().trainTop);
-  g.addColorStop(0.08, TH().trainUpper);
-  g.addColorStop(0.5, TH().trainUpper);
+  g.addColorStop(0, t.trainTop);
+  g.addColorStop(0.1, t.trainUpper);
+  g.addColorStop(1, t.trainUpper);
   c.fillStyle = g;
-  c.fillRect(0, 0, w, h * 0.5);
-  // window band
-  c.fillStyle = TH().windowBand;
-  c.fillRect(0, h * 0.2, w, h * 0.24);
-  for (let i = 0; i < 12; i++) {
-    const x = w * 0.1 + i * w * 0.068;
-    c.fillStyle = TH().windowGlass;
-    rr(c, x, h * 0.22, w * 0.055, h * 0.2, 10);
+  c.fillRect(0, 0, w, h);
+  // continuous tinted window band
+  rr(c, w * 0.075, h * 0.16, w * 0.85, h * 0.31, 26);
+  c.fillStyle = t.windowBand;
+  c.fill();
+  c.save();
+  rr(c, w * 0.075, h * 0.16, w * 0.85, h * 0.31, 26);
+  c.clip();
+  const gl = c.createLinearGradient(0, h * 0.16, 0, h * 0.47);
+  gl.addColorStop(0, t.windowGlass);
+  gl.addColorStop(1, t.windowBand);
+  c.fillStyle = gl;
+  c.fillRect(0, h * 0.16, w, h * 0.31);
+  for (let i = 0; i < 9; i++) {
+    const x = w * 0.1 + i * w * 0.1;
+    c.fillStyle = "rgba(255,255,255,0.10)";
+    c.beginPath();
+    c.moveTo(x, h * 0.47);
+    c.lineTo(x + 60, h * 0.16);
+    c.lineTo(x + 110, h * 0.16);
+    c.lineTo(x + 50, h * 0.47);
     c.fill();
-    c.fillStyle = "rgba(255,255,255,0.18)";
-    c.fillRect(x + 6, h * 0.23, w * 0.018, h * 0.18);
+    c.fillStyle = "rgba(255,255,255,0.07)";
+    c.fillRect(w * 0.075 + i * w * 0.0944, h * 0.16, 5, h * 0.31);
   }
-  // red lower body
-  const r = c.createLinearGradient(0, h * 0.5, 0, h);
-  r.addColorStop(0, TH().lowerA);
-  r.addColorStop(1, TH().lowerB);
+  c.restore();
+  // sky-blue pinstripe + navy lower band
+  c.fillStyle = t.stripe;
+  c.fillRect(0, h * 0.535, w, h * 0.03);
+  const r = c.createLinearGradient(0, h * 0.6, 0, h * 0.93);
+  r.addColorStop(0, t.lowerA);
+  r.addColorStop(1, t.lowerB);
   c.fillStyle = r;
-  c.fillRect(0, h * 0.5, w, h * 0.42);
-  // gold stripes
-  c.fillStyle = TH().stripe;
-  c.fillRect(0, h * 0.545, w, h * 0.035);
-  c.fillRect(0, h * 0.6, w, h * 0.015);
-  // doors
-  for (const dx of [0.025, 0.925]) {
-    c.strokeStyle = TH().doorLine;
-    c.lineWidth = 6;
-    c.strokeRect(w * dx, h * 0.18, w * 0.05, h * 0.72);
-    c.fillStyle = TH().windowBand;
-    rr(c, w * dx + 14, h * 0.24, w * 0.05 - 28, h * 0.16, 6);
+  c.fillRect(0, h * 0.6, w, h * 0.33);
+  // plug doors
+  for (const dx of [0.018, 0.937]) {
+    c.strokeStyle = t.doorLine;
+    c.lineWidth = 5;
+    rr(c, w * dx, h * 0.1, w * 0.045, h * 0.83, 10);
+    c.stroke();
+    c.fillStyle = t.windowBand;
+    rr(c, w * dx + 14, h * 0.18, w * 0.045 - 28, h * 0.22, 8);
     c.fill();
   }
-  // skirt
-  c.fillStyle = "#2A2C31";
-  c.fillRect(0, h * 0.92, w, h * 0.08);
-  // end gaps
-  c.fillStyle = "#1E2025";
-  c.fillRect(0, 0, 8, h);
-  c.fillRect(w - 8, 0, 8, h);
+  // skirt line
+  c.fillStyle = t.trainEnd;
+  c.fillRect(0, h * 0.93, w, h * 0.07);
 };
 
 export const trainTex = (blur: boolean) =>

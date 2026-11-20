@@ -6,7 +6,7 @@ import T from "./timeline.json";
 import { setTheme, TH } from "./theme";
 import { Callout, CamState, Cursor, EqBars, FocusRing, GapBracket, KeyPops, KineticTitle, MG, PlayTrack, project, Rings, Seg, SpeedLines, TrainProgress, Wipe } from "./mg";
 import { useFontsReady } from "./three/fonts";
-import { Board, Cabin, Cam, Card3D, ClockBadge, Lights, Room, ROOM, Speaker, Station, Train, trainOffset, V3 } from "./three/Parts";
+import { Board, Cabin, Cam, Card3D, ClockBadge, Lights, Room, ROOM, Speaker, Station, Train, trainLength, trainOffset, V3 } from "./three/Parts";
 import { drawScreen, ROW_H, ROW_Y0, SCREEN_H, SCREEN_W, ScreenState, SEQUENCE } from "./three/screenUI";
 import { BOARD, CardState, pillTex } from "./three/textures";
 
@@ -41,7 +41,7 @@ const Canvas3D: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   </ThreeCanvas>
 );
 
-const StationSet: React.FC<{ dist: number; speed: number; children?: React.ReactNode }> = ({ dist, speed, children }) => (
+const StationSet: React.FC<{ dist: number; speed: number; trainX?: number; nose?: boolean; children?: React.ReactNode }> = ({ dist, speed, trainX, nose, children }) => (
   <>
     <Lights />
     <Station />
@@ -51,7 +51,7 @@ const StationSet: React.FC<{ dist: number; speed: number; children?: React.React
     <Board position={BOARD_POS} />
     <Board position={[-40, 4.7, 3.0]} />
     <Cabin />
-    <Train x={trainOffset(dist)} blur={speed > 0.22} />
+    <Train x={trainX ?? trainOffset(dist)} blur={speed > 0.22} nose={nose} />
     {children}
   </>
 );
@@ -420,14 +420,16 @@ const S10: React.FC<ShotProps> = ({ f, dur }) => {
 };
 
 const S11: React.FC<ShotProps> = ({ f, dur }) => {
-  const v0 = 0.75;
-  const dist = 30 + v0 * f - (v0 * 0.8 * f * f) / (2 * dur);
-  const speed = v0 - (v0 * 0.8 * f) / dur;
+  // the driving car's nose glides in and slows to a stop
+  const t = clamp(f / dur);
+  const tip = -14 + 30 * outC(t);
+  const speed = (30 * 3 * Math.pow(1 - t, 2)) / dur;
+  const dist = 0;
   const c = camAt({ p0: [-19.4, 2.7, 6.6], t0: [-6, 2.7, 0.5], p1: [-6, 3.3, 7.6], t1: [0.2, 4.6, 2.4], fov: 54 }, f, dur);
   return (
     <>
       <Canvas3D>
-        <StationSet dist={dist} speed={speed}>
+        <StationSet dist={dist} speed={speed} trainX={tip - trainLength()} nose>
           <Emerging f={f - 36} count={2} />
           <Cam {...c} />
         </StationSet>
