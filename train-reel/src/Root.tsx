@@ -4,7 +4,7 @@ import { Main } from "./Main";
 import T from "./timeline.json";
 
 // Hold rendering until all web fonts (incl. Indic scripts) are ready.
-const fontHandle = delayRender("Loading fonts");
+const fontHandle = delayRender("Loading fonts", { timeoutInMilliseconds: 120000, retries: 2 });
 Promise.all(
   [
     "400 40px Anton",
