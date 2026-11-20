@@ -16,7 +16,7 @@ const inOut = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2,
 const outC = (t: number) => 1 - Math.pow(1 - t, 3);
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 const l3 = (a: V3, b: V3, t: number): V3 => [lerp(a[0], b[0], t), lerp(a[1], b[1], t), lerp(a[2], b[2], t)];
-const R = (p: V3): V3 => [p[0] + ROOM[0], p[1] + ROOM[1], p[2] + ROOM[2]];
+export const R = (p: V3): V3 => [p[0] + ROOM[0], p[1] + ROOM[1], p[2] + ROOM[2]];
 
 type Move = { p0: V3; t0: V3; p1: V3; t1: V3; fov?: number; fov1?: number };
 const camAt = (m: Move, f: number, dur: number, ease = inOut) => {
@@ -24,8 +24,8 @@ const camAt = (m: Move, f: number, dur: number, ease = inOut) => {
   return { pos: l3(m.p0, m.p1, t), target: l3(m.t0, m.t1, t), fov: lerp(m.fov ?? 50, m.fov1 ?? m.fov ?? 50, t) };
 };
 
-const SPEAKER: V3 = [0, 5.75, 2.3];
-const BOARD_POS: V3 = [3.6, 4.7, 3.0];
+export const SPEAKER: V3 = [0, 5.75, 2.3];
+export const BOARD_POS: V3 = [3.6, 4.7, 3.0];
 
 const Canvas3D: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <ThreeCanvas
@@ -41,7 +41,7 @@ const Canvas3D: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   </ThreeCanvas>
 );
 
-const StationSet: React.FC<{ dist: number; speed: number; trainX?: number; nose?: boolean; children?: React.ReactNode }> = ({ dist, speed, trainX, nose, children }) => (
+export const StationSet: React.FC<{ dist: number; speed: number; trainX?: number; nose?: boolean; children?: React.ReactNode }> = ({ dist, speed, trainX, nose, children }) => (
   <>
     <Lights />
     <Station />
@@ -82,7 +82,7 @@ const layoutRow = (row: CardDef[], h: number, y: number, z: number, gap = 0.1) =
     return { ...c, pos: [cx, y, z] as V3, w, h };
   });
 };
-const CARDS = [...layoutRow(ROW1, 0.62, 3.4, 1.0), ...layoutRow(ROW2, 0.58, 2.62, 1.0)];
+export const CARDS = [...layoutRow(ROW1, 0.62, 3.4, 1.0), ...layoutRow(ROW2, 0.58, 2.62, 1.0)];
 const GAPS = CARDS.slice(0, -1)
   .map((c, i) => ({ a: c, b: CARDS[i + 1], i }))
   .filter(({ a, b }) => a.pos[1] === b.pos[1])
@@ -96,10 +96,10 @@ const playIdx = (f: number, start: number, on = 6, off = 3) => {
   return { idx: inGap ? -1 : k, gap: inGap ? k : -1 };
 };
 
-const cardState = (i: number, idx: number, gold?: boolean): CardState => (i === idx ? "active" : gold ? "gold" : "normal");
+export const cardState = (i: number, idx: number, gold?: boolean): CardState => (i === idx ? "active" : gold ? "gold" : "normal");
 
 /* ---------------------------------------------------------- screen texture */
-const useScreen = (state: ScreenState) => {
+export const useScreen = (state: ScreenState) => {
   const canvas = useMemo(() => {
     const c = document.createElement("canvas");
     c.width = SCREEN_W;
@@ -441,7 +441,7 @@ const S11: React.FC<ShotProps> = ({ f, dur }) => {
   );
 };
 
-const CardWall: React.FC<{ f: number; appearStart: number; playStart: number; clocks?: [number, number]; pauseAt?: number }> = ({ f, appearStart, playStart, clocks, pauseAt }) => {
+export const CardWall: React.FC<{ f: number; appearStart: number; playStart: number; clocks?: [number, number]; pauseAt?: number }> = ({ f, appearStart, playStart, clocks, pauseAt }) => {
   const { fps } = useVideoConfig();
   const pl = playIdx(f, playStart, 7, 3);
   const pill = pillTex("PAUSE");
