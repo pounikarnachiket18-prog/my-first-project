@@ -499,13 +499,12 @@ const S12: React.FC<ShotProps> = ({ f, dur }) => {
   return (
     <>
       <Canvas3D>
-        <StationSet dist={f * 0.45 + 12} speed={0.45}>
+        <StationSet dist={f * 0.12 + 12} speed={0.12}>
           <CardWall f={f} appearStart={0} playStart={42} clocks={[60, 112]} />
           <Cam {...c} />
         </StationSet>
       </Canvas3D>
-      <SpeedLines f={f} amount={0.5} top={1250} bottom={1500} />
-      <ActiveEq c={c} f={f} playStart={42} />
+            <ActiveEq c={c} f={f} playStart={42} />
       <PlayTrack f={f} segs={segsFor(42, 7, 3)} y={1660} show={clamp((f - 34) / 8)} />
     </>
   );
@@ -517,7 +516,7 @@ const S13: React.FC<ShotProps> = ({ f, dur }) => {
   return (
     <>
       <Canvas3D>
-        <StationSet dist={f * 0.35 + 70} speed={0.35}>
+        <StationSet dist={f * 0.1 + 30} speed={0.1}>
           <CardWall f={f + 60} appearStart={0} playStart={60} pauseAt={60 + 62} />
           <Cam {...c} />
         </StationSet>

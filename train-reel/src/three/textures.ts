@@ -36,6 +36,8 @@ const rr = (c: CanvasRenderingContext2D, x: number, y: number, w: number, h: num
   c.closePath();
 };
 
+export const CHANNEL = "Mindset mode | Explainers";
+
 export const HINDI = "'Hind', 'Noto Sans Devanagari', sans-serif";
 export const POP = "'Poppins', 'Inter', sans-serif";
 
@@ -118,6 +120,14 @@ const drawTrainSide = (c: CanvasRenderingContext2D, w: number, h: number) => {
   r.addColorStop(1, t.lowerB);
   c.fillStyle = r;
   c.fillRect(0, h * 0.6, w, h * 0.33);
+  // channel name along the navy band
+  c.fillStyle = "#FFFFFF";
+  c.textAlign = "center";
+  c.textBaseline = "middle";
+  c.font = `800 36px ${POP}`;
+  for (const fx of [0.19, 0.5, 0.81]) c.fillText(CHANNEL, w * fx, h * 0.765, w * 0.29);
+  c.textAlign = "left";
+  c.textBaseline = "alphabetic";
   // plug doors
   for (const dx of [0.018, 0.937]) {
     c.strokeStyle = t.doorLine;
