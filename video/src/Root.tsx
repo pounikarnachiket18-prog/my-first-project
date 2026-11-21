@@ -3,6 +3,8 @@ import { Composition, Still } from "remotion";
 import { Main } from "./Main";
 import { MainMobile } from "./MainMobile";
 import { ThumbnailCard } from "./primitives";
+import { SapnaExpress } from "./sapna/SapnaExpress";
+import { TOTAL_FRAMES as SAPNA_FRAMES } from "./sapna/theme";
 
 // Adjust durationInFrames to match the sum of all your scene Sequences
 const TOTAL_FRAMES = 351; // 59 intro + 127 hook + 75 statement + 90 outro (~11.7s @ 30fps)
@@ -21,6 +23,14 @@ export const Root: React.FC = () => (
       id="MainMobile"
       component={MainMobile}
       durationInFrames={TOTAL_FRAMES}
+      fps={30}
+      width={1080}
+      height={1920}
+    />
+    <Composition
+      id="SapnaExpress"
+      component={SapnaExpress}
+      durationInFrames={SAPNA_FRAMES}
       fps={30}
       width={1080}
       height={1920}
