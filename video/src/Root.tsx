@@ -3,6 +3,7 @@ import { Composition, Still } from "remotion";
 import { Main } from "./Main";
 import { MainMobile } from "./MainMobile";
 import { ThumbnailCard } from "./primitives";
+import { VcdCompositions } from "./vcd/VcdRoot";
 
 // Adjust durationInFrames to match the sum of all your scene Sequences
 const TOTAL_FRAMES = 351; // 59 intro + 127 hook + 75 statement + 90 outro (~11.7s @ 30fps)
@@ -27,5 +28,8 @@ export const Root: React.FC = () => (
     />
     <Still id="Thumb16x9" component={ThumbnailCard} width={1920} height={1080} />
     <Still id="Thumb9x16" component={ThumbnailCard} width={1080} height={1920} />
+
+    {/* Vigilance Control Device explainer (9:16, low-poly 3D night style) */}
+    <VcdCompositions />
   </>
 );
