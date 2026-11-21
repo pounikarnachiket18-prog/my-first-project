@@ -1,5 +1,5 @@
 import React from "react";
-import { AbsoluteFill, Sequence } from "remotion";
+import { AbsoluteFill, Sequence, continueRender, delayRender } from "remotion";
 import { Soundtrack } from "./audio";
 import { FadeIn } from "./parts";
 import {
@@ -10,7 +10,7 @@ import {
   KambalBhiScene,
   LaundryScene,
 } from "./scenes";
-import { BEAT, C, s } from "./theme";
+import { BEAT, C, FONT_CHECKS, s } from "./theme";
 
 const X = 8; // cross-fade overlap (frames)
 
@@ -23,7 +23,28 @@ const Beat: React.FC<{ b: readonly [number, number]; first?: boolean; children: 
   );
 };
 
-export const RailKambal: React.FC = () => (
+/** Waits (max 10s) for the embedded Devanagari + Latin fonts before rendering. */
+const useFonts = () => {
+  const [handle] = React.useState(() => delayRender("Loading embedded fonts"));
+  React.useEffect(() => {
+    let done = false;
+    const finish = () => {
+      if (!done) {
+        done = true;
+        continueRender(handle);
+      }
+    };
+    Promise.all(FONT_CHECKS.flatMap((f) => [document.fonts.load(f, "Aa"), document.fonts.load(f, "भारतीय रेल")]))
+      .then(finish)
+      .catch(finish);
+    const t = setTimeout(finish, 10000);
+    return () => clearTimeout(t);
+  }, [handle]);
+};
+
+export const RailKambal: React.FC = () => {
+  useFonts();
+  return (
   <AbsoluteFill style={{ background: C.wall }}>
     <Beat b={[BEAT.hook[0], BEAT.packet[1]]} first>
       <HookPacketScene />
@@ -45,4 +66,5 @@ export const RailKambal: React.FC = () => (
     </Beat>
     <Soundtrack />
   </AbsoluteFill>
-);
+  );
+};

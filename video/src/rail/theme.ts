@@ -2,11 +2,10 @@
  * "Kambal kab dhula?" — Bharatiya Rail edition.
  * All colours, fonts, branding text and beat timings live here.
  */
-import { continueRender, delayRender } from "remotion";
 import { FONT_FILES } from "./fontFiles";
 
-// Embedded fonts via CSS @font-face. We wait for document.fonts.ready
-// (with a safety timeout) so text never renders in a fallback font.
+// Embedded fonts via CSS @font-face (data URLs — no network needed).
+// <FontGate> in RailKambal.tsx holds the render until they're decoded.
 if (typeof document !== "undefined" && !document.getElementById("rail-fonts")) {
   const style = document.createElement("style");
   style.id = "rail-fonts";
@@ -16,29 +15,9 @@ if (typeof document !== "undefined" && !document.getElementById("rail-fonts")) {
       `src:url(${f.url}) format("woff2");unicode-range:${f.range};}`,
   ).join("\n");
   document.head.appendChild(style);
-
-  // Probe element forces every face to be used (and therefore loaded).
-  const probe = document.createElement("div");
-  probe.style.cssText = "position:absolute;left:-9999px;top:0;opacity:0";
-  probe.innerHTML = ["Baloo 2|800", "Mukta|500", "Mukta|700", "Mukta|800"]
-    .map((x) => {
-      const [fam, w] = x.split("|");
-      return `<span style='font-family:"${fam}";font-weight:${w}'>Aa भारतीय रेल</span>`;
-    })
-    .join("");
-  document.body.appendChild(probe);
-
-  const handle = delayRender("Loading embedded fonts");
-  let done = false;
-  const finish = () => {
-    if (!done) {
-      done = true;
-      continueRender(handle);
-    }
-  };
-  document.fonts.ready.then(() => requestAnimationFrame(finish));
-  setTimeout(finish, 8000);
 }
+
+export const FONT_CHECKS = ['800 40px "Baloo 2"', '500 40px "Mukta"', '700 40px "Mukta"', '800 40px "Mukta"'];
 
 export const FONT = {
   title: `"Baloo 2", sans-serif`,
