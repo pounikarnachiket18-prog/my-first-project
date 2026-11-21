@@ -1,5 +1,5 @@
 import React from "react";
-import { Audio, Loop, Sequence, getStaticFiles, staticFile } from "remotion";
+import { Audio, Loop, Sequence, getStaticFiles, interpolate, staticFile } from "remotion";
 import { DURATION, s } from "./theme";
 
 /**
@@ -27,7 +27,6 @@ export const SFX: { file: string; at: number; volume?: number }[] = [
   { file: "audio/cloth-whoosh.mp3", at: 30.3 }, // sheet 1 spreads
   { file: "audio/cloth-whoosh.mp3", at: 32.6 }, // blanket into cover
   { file: "audio/whoosh.mp3", at: 39.6 }, // printed cover wipes in
-  { file: "audio/train-horn.mp3", at: 44.0, volume: 0.35 }, // end card
 ];
 
 const has = (() => {
@@ -44,12 +43,16 @@ const has = (() => {
   };
 })();
 
+// Short fade at the very end so the cut before the end card is clean.
+const fadeOut = (base: number) => (f: number) =>
+  base * interpolate(f, [DURATION - 6, DURATION], [1, 0], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+
 export const Soundtrack: React.FC = () => (
   <>
-    {has(VOICEOVER.file) && <Audio src={staticFile(VOICEOVER.file)} volume={VOICEOVER.volume} />}
+    {has(VOICEOVER.file) && <Audio src={staticFile(VOICEOVER.file)} volume={fadeOut(VOICEOVER.volume)} />}
     {AMBIENCE.filter((a) => has(a.file)).map((a) => (
       <Loop key={a.file} durationInFrames={DURATION}>
-        <Audio src={staticFile(a.file)} volume={a.volume} />
+        <Audio src={staticFile(a.file)} volume={fadeOut(a.volume)} />
       </Loop>
     ))}
     {SFX.filter((x) => has(x.file)).map((x, i) => (

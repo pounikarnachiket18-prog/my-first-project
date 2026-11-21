@@ -270,7 +270,7 @@ const Attendant: React.FC = () => {
           <circle cx="422" cy="249" r="8" fill="#2B1B14" />
         </g>
         {/* bindi, nose, smile */}
-        <circle cx="380" cy="205" r="6" fill={C.berth} />
+        <circle cx="380" cy="205" r="6" fill="#C8283C" />
         <path d="M 380 258 Q 372 290 384 296" stroke={C.skinShade} strokeWidth="5" fill="none" strokeLinecap="round" />
         <path d="M 345 318 Q 380 345 415 318" stroke="#7A2E22" strokeWidth="7" fill="none" strokeLinecap="round" />
       </g>
@@ -691,7 +691,6 @@ export const BerthStoryScene: React.FC = () => {
       <Pill text="Kambal: mahine mein" x={540} y={1560} inAt={s(9.0)} outAt={s(11.4)} />
       <Pill text="Kuch trains mein" x={540} y={1650} inAt={s(11.8)} outAt={s(14.0)} variant="key" />
       <Pill text="Printed cover: alag se dhulta" x={540} y={1650} inAt={s(14.0)} outAt={s(22.5)} variant="key" size={46} />
-      <EndCard inAt={s(17.0)} />
     </AbsoluteFill>
   );
 };
@@ -720,82 +719,3 @@ const Badge: React.FC<{ n: number; show: number }> = ({ n, show }) => (
     {n}
   </div>
 );
-
-/* ------------------------------------------------------------------ */
-/* End card — "Agli video"                                             */
-/* ------------------------------------------------------------------ */
-const EndCard: React.FC<{ inAt: number }> = ({ inAt }) => {
-  const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
-  if (frame < inAt) return null;
-  const p = spring({ frame: frame - inAt, fps, config: { damping: 15, stiffness: 140 } });
-  const route = interpolate(frame - inAt, [10, 60], [0, 1], clamp);
-  return (
-    <div
-      style={{
-        position: "absolute",
-        left: 70,
-        top: 760,
-        width: 940,
-        height: 470,
-        background: "#FFFFFF",
-        borderRadius: 40,
-        boxShadow: "0 40px 90px rgba(40,20,10,0.4)",
-        transform: `translateY(${(1 - p) * 400}px) scale(${0.9 + 0.1 * p})`,
-        opacity: p,
-        display: "flex",
-        gap: 40,
-        padding: 34,
-        boxSizing: "border-box",
-        fontFamily: FONT.body,
-      }}
-    >
-      {/* phone mock with a route map */}
-      <div style={{ width: 230, height: 400, borderRadius: 34, background: C.ink, padding: 10, boxSizing: "border-box", flexShrink: 0 }}>
-        <svg width="210" height="380" style={{ borderRadius: 26, background: "#F4EEE2", display: "block" }}>
-          {[60, 130, 200, 270, 340].map((y) => (
-            <line key={y} x1="0" x2="210" y1={y} y2={y} stroke="#E0D6C4" strokeWidth="10" />
-          ))}
-          {[50, 120, 170].map((x) => (
-            <line key={x} x1={x} x2={x} y1="0" y2="380" stroke="#E0D6C4" strokeWidth="10" />
-          ))}
-          <path
-            d="M 40 330 L 40 270 L 120 270 L 120 130 L 170 130 L 170 50"
-            fill="none"
-            stroke={C.accent}
-            strokeWidth="10"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            pathLength={1}
-            strokeDasharray={1}
-            strokeDashoffset={1 - route}
-          />
-          <circle cx="40" cy="330" r="14" fill={C.berth} />
-          <circle cx="170" cy="50" r="14" fill={C.blanket} />
-        </svg>
-      </div>
-      <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", gap: 18 }}>
-        <div style={{ color: C.accent, fontWeight: 800, fontSize: 30, letterSpacing: 4 }}>AGLI VIDEO</div>
-        <div style={{ fontFamily: FONT.title, color: C.ink, fontWeight: 800, fontSize: 66, lineHeight: 1.02 }}>
-          {BRAND.nextVideoTitle}
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 16, marginTop: 10 }}>
-          <div
-            style={{
-              width: 64,
-              height: 64,
-              borderRadius: 99,
-              background: C.berth,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <div style={{ width: 0, height: 0, borderLeft: "22px solid #FFF", borderTop: "14px solid transparent", borderBottom: "14px solid transparent", marginLeft: 6 }} />
-          </div>
-          <div style={{ color: C.inkSoft, fontWeight: 700, fontSize: 32 }}>{BRAND.handle}</div>
-        </div>
-      </div>
-    </div>
-  );
-};

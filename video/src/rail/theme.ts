@@ -25,52 +25,56 @@ export const FONT = {
 };
 
 export const FPS = 30;
-export const DURATION_SEC = 49.4;
+// Ends at 43.6s, just before the reference's channel-name end card.
+export const DURATION_SEC = 43.6;
 export const DURATION = Math.round(DURATION_SEC * FPS);
 export const s = (sec: number) => Math.round(sec * FPS);
 
-// New palette (original was blue berth / charcoal blanket / grey coach).
+// Palette modelled on the reference reel: bright white/grey coach,
+// royal-blue berth, charcoal blanket with peach stripes, kraft packet,
+// blue highlight words.
 export const C = {
-  wall: "#F4EBDC",
-  wallShade: "#E3D3BA",
-  wallDeep: "#CDB898",
-  ink: "#2B1B14",
-  inkSoft: "#6E5545",
+  wall: "#EEF1F5",
+  wallShade: "#D9DFE7",
+  wallDeep: "#BCC6D2",
+  ink: "#15171C",
+  inkSoft: "#5A6270",
 
-  berth: "#8E1F2F", // maroon cushion
-  berthSide: "#5F1220",
-  berthEdge: "#B23A48",
+  berth: "#2B5BA8", // royal-blue cushion
+  berthSide: "#1B3F7A",
+  berthEdge: "#4C80D0",
 
-  blanket: "#2E4C3B", // forest green
-  blanketSide: "#1E3328",
-  blanketStripe: "#E7AE3E", // mustard check
-  blanketStripe2: "#C9483A",
+  blanket: "#3A3F47", // charcoal
+  blanketSide: "#24282E",
+  blanketStripe: "#F0A982", // peach check
+  blanketStripe2: "#F7DCCB",
 
   sheet: "#FFFFFF",
-  sheetSide: "#E6DDD0",
-  brandPrint: "#8E1F2F", // maroon print on the chadar
+  sheetSide: "#DADFE6",
+  brandPrint: "#1F3F8A", // blue "भारतीय रेल" print on the chadar
 
-  packet: "#F2A541", // saffron bedroll packet
-  packetSide: "#C77E22",
+  packet: "#D9A35E", // kraft bedroll packet
+  packetSide: "#A9773A",
+  packetPrint: "#5A3A16",
 
-  accent: "#F07C1E", // saffron highlight words
-  pill: "#8E1F2F",
-  curtain: "#D9A23A",
-  glass: "#3B4A52",
+  accent: "#2F44E0", // blue highlight words
+  pill: "#2F44E0",
+  curtain: "#2F5446",
+  glass: "#5E7A8C",
 
-  cover: "#7A1B2A", // printed cover base
-  coverPrint: "#F6E6C8",
+  cover: "#24467E", // printed cover base (navy)
+  coverPrint: "#F3F6FB",
 
-  uniform: "#16675F", // attendant uniform (teal)
-  uniformDark: "#0F4A44",
-  dupatta: "#F07C1E",
+  uniform: "#23272F", // attendant: dark vest
+  uniformDark: "#121418",
+  dupatta: "#2F44E0",
   skin: "#B9784E",
   skinShade: "#9C5F3B",
   hair: "#1E1410",
 
-  laundryWall: "#E7EEEA",
-  machine: "#F5F1E8",
-  machinePanel: "#8E1F2F",
+  laundryWall: "#E9ECF0",
+  machine: "#F7F8FA",
+  machinePanel: "#2B5BA8",
 };
 
 // Branding printed on the textiles.
@@ -90,5 +94,5 @@ export const BEAT = {
   laundry: [11.2, 16.0],
   kambalBhi: [16.0, 20.0],
   calendar: [20.0, 27.0],
-  berthStory: [27.0, DURATION_SEC], // do chadar → cover → printed cover → end card
+  berthStory: [27.0, DURATION_SEC], // do chadar → cover → printed cover
 } as const;

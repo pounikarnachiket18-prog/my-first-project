@@ -263,16 +263,16 @@ export const PacketTop: React.FC<{ w: number; h: number }> = ({ w, h }) => {
       style={{
         width: "100%",
         height: "100%",
-        background: `radial-gradient(ellipse at 30% 25%, #FFC46B, ${C.packet} 60%, #E08F2C)`,
+        background: `radial-gradient(ellipse at 30% 25%, #EDC489, ${C.packet} 60%, #C48D4A)`,
         display: "flex",
         alignItems: "center",
         gap: u * 0.08,
         padding: u * 0.1,
         boxSizing: "border-box",
-        color: C.brandPrint,
+        color: C.packetPrint,
       }}
     >
-      <Emblem size={u * 0.55} color={C.brandPrint} />
+      <Emblem size={u * 0.55} color={C.packetPrint} />
       <div style={{ display: "flex", flexDirection: "column", lineHeight: 1 }}>
         <div style={{ fontFamily: FONT.title, fontWeight: 800, fontSize: u * 0.24 }}>{BRAND.kitHindi}</div>
         <div style={{ fontFamily: FONT.body, fontWeight: 800, fontSize: u * 0.15, letterSpacing: 2 }}>
@@ -301,7 +301,7 @@ export const BerthTop: React.FC = () => (
     style={{
       width: "100%",
       height: "100%",
-      background: `radial-gradient(ellipse at 40% 30%, ${C.berthEdge} 0%, ${C.berth} 55%, #741626 100%)`,
+      background: `radial-gradient(ellipse at 40% 30%, ${C.berthEdge} 0%, ${C.berth} 55%, ${C.berthSide} 100%)`,
       boxShadow: `inset 0 0 0 10px rgba(255,255,255,0.06)`,
     }}
   />
@@ -328,7 +328,7 @@ export const PrintedCover: React.FC<{ w: number; h: number }> = ({ w, h }) => {
         >
           {Array.from({ length: 8 }).map((_, i) => (
             <React.Fragment key={i}>
-              <Emblem size={46} color={C.accent} />
+              <Emblem size={46} color="#8FB0F0" />
               <span style={{ fontFamily: FONT.title, fontWeight: 800, fontSize: 44 }}>{BRAND.hindi}</span>
             </React.Fragment>
           ))}
@@ -459,7 +459,7 @@ export const Pill: React.FC<{
         opacity: out,
         background: key ? C.pill : "#FFFFFF",
         color: key ? "#FFFFFF" : C.ink,
-        border: key ? `4px solid ${C.accent}` : `3px solid ${C.wallShade}`,
+        border: key ? "3px solid rgba(255,255,255,0.55)" : `3px solid ${C.wallShade}`,
         fontFamily: FONT.body,
         fontWeight: 800,
         fontSize: size,
