@@ -5,6 +5,8 @@
   "scripts": {
     "start": "remotion studio",
     "render": "remotion render Reel out/train-announcement-reel.mp4 --codec=h264 --crf=18",
+    "jammer:audio": "python3 scripts/jammer_audio.py",
+    "jammer:render": "remotion render Jammer out/jammer-reel.mp4 --codec=h264 --crf=18",
     "thumb": "remotion still Reel out/thumb.png --frame=45"
   },
   "dependencies": {

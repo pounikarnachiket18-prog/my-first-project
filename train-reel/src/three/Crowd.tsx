@@ -10,12 +10,12 @@ const PLAT = 1.1;
 const SKINS = ["#C68863", "#A8714F", "#8D5A3B", "#D9A07A", "#B97E58"];
 const HAIR = ["#1B1512", "#2A1E18", "#3A2A20", "#151515"];
 
-type Pose = "stand" | "phone" | "suitcase" | "backpack" | "saree" | "child" | "sit";
-type PersonDef = { p: V3; r: number; pose: Pose; top: string; bottom: string; h?: number };
+export type Pose = "stand" | "phone" | "suitcase" | "backpack" | "saree" | "child" | "sit";
+export type PersonDef = { p: V3; r: number; pose: Pose; top: string; bottom: string; h?: number };
 
 const Mat: React.FC<{ c: string; rough?: number }> = ({ c, rough = 0.8 }) => <meshStandardMaterial color={c} roughness={rough} />;
 
-const Person: React.FC<{ d: PersonDef; i: number; f: number; y?: number }> = ({ d, i, f, y = PLAT }) => {
+export const Person: React.FC<{ d: PersonDef; i: number; f: number; y?: number }> = ({ d, i, f, y = PLAT }) => {
   const skin = SKINS[i % SKINS.length];
   const hair = HAIR[i % HAIR.length];
   const kid = d.pose === "child";

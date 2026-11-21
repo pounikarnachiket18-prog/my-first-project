@@ -40,3 +40,27 @@ npm start        # Remotion Studio preview
 npm run render   # out/train-announcement-reel.mp4
 ```
 Rendering uses WebGL through SwiftShader (`--gl=swangle`, set in `remotion.config.ts`), so it works without a GPU.
+
+---
+
+# Reel 2: How does a jammer work? (`Jammer` composition)
+
+A 36 s, 1080×1920 reel in the same 3D style. It's set in an exam-hall diorama with a phone, a cell tower,
+an RF jammer, signal and noise waves, and a range dome. Captions are in Hinglish, and the music and sound effects are synthesised in Python.
+
+| # | Time | Shot |
+|---|------|------|
+| 1 | 0–3s | Phone on an exam desk: full bars → **No Service** |
+| 2 | 3–5.5s | Title "Jammer kaam kaise karta hai?" over the jammer |
+| 3 | 5.5–10.5s | Tower ↔ phone radio link on a fixed frequency band |
+| 4 | 10.5–14.5s | Jammer switches ON and floods the same band with noise |
+| 5 | 14.5–19.5s | Panel: tower signal + jammer noise = garbage at the phone |
+| 6 | 19.5–23.5s | Signal vs noise meter; ✕ Calls ✕ Internet ✕ SMS |
+| 7 | 23.5–28.5s | Range dome: no signal inside, normal outside |
+| 8 | 28.5–32.5s | "India mein bina permission jammer = illegal" stamp |
+| 9 | 32.5–36s | Outro: Mindset mode \| Explainers |
+
+```bash
+npm run jammer:audio    # public/jammer-audio.wav
+npm run jammer:render   # out/jammer-reel.mp4
+```
