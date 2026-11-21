@@ -2,8 +2,12 @@ import React from "react";
 import { AbsoluteFill, Easing, interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
 import { C, FONT } from "../theme";
 import { Headline, TrainGlyph, popStyle, usePop } from "../ui";
+import { World3D } from "../three/World3D";
+import { S4_INDEX, localToWorld } from "../three/track";
 
 const clamp = { extrapolateLeft: "clamp", extrapolateRight: "clamp" } as const;
+
+const WINDOW_HEAD0 = 980;
 
 const STATIONS = [
   { n: "HOWRAH JN", t: "08:05", done: true },
@@ -54,41 +58,40 @@ export const S03Phone: React.FC = () => {
   const ripple = (frame - 70) % 40;
   const q = usePop(118, 8);
   const marker = interpolate(frame, [0, 180], [0.7, 0.8]);
-  const windowShift = (frame * 14) % 300;
 
   return (
-    <AbsoluteFill style={{ background: "linear-gradient(180deg, #FFE9C7 0%, #FFF8EC 55%, #E7F4FF 100%)", overflow: "hidden" }}>
-      {/* train window with passing fields */}
+    <AbsoluteFill style={{ background: "linear-gradient(180deg, #3a4a5e 0%, #5a6b80 50%, #2c3846 100%)", overflow: "hidden" }}>
+      {/* real 3D view out of the coach window, softly out of focus */}
       <div
         style={{
           position: "absolute",
-          left: 90,
-          right: 90,
-          top: 560,
-          height: 640,
-          borderRadius: 60,
+          left: 60,
+          right: 60,
+          top: 470,
+          height: 760,
+          borderRadius: 70,
           overflow: "hidden",
-          border: `22px solid ${C.train}`,
-          filter: "blur(5px)",
-          opacity: 0.9,
+          border: `24px solid #2f3f52`,
+          boxShadow: "inset 0 0 60px rgba(0,0,0,0.5)",
         }}
       >
-        <div style={{ position: "absolute", inset: 0, background: `linear-gradient(180deg, ${C.skyTop}, ${C.skyLow} 55%, ${C.field} 55%)` }} />
-        {new Array(8).fill(0).map((_, i) => (
-          <div
-            key={i}
-            style={{
-              position: "absolute",
-              top: 300 + (i % 3) * 30,
-              left: i * 300 - windowShift - 300,
-              width: 120,
-              height: 120,
-              borderRadius: "50%",
-              background: i % 2 ? C.tree : C.treeDark,
+        <div style={{ position: "absolute", left: -24, top: -24, width: 960, height: 760, filter: "blur(5px)" }}>
+          <World3D
+            width={960}
+            height={760}
+            head={WINDOW_HEAD0 + frame * 0.95}
+            shadowFocus={localToWorld(WINDOW_HEAD0 + frame * 0.95, S4_INDEX, [0, 0, -20])}
+            shadowSize={80}
+            cam={{
+              pos: localToWorld(WINDOW_HEAD0 + frame * 0.95, S4_INDEX, [0.5, 2.9, -1.0]),
+              look: localToWorld(WINDOW_HEAD0 + frame * 0.95, S4_INDEX, [-8, 1.0, -30]),
+              fov: 60,
             }}
           />
-        ))}
+        </div>
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(255,240,210,0.25), rgba(0,0,0,0.15))" }} />
       </div>
+      <div style={{ position: "absolute", inset: 0, background: "radial-gradient(circle at 50% 70%, rgba(0,0,0,0) 30%, rgba(0,0,0,0.35) 100%)" }} />
 
       {/* phone */}
       <div
@@ -218,8 +221,7 @@ export const S03Phone: React.FC = () => {
           fontWeight: 800,
           fontSize: 260,
           color: C.stripe,
-          WebkitTextStroke: `18px ${C.ink}`,
-          paintOrder: "stroke fill",
+          textShadow: "0 8px 30px rgba(0,0,0,0.5)",
           rotate: `${Math.sin(frame / 6) * 8}deg`,
           ...popStyle(q),
         }}

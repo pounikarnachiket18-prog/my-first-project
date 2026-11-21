@@ -1,94 +1,49 @@
-import React, { useMemo } from "react";
+import React from "react";
+import * as THREE from "three";
 import { AbsoluteFill, Easing, interpolate, random, useCurrentFrame } from "remotion";
-import { evolvePath } from "@remotion/paths";
 import { C, FONT } from "../theme";
-import { Chip, Headline, PinIcon, TowerIcon, popStyle, usePop } from "../ui";
+import { Chip, Headline, PinIcon, popStyle, usePop } from "../ui";
+import { Routes, Tower, TrackGlow, World3D } from "../three/World3D";
+import { STATION, project } from "../three/track";
 
 const clamp = { extrapolateLeft: "clamp", extrapolateRight: "clamp" } as const;
-const COLORS = [C.stripe, C.pink, "#3B82F6", C.green, "#F97316", "#8B5CF6", "#14B8A6"];
+const ST = new THREE.Vector3(STATION.x, 0, (STATION.zStart + STATION.zEnd) / 2);
+const CLUSTER = new Array(6).fill(0).map((_, i) => {
+  const a = (i / 6) * Math.PI * 2 + 0.4;
+  const r = 70 + random(`cl${i}`) * 60;
+  return new THREE.Vector3(ST.x + Math.cos(a) * r, 0, ST.z + Math.sin(a) * r);
+});
 
-const buildRoutes = () =>
-  new Array(34).fill(0).map((_, i) => {
-    const r = (k: string) => random(`route${i}${k}`);
-    const sx = r("sx") * 1300 - 110;
-    const ex = r("ex") * 1300 - 110;
-    const vertical = r("v") > 0.45;
-    const d = vertical
-      ? `M ${sx} 2050 C ${sx + (r("a") - 0.5) * 900} 1400, ${ex + (r("b") - 0.5) * 900} 700, ${ex} -100`
-      : `M -120 ${300 + r("sy") * 1500} C 300 ${r("c") * 1900}, 700 ${r("d") * 1900}, 1200 ${300 + r("ey") * 1500}`;
-    return { d, color: COLORS[i % COLORS.length], delay: Math.floor(r("delay") * 70) };
-  });
-
-const CLUSTER = [
-  [560, 1060],
-  [480, 990],
-  [640, 980],
-  [520, 1150],
-  [650, 1130],
-];
-
-/** Scene 6: lakhs of journeys teach the app which tower sits near which station. */
+/** Scene 6: drone climbs high; lakhs of journeys light up into one tower map. */
 export const S06CrowdMap: React.FC = () => {
   const frame = useCurrentFrame();
-  const routes = useMemo(buildRoutes, []);
-  const zoom = interpolate(frame, [0, 90], [1.5, 1], { ...clamp, easing: Easing.out(Easing.cubic) });
+  const t = interpolate(frame, [0, 120], [0, 1], { ...clamp, easing: Easing.inOut(Easing.cubic) });
+  const t2 = interpolate(frame, [150, 230], [0, 1], { ...clamp, easing: Easing.inOut(Easing.cubic) });
+  const wide = new THREE.Vector3(-250, 3300, 900);
+  const wideLook = new THREE.Vector3(-350, 0, -250);
+  const close = new THREE.Vector3(ST.x - 420, 700, ST.z + 520);
+  const pos = new THREE.Vector3().lerpVectors(new THREE.Vector3(-300, 900, 600), wide, t).lerp(close, t2);
+  const look = new THREE.Vector3().lerpVectors(new THREE.Vector3(-300, 0, 0), wideLook, t).lerp(ST, t2);
+  const cam = { pos, look, fov: 50 };
   const chip = usePop(110);
-  const station = usePop(170);
+  const station = usePop(185);
+  const sp = project(cam, ST.clone().add(new THREE.Vector3(0, 40, 0)), 1080, 1920);
 
   return (
-    <AbsoluteFill style={{ background: C.map, overflow: "hidden" }}>
-      <div style={{ position: "absolute", inset: 0, scale: zoom }}>
-        <svg width={1080} height={1920} style={{ position: "absolute", inset: 0 }}>
-          {new Array(30).fill(0).map((_, i) => (
-            <React.Fragment key={i}>
-              <line x1={i * 80} y1={0} x2={i * 80} y2={1920} stroke="#E6DCC6" strokeWidth={2} />
-              <line x1={0} y1={i * 80} x2={1080} y2={i * 80} stroke="#E6DCC6" strokeWidth={2} />
-            </React.Fragment>
-          ))}
-          {routes.map((rt, i) => {
-            const p = interpolate(frame, [rt.delay, rt.delay + 80], [0, 1], { ...clamp, easing: Easing.inOut(Easing.quad) });
-            const ev = evolvePath(p, rt.d);
-            return (
-              <path
-                key={i}
-                d={rt.d}
-                stroke={rt.color}
-                strokeWidth={7}
-                fill="none"
-                strokeLinecap="round"
-                opacity={0.85}
-                strokeDasharray={ev.strokeDasharray}
-                strokeDashoffset={ev.strokeDashoffset}
-              />
-            );
-          })}
-        </svg>
-        {CLUSTER.map(([x, y], i) => {
-          const s = interpolate(frame, [150 + i * 6, 165 + i * 6], [0, 1], { ...clamp, easing: Easing.out(Easing.back(2)) });
+    <AbsoluteFill>
+      <World3D cam={cam} head={STATION.sStart - 900} coaches={8} shadowFocus={look} shadowSize={900} fogFar={9000}>
+        <Routes progress={(i) => interpolate(frame, [10 + (i % 12) * 6, 90 + (i % 12) * 6], [0, 1], clamp)} count={42} />
+        <TrackGlow progress={interpolate(frame, [20, 110], [0, 1], clamp)} />
+        {CLUSTER.map((p, i) => {
+          const s = interpolate(frame, [160 + i * 6, 178 + i * 6], [0.001, 1], { ...clamp, easing: Easing.out(Easing.back(2)) });
           return (
-            <div
-              key={i}
-              style={{
-                position: "absolute",
-                left: x - 36,
-                top: y - 36,
-                width: 72,
-                height: 72,
-                borderRadius: 20,
-                background: C.white,
-                border: `4px solid ${C.ink}`,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                scale: s,
-              }}
-            >
-              <TowerIcon size={48} />
-            </div>
+            <group key={i} scale={[1, s, 1]}>
+              <Tower pos={p} scale={3} active />
+            </group>
           );
         })}
-      </div>
-      <div style={{ position: "absolute", left: 300, top: 1240, display: "flex", alignItems: "center", gap: 10, ...popStyle(station) }}>
+      </World3D>
+      <div style={{ position: "absolute", left: sp.x - 40, top: sp.y - 150, display: "flex", alignItems: "center", gap: 10, ...popStyle(station) }}>
         <PinIcon size={80} />
         <div
           style={{
@@ -99,7 +54,7 @@ export const S06CrowdMap: React.FC = () => {
             fontWeight: 800,
             fontSize: 40,
             color: C.ink,
-            boxShadow: "0 12px 30px rgba(19,35,58,0.25)",
+            boxShadow: "0 12px 30px rgba(0,0,0,0.3)",
           }}
         >
           BARDHAMAN JN

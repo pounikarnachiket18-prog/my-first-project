@@ -71,9 +71,7 @@ export const Headline: React.FC<{
                   display: "inline-block",
                   margin: "0 12px",
                   color,
-                  WebkitTextStroke: `14px ${C.ink}`,
-                  paintOrder: "stroke fill",
-                  textShadow: "0 10px 0 rgba(19,35,58,0.35)",
+                  textShadow: "0 4px 22px rgba(0,0,0,0.55), 0 2px 6px rgba(0,0,0,0.45)",
                   opacity: interpolate(s, [0, 0.3], [0, 1], clamp),
                   scale: interpolate(s, [0, 1], [0.4, 1]),
                   translate: `0px ${interpolate(s, [0, 1], [50, 0])}px`,
@@ -307,6 +305,7 @@ export const Chrome: React.FC<{ total: number }> = ({ total }) => {
   const frame = useCurrentFrame();
   return (
     <AbsoluteFill style={{ pointerEvents: "none" }}>
+      <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 640, background: "linear-gradient(180deg, rgba(8,16,30,0.55), rgba(8,16,30,0))" }} />
       <div
         style={{
           position: "absolute",
@@ -339,75 +338,42 @@ export const Chrome: React.FC<{ total: number }> = ({ total }) => {
   );
 };
 
-/** Sapna Express narrator badge: engine face with blinking headlight eyes. */
+/** Sapna Express name badge: glass pill with train glyph and a live sound meter. */
 export const NarratorBadge: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
-  const enter = spring({ frame: frame - 20, fps, config: { damping: 12 } });
-  // blink every ~3.2 s
-  const t = frame % 96;
-  const blink = t > 88 ? interpolate(t, [88, 92, 96], [1, 0.1, 1]) : 1;
-  const bob = Math.sin(frame / 8) * 4;
+  const enter = spring({ frame: frame - 20, fps, config: { damping: 14 } });
   return (
     <div
       style={{
         position: "absolute",
         left: 50,
-        bottom: 120,
+        bottom: 130,
         display: "flex",
         alignItems: "center",
         gap: 16,
+        padding: "14px 26px 14px 14px",
+        borderRadius: 999,
+        background: "rgba(12,22,38,0.55)",
+        border: "1.5px solid rgba(255,255,255,0.25)",
+        backdropFilter: "blur(12px)",
+        color: C.white,
+        fontFamily: FONT,
+        fontWeight: 700,
+        fontSize: 28,
+        letterSpacing: 1,
         opacity: interpolate(enter, [0, 0.3], [0, 1], clamp),
-        scale: interpolate(enter, [0, 1], [0.4, 1]),
-        transformOrigin: "left center",
+        translate: `${interpolate(enter, [0, 1], [-40, 0])}px 0px`,
       }}
     >
-      <svg width={150} height={150} viewBox="0 0 150 150" style={{ translate: `0px ${bob}px` }}>
-        <circle cx={75} cy={75} r={72} fill={C.white} />
-        <circle cx={75} cy={75} r={66} fill={C.skyLow} />
-        {/* engine front */}
-        <rect x={30} y={28} width={90} height={98} rx={26} fill={C.train} />
-        <rect x={30} y={92} width={90} height={12} fill={C.stripe} />
-        <rect x={42} y={38} width={66} height={30} rx={10} fill={C.ink} />
-        <rect x={48} y={42} width={22} height={8} rx={4} fill="rgba(255,255,255,0.35)" />
-        {/* headlight eyes */}
-        {[54, 96].map((cx) => (
-          <g key={cx}>
-            <ellipse cx={cx} cy={80} rx={11} ry={11 * blink} fill={C.white} />
-            <ellipse cx={cx + 2} cy={81} rx={5} ry={5 * blink} fill={C.ink} />
-          </g>
+      <div style={{ width: 58, height: 58, borderRadius: 29, background: C.train, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <TrainGlyph size={36} />
+      </div>
+      SAPNA EXPRESS
+      <div style={{ display: "flex", gap: 4, alignItems: "center", height: 30 }}>
+        {[0, 1, 2, 3].map((i) => (
+          <div key={i} style={{ width: 5, borderRadius: 3, background: C.stripe, height: 8 + Math.abs(Math.sin(frame / 5 + i * 1.7)) * 18 }} />
         ))}
-        {/* smile */}
-        <path d="M62 112 Q75 120 88 112" stroke={C.ink} strokeWidth={4} fill="none" strokeLinecap="round" />
-      </svg>
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 12,
-          padding: "12px 22px",
-          borderRadius: 999,
-          background: "rgba(19,35,58,0.85)",
-          color: C.white,
-          fontFamily: FONT,
-          fontWeight: 700,
-          fontSize: 30,
-        }}
-      >
-        Sapna Express
-        <div style={{ display: "flex", gap: 4, alignItems: "center", height: 30 }}>
-          {[0, 1, 2].map((i) => (
-            <div
-              key={i}
-              style={{
-                width: 6,
-                borderRadius: 3,
-                background: C.stripe,
-                height: 10 + Math.abs(Math.sin(frame / 4 + i * 1.3)) * 18,
-              }}
-            />
-          ))}
-        </div>
       </div>
     </div>
   );
