@@ -457,7 +457,61 @@ const J9: React.FC<SP> = ({ f, dur }) => {
   );
 };
 
-const SHOTS: Record<string, React.FC<SP>> = { j1: J1, j2: J2, j3: J3, j4: J4, j5: J5, j6: J6, j7: J7, j8: J8, j9: J9 };
+const J10: React.FC<SP> = ({ f, dur }) => {
+  const off = S.j10.off as number;
+  const [r0, r1] = S.j10.rise as number[];
+  const bars = f < r0 ? 0 : Math.min(4, Math.floor(((f - r0) / (r1 - r0)) * 4) + 1);
+  const back = f >= r0;
+  const c = camAt({ p0: add(PHONE_POS, [0.12, 0.32, 0.3]), t0: add(PHONE_POS, [0, 0, -0.02]), p1: add(PHONE_POS, [0.05, 0.27, 0.2]), t1: add(PHONE_POS, [0, 0, -0.02]), fov: 45 }, f, dur);
+  const [px, py] = project(c, PHONE_POS);
+  return (
+    <>
+      <Canvas3D>
+        <World f={f} phone={{ bars, noService: !back, flash: f >= r1 && f < r1 + 8 ? 0.4 * (1 - (f - r1) / 8) : 0 }} jamOn={f < off} noise={clamp(1 - f / off)} />
+        <Cam {...c} />
+      </Canvas3D>
+      <Pill x={540} y={1620} f={f} at={off} text="⏻ Jammer OFF" bg="#5B6270" />
+      {f >= r1 && <Rings x={px} y={py} f={f - r1} size={420} color="#1E9E5A" />}
+      <Pill x={540} y={1460} f={f} at={r1 + 2} text="✓ Calls · Internet · SMS" bg="#1E9E5A" size={40} />
+      <Caption f={f} at={S.j10.cap as number} l1="Jammer band karo…" l2="network turant wapas!" c2="#1E9E5A" />
+    </>
+  );
+};
+
+const USES: [string, string, string][] = [
+  ["Exam centre", "nakal rokne ke liye", "#2C4C9C"],
+  ["Jail", "illegal calls rokne ke liye", "#9E1B22"],
+  ["VIP / security", "suraksha ke liye", "#1E6E4E"],
+];
+const J11: React.FC<SP> = ({ f, dur }) => {
+  const a = lerp(-0.5, 0.25, inOut(clamp(f / dur)));
+  const c: CamState = { pos: [Math.sin(a) * 26, 17, Math.cos(a) * 26 - 2], target: [0, 1, -2], fov: 50 };
+  const pills = S.j11.pills as number[];
+  return (
+    <>
+      <Canvas3D>
+        <World f={f} phone={{ bars: 0, noService: true }} jamOn noise={0.5} dome={1} />
+        <Cam {...c} />
+      </Canvas3D>
+      {USES.map(([t, sub, col], i) => {
+        const p = usePop(f, pills[i], 12, 170);
+        if (f < pills[i]) return null;
+        return (
+          <div key={t} style={{ position: "absolute", left: 90, top: 1180 + i * 170, width: 900, display: "flex", alignItems: "center", gap: 26, padding: "20px 30px", borderRadius: 30, background: MG.cream(), border: `5px solid ${col}`, boxShadow: "0 16px 40px rgba(0,0,0,0.22)", transform: `translateX(${(1 - p) * (i % 2 ? 300 : -300)}px)`, opacity: clamp(p * 1.4) }}>
+            <div style={{ width: 84, height: 84, borderRadius: 22, background: col, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Poppins", fontWeight: 800, fontSize: 44 }}>{i + 1}</div>
+            <div>
+              <div style={{ fontFamily: "Poppins", fontWeight: 800, fontSize: 48, color: col, lineHeight: 1.1 }}>{t}</div>
+              <div style={{ fontFamily: "Poppins", fontWeight: 600, fontSize: 32, color: MG.ink(), opacity: 0.75 }}>{sub}</div>
+            </div>
+          </div>
+        );
+      })}
+      <Caption f={f} at={S.j11.cap as number} l1="Kahan use hota hai?" l2="jahan phone rokna zaroori ho" c2={MG.blue()} />
+    </>
+  );
+};
+
+const SHOTS: Record<string, React.FC<SP>> = { j1: J1, j2: J2, j3: J3, j4: J4, j5: J5, j6: J6, j7: J7, j8: J8, j9: J9, j10: J10, j11: J11 };
 
 const ShotHost: React.FC<{ id: string; dur: number }> = ({ id, dur }) => {
   const f = useCurrentFrame();

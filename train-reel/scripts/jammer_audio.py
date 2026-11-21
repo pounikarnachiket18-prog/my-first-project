@@ -194,12 +194,19 @@ dur_static = (T["total"] - on) / FPS
 
 def lvl(sec):
     gf = on + sec * FPS
+    off = SC["j10"] + J["j10"]["off"]
     if gf < SC["j5"]:
         return min(1, sec / 0.6) * 0.55
     if gf < SC["j7"]:
         return 0.28
-    if gf < SC["j9"]:
+    if gf < SC["j10"]:
         return 0.2
+    if gf < SC["j11"]:
+        return 0.2 * max(0, 1 - (gf - SC["j10"]) / max(1, off - SC["j10"]))
+    if gf < SC["j11"] + 12:
+        return 0.16 * (gf - SC["j11"]) / 12
+    if gf < SC["j9"]:
+        return 0.16
     return 0.14 * max(0, 1 - (gf - SC["j9"]) / 100)
 
 
@@ -220,6 +227,17 @@ for k in range(3):
     add(sfx, g("j7", J["j7"]["marks"] + k * 5), err_buzz(0.1), 0.2)
 for k in range(3):
     add(sfx, g("j7", J["j7"]["marks"] + 18 + k * 5), pop(1500, 0.08), 0.3)
+# j10: jammer off, bars climb back, success
+add(sfx, g("j10", J["j10"]["off"]), pop(380, 0.06), 0.6)
+r0, r1 = J["j10"]["rise"]
+for k in range(4):
+    add(sfx, g("j10", r0 + k * (r1 - r0) / 4), chirp(600 + k * 180, 800 + k * 180, 0.09), 0.25)
+add(sfx, g("j10", r1), bell(1046, 1.0), 0.3)
+add(sfx, g("j10", r1) + int(0.1 * SR), bell(1568, 1.0), 0.25)
+# j11: use-case cards
+for p_ in J["j11"]["pills"]:
+    add(sfx, g("j11", p_), whoosh(0.3), 0.2)
+    add(sfx, g("j11", p_ + 8), pop(1200, 0.08), 0.3)
 # j8: stamp
 add(sfx, g("j8", J["j8"]["stamp"]), stamp(), 0.9)
 add(sfx, g("j8", J["j8"]["sub"]), pop(900, 0.08), 0.3)

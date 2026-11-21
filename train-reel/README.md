@@ -45,7 +45,7 @@ Rendering uses WebGL through SwiftShader (`--gl=swangle`, set in `remotion.confi
 
 # Reel 2: How does a jammer work? (`Jammer` composition)
 
-A 36 s, 1080×1920 reel in the same 3D style. It's set in an exam-hall diorama with a phone, a cell tower,
+A 45 s, 1080×1920 reel in the same 3D style. It's set in an exam-hall diorama with a phone, a cell tower,
 an RF jammer, signal and noise waves, and a range dome. Captions are in Hinglish, and the music and sound effects are synthesised in Python.
 
 | # | Time | Shot |
@@ -57,8 +57,10 @@ an RF jammer, signal and noise waves, and a range dome. Captions are in Hinglish
 | 5 | 14.5–19.5s | Panel: tower signal + jammer noise = garbage at the phone |
 | 6 | 19.5–23.5s | Signal vs noise meter; ✕ Calls ✕ Internet ✕ SMS |
 | 7 | 23.5–28.5s | Range dome: no signal inside, normal outside |
-| 8 | 28.5–32.5s | "India mein bina permission jammer = illegal" stamp |
-| 9 | 32.5–36s | Outro: Mindset mode \| Explainers |
+| 8 | 28.5–33s | Jammer switched OFF → bars climb back, ✓ Calls · Internet · SMS |
+| 9 | 33–37.5s | "Kahan use hota hai?": exam centre, jail, VIP/security |
+| 10 | 37.5–41.5s | "India mein bina permission jammer = illegal" stamp |
+| 11 | 41.5–45s | Outro: Mindset mode \| Explainers |
 
 ```bash
 npm run jammer:audio    # public/jammer-audio.wav
