@@ -2,16 +2,20 @@ import { continueRender, delayRender, staticFile } from "remotion";
 
 // Poppins is self-hosted in public/fonts so rendering needs no network.
 export const FONT = "SapnaPoppins";
+export const DEVA_FONT = "SapnaDeva";
 
 if (typeof document !== "undefined") {
   const handle = delayRender("Loading Poppins");
-  Promise.all(
-    ["500", "600", "700", "800"].map((w) => {
+  const deva = new FontFace(DEVA_FONT, `url(${staticFile("fonts/NotoSansDevanagari-800.woff2")}) format("woff2")`, { weight: "800" });
+  document.fonts.add(deva);
+  Promise.all([
+    deva.load(),
+    ...["500", "600", "700", "800"].map((w) => {
       const face = new FontFace(FONT, `url(${staticFile(`fonts/Poppins-${w}.woff2`)}) format("woff2")`, { weight: w });
       document.fonts.add(face);
       return face.load();
     }),
-  )
+  ])
     .then(() => continueRender(handle))
     .catch((err) => {
       console.error(err);

@@ -1,8 +1,9 @@
 import * as THREE from "three";
-import React, { useLayoutEffect, useMemo, useRef } from "react";
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useThree } from "@react-three/fiber";
 import { ThreeCanvas } from "@remotion/three";
-import { random, useCurrentFrame } from "remotion";
+import { continueRender, delayRender, random, useCurrentFrame } from "remotion";
+import { DEVA_FONT, FONT } from "../theme";
 import {
   BAY_X,
   CURVE,
@@ -20,6 +21,22 @@ import {
 } from "./track";
 
 /* ======================= Textures (built in the browser) ======================= */
+
+/** Waits for the self-hosted fonts so canvas textures never draw with a fallback font. */
+const useFontsReady = () => {
+  const [ready, setReady] = useState(false);
+  const [handle] = useState(() => delayRender("canvas fonts"));
+  useEffect(() => {
+    Promise.all([document.fonts.load(`800 60px ${FONT}`), document.fonts.load(`800 60px ${DEVA_FONT}`, "बर्धमान")])
+      .catch(() => undefined)
+      .then(() => {
+        setReady(true);
+        continueRender(handle);
+      });
+  }, [handle]);
+  return ready;
+};
+
 
 const SPAN = 3800;
 const CX = -450;
@@ -145,9 +162,9 @@ const makeSideTexture = (kind: "engine" | "coach", label: string) => {
     g.fillStyle = "rgba(0,0,0,0.25)";
     for (let i = 0; i < 6; i++) g.fillRect(120 + i * 80, 40, 50, 60);
     g.fillStyle = "#fff";
-    g.font = "800 40px SapnaPoppins, sans-serif";
+    g.font = `800 40px ${FONT}, sans-serif`;
     g.fillText("SAPNA EXPRESS", 330, 185);
-    g.font = "800 34px SapnaPoppins, sans-serif";
+    g.font = `800 34px ${FONT}, sans-serif`;
     g.fillText("12345", 40, 185);
   } else {
     g.fillStyle = "#3FA9F5";
@@ -174,9 +191,9 @@ const makeSideTexture = (kind: "engine" | "coach", label: string) => {
     g.fillStyle = "#FFC93C";
     g.fillRect(0, 126, W, 14);
     g.fillStyle = "#fff";
-    g.font = "700 30px SapnaPoppins, sans-serif";
+    g.font = `700 30px ${FONT}, sans-serif`;
     g.fillText("SAPNA EXPRESS", 420, 180);
-    g.font = "800 34px SapnaPoppins, sans-serif";
+    g.font = `800 34px ${FONT}, sans-serif`;
     g.fillText(label, W - 190, 180);
   }
   const t = new THREE.CanvasTexture(c);
@@ -185,20 +202,74 @@ const makeSideTexture = (kind: "engine" | "coach", label: string) => {
   return t;
 };
 
-const makeSignTexture = (text: string) => {
+const makeSignTexture = (hindi: string, english: string) => {
   const c = document.createElement("canvas");
   c.width = 1024;
-  c.height = 200;
+  c.height = 360;
   const g = c.getContext("2d")!;
-  g.fillStyle = "#FFC93C";
-  g.fillRect(0, 0, 1024, 200);
-  g.strokeStyle = "#13233A";
-  g.lineWidth = 16;
-  g.strokeRect(8, 8, 1008, 184);
-  g.fillStyle = "#13233A";
-  g.font = "800 110px SapnaPoppins, sans-serif";
+  g.fillStyle = "#FFD400";
+  g.fillRect(0, 0, 1024, 360);
+  g.strokeStyle = "#111";
+  g.lineWidth = 18;
+  g.strokeRect(9, 9, 1006, 342);
+  g.fillStyle = "#111";
   g.textAlign = "center";
-  g.fillText(text, 512, 140);
+  g.font = `800 120px ${DEVA_FONT}, sans-serif`;
+  g.fillText(hindi, 512, 160);
+  g.font = `800 104px ${FONT}, sans-serif`;
+  g.fillText(english, 512, 300);
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.anisotropy = 8;
+  return t;
+};
+
+const makeStallTexture = () => {
+  const c = document.createElement("canvas");
+  c.width = 512;
+  c.height = 160;
+  const g = c.getContext("2d")!;
+  g.fillStyle = "#B3202A";
+  g.fillRect(0, 0, 512, 160);
+  g.fillStyle = "#FFF4D6";
+  g.textAlign = "center";
+  g.font = `800 78px ${DEVA_FONT}, sans-serif`;
+  g.fillText("चाय", 140, 108);
+  g.font = `800 44px ${FONT}, sans-serif`;
+  g.fillText("TEA STALL", 360, 98);
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  return t;
+};
+
+const makeClockTexture = () => {
+  const c = document.createElement("canvas");
+  c.width = 256;
+  c.height = 256;
+  const g = c.getContext("2d")!;
+  g.fillStyle = "#FFFDF4";
+  g.beginPath();
+  g.arc(128, 128, 120, 0, Math.PI * 2);
+  g.fill();
+  g.strokeStyle = "#222";
+  g.lineWidth = 10;
+  g.stroke();
+  for (let i = 0; i < 12; i++) {
+    const a = (i / 12) * Math.PI * 2;
+    g.fillStyle = "#222";
+    g.fillRect(128 + Math.cos(a) * 96 - 5, 128 + Math.sin(a) * 96 - 5, 10, 10);
+  }
+  g.lineCap = "round";
+  g.lineWidth = 12;
+  g.beginPath();
+  g.moveTo(128, 128);
+  g.lineTo(128, 62);
+  g.stroke();
+  g.lineWidth = 8;
+  g.beginPath();
+  g.moveTo(128, 128);
+  g.lineTo(180, 150);
+  g.stroke();
   const t = new THREE.CanvasTexture(c);
   t.colorSpace = THREE.SRGBColorSpace;
   return t;
@@ -484,83 +555,272 @@ const Track: React.FC = () => {
   );
 };
 
-/* ======================= Station ======================= */
+/* ======================= Station (Indian Railways style) ======================= */
 
-const Station: React.FC = () => {
-  const sign = useMemo(() => makeSignTexture("BARDHAMAN JN"), []);
-  const people = useRef<THREE.InstancedMesh>(null);
-  const len = STATION.zStart - STATION.zEnd;
-  const zc = (STATION.zStart + STATION.zEnd) / 2;
-  const N = 70;
+const SAREE = ["#e11d48", "#f59e0b", "#16a34a", "#7c3aed", "#0ea5e9", "#f97316", "#db2777", "#facc15", "#ffffff", "#14b8a6", "#ef4444", "#84cc16"];
+const SKIN = ["#8d5a3b", "#a86b45", "#6f4329", "#c08457", "#9a6240"];
+const HAIR = ["#1a1a1a", "#2b1b12", "#3b2a20", "#9ca3af"];
+
+const Crowd: React.FC<{ count: number }> = ({ count }) => {
+  const bodies = useRef<THREE.InstancedMesh>(null);
+  const heads = useRef<THREE.InstancedMesh>(null);
+  const hair = useRef<THREE.InstancedMesh>(null);
+  const bags = useRef<THREE.InstancedMesh>(null);
+  const frame = useCurrentFrame();
+  const people = useMemo(() => {
+    const len = STATION.zStart - STATION.zEnd;
+    return new Array(count).fill(0).map((_, i) => {
+      const side = i % 2 ? 1 : -1;
+      const kid = random(`kid${i}`) > 0.88;
+      return {
+        x: STATION.x + side * (3.0 + random(`px${i}`) * 5.4),
+        // keep the last 35 m of the platform clear: the intro camera stands there
+        z: STATION.zStart - 8 - random(`pz${i}`) * (len - 43),
+        h: kid ? 0.7 : 1.0 + random(`ph${i}`) * 0.12,
+        col: SAREE[Math.floor(random(`pc${i}`) * SAREE.length)],
+        skin: SKIN[Math.floor(random(`ps${i}`) * SKIN.length)],
+        hair: HAIR[Math.floor(random(`pr${i}`) * HAIR.length)],
+        bag: random(`pb${i}`) > 0.6,
+        walk: random(`pw${i}`) > 0.75 ? (random(`pd${i}`) - 0.5) * 0.06 : 0,
+        phase: random(`pf${i}`) * 6,
+      };
+    });
+  }, [count]);
   useLayoutEffect(() => {
     const m = new THREE.Matrix4();
-    const cols = ["#ef4444", "#10b981", "#6366f1", "#f59e0b", "#0ea5e9", "#f472b6", "#f8fafc"];
-    for (let i = 0; i < N; i++) {
-      const side = i % 2 ? 1 : -1;
-      const x = STATION.x + side * (4.2 + random(`pp${i}x`) * 3.2);
-      const z = STATION.zStart - 10 - random(`pp${i}z`) * (len - 20);
-      m.compose(new THREE.Vector3(x, 1.0 + 0.85, z), new THREE.Quaternion(), new THREE.Vector3(1, 1, 1));
-      people.current!.setMatrixAt(i, m);
-      people.current!.setColorAt(i, new THREE.Color(cols[i % cols.length]));
-    }
-    people.current!.instanceMatrix.needsUpdate = true;
-    if (people.current!.instanceColor) people.current!.instanceColor.needsUpdate = true;
-  }, [len]);
-  const canopies = [0, 1, 2, 3, 4, 5];
+    const q = new THREE.Quaternion();
+    people.forEach((p, i) => {
+      const z = p.z + p.walk * frame;
+      const bob = p.walk ? Math.abs(Math.sin(frame / 4 + p.phase)) * 0.05 : 0;
+      m.compose(new THREE.Vector3(p.x, 1.0 + 0.78 * p.h + bob, z), q, new THREE.Vector3(p.h, p.h, p.h));
+      bodies.current!.setMatrixAt(i, m);
+      bodies.current!.setColorAt(i, new THREE.Color(p.col));
+      m.compose(new THREE.Vector3(p.x, 1.0 + 1.62 * p.h + bob, z), q, new THREE.Vector3(p.h, p.h, p.h));
+      heads.current!.setMatrixAt(i, m);
+      heads.current!.setColorAt(i, new THREE.Color(p.skin));
+      m.compose(new THREE.Vector3(p.x, 1.0 + 1.69 * p.h + bob, z), q, new THREE.Vector3(p.h * 1.04, p.h * 0.8, p.h * 1.04));
+      hair.current!.setMatrixAt(i, m);
+      hair.current!.setColorAt(i, new THREE.Color(p.hair));
+      m.compose(new THREE.Vector3(p.x + 0.45, 1.25, z), q, p.bag ? new THREE.Vector3(0.45, 0.5, 0.25) : new THREE.Vector3(0, 0, 0));
+      bags.current!.setMatrixAt(i, m);
+      bags.current!.setColorAt(i, new THREE.Color(i % 3 ? "#1f2937" : "#7c2d12"));
+    });
+    [bodies, heads, hair, bags].forEach((r) => {
+      r.current!.instanceMatrix.needsUpdate = true;
+      if (r.current!.instanceColor) r.current!.instanceColor.needsUpdate = true;
+    });
+  });
+  return (
+    <>
+      <instancedMesh ref={bodies} args={[undefined, undefined, count]} castShadow>
+        <capsuleGeometry args={[0.26, 0.9, 4, 10]} />
+        <meshStandardMaterial roughness={0.8} />
+      </instancedMesh>
+      <instancedMesh ref={heads} args={[undefined, undefined, count]} castShadow>
+        <sphereGeometry args={[0.15, 12, 10]} />
+        <meshStandardMaterial roughness={0.7} />
+      </instancedMesh>
+      <instancedMesh ref={hair} args={[undefined, undefined, count]}>
+        <sphereGeometry args={[0.155, 12, 8, 0, Math.PI * 2, 0, Math.PI / 2]} />
+        <meshStandardMaterial roughness={0.9} />
+      </instancedMesh>
+      <instancedMesh ref={bags} args={[undefined, undefined, count]} castShadow>
+        <boxGeometry />
+        <meshStandardMaterial roughness={0.6} />
+      </instancedMesh>
+    </>
+  );
+};
+
+const OheMasts: React.FC = () => {
+  const zs = useMemo(() => new Array(22).fill(0).map((_, i) => STATION.zStart + 260 - i * 50), []);
+  return (
+    <group>
+      {zs.map((z) => (
+        <group key={z} position={[STATION.x - 2.6, 0, z]}>
+          <mesh position={[0, 4.2, 0]} castShadow>
+            <boxGeometry args={[0.25, 8.4, 0.25]} />
+            <meshStandardMaterial color="#9aa3ad" metalness={0.6} roughness={0.4} />
+          </mesh>
+          <mesh position={[1.6, 7.6, 0]}>
+            <boxGeometry args={[3.4, 0.12, 0.12]} />
+            <meshStandardMaterial color="#9aa3ad" metalness={0.6} roughness={0.4} />
+          </mesh>
+        </group>
+      ))}
+      {/* contact wire */}
+      <mesh position={[STATION.x, 7.2, STATION.zStart + 260 - 525]}>
+        <boxGeometry args={[0.03, 0.03, 1100]} />
+        <meshStandardMaterial color="#3f3f46" />
+      </mesh>
+      <mesh position={[STATION.x, 7.9, STATION.zStart + 260 - 525]}>
+        <boxGeometry args={[0.03, 0.03, 1100]} />
+        <meshStandardMaterial color="#3f3f46" />
+      </mesh>
+    </group>
+  );
+};
+
+const Station: React.FC = () => {
+  const ready = useFontsReady();
+  const sign = useMemo(() => makeSignTexture("बर्धमान जं.", "BARDHAMAN JN."), [ready]);
+  const stall = useMemo(makeStallTexture, [ready]);
+  const clock = useMemo(makeClockTexture, []);
+  const len = STATION.zStart - STATION.zEnd;
+  const zc = (STATION.zStart + STATION.zEnd) / 2;
+  const BX = STATION.x + 17;
+  const canopies = new Array(8).fill(0).map((_, k) => STATION.zStart - 20 - k * ((len - 40) / 7));
+  const brick = "#A63A2B";
+  const trim = "#F3E3C3";
   return (
     <group>
       {[-1, 1].map((side) => (
         <group key={side}>
-          <mesh position={[STATION.x + side * 5.9, 0.5, zc]} castShadow receiveShadow>
+          <mesh position={[STATION.x + side * 6.0, 0.5, zc]} castShadow receiveShadow>
             <boxGeometry args={[8, 1, len]} />
-            <meshStandardMaterial color="#cfcac0" roughness={0.9} />
+            <meshStandardMaterial color="#d8cdb8" roughness={0.9} />
           </mesh>
-          <mesh position={[STATION.x + side * 2.05, 1.01, zc]}>
-            <boxGeometry args={[0.3, 0.02, len]} />
-            <meshStandardMaterial color="#FFC93C" />
+          <mesh position={[STATION.x + side * 2.25, 1.01, zc]}>
+            <boxGeometry args={[0.45, 0.02, len]} />
+            <meshStandardMaterial color="#FFD400" />
           </mesh>
-          {canopies.map((k) => (
-            <group key={k} position={[STATION.x + side * 6.2, 0, STATION.zStart - 25 - k * ((len - 50) / 5)]}>
-              <mesh position={[0, 6.2, 0]} castShadow receiveShadow>
-                <boxGeometry args={[7.5, 0.35, 34]} />
-                <meshStandardMaterial color={k % 2 ? "#c4573a" : "#d9774a"} roughness={0.7} />
+          {canopies.map((z, k) => (
+            <group key={k} position={[STATION.x + side * 6.3, 0, z]}>
+              <mesh position={[0, 6.4, 0]} rotation-z={side * 0.08} castShadow receiveShadow>
+                <boxGeometry args={[8.2, 0.25, 32]} />
+                <meshStandardMaterial color="#7A2430" roughness={0.6} />
               </mesh>
-              <mesh position={[0, 3.6, 0]} castShadow>
-                <cylinderGeometry args={[0.18, 0.18, 5.2, 8]} />
-                <meshStandardMaterial color="#5b6573" />
+              <mesh position={[0, 6.15, 0]}>
+                <boxGeometry args={[8.3, 0.2, 32.2]} />
+                <meshStandardMaterial color={trim} emissive="#cbb994" emissiveIntensity={0.9} />
+              </mesh>
+              {[-10, 0, 10].map((dz) => (
+                <mesh key={dz} position={[0, 3.6, dz]} castShadow>
+                  <cylinderGeometry args={[0.16, 0.2, 5.2, 10]} />
+                  <meshStandardMaterial color="#2E5E8C" metalness={0.3} roughness={0.5} />
+                </mesh>
+              ))}
+              {/* bench */}
+              <mesh position={[side * 1.6, 1.45, 4]} castShadow>
+                <boxGeometry args={[0.6, 0.12, 2.6]} />
+                <meshStandardMaterial color="#2563eb" metalness={0.3} roughness={0.5} />
+              </mesh>
+              <mesh position={[side * 1.9, 1.8, 4]}>
+                <boxGeometry args={[0.08, 0.6, 2.6]} />
+                <meshStandardMaterial color="#2563eb" metalness={0.3} roughness={0.5} />
               </mesh>
             </group>
           ))}
         </group>
       ))}
-      {/* station building */}
-      <mesh position={[STATION.x + 20, 5, zc]} castShadow receiveShadow>
-        <boxGeometry args={[14, 10, 70]} />
-        <meshStandardMaterial color="#f1e2c4" roughness={0.9} />
+      {/* red-brick station building with cream trims and arches */}
+      <mesh position={[BX, 5.5, zc]} castShadow receiveShadow>
+        <boxGeometry args={[14, 11, 110]} />
+        <meshStandardMaterial color={brick} roughness={0.85} />
       </mesh>
-      <mesh position={[STATION.x + 20, 10.4, zc]} castShadow>
-        <boxGeometry args={[15.5, 0.8, 72]} />
-        <meshStandardMaterial color="#b04a33" roughness={0.8} />
+      {[1.2, 10.8].map((y) => (
+        <mesh key={y} position={[BX - 7.05, y, zc]}>
+          <boxGeometry args={[0.2, 0.5, 110.2]} />
+          <meshStandardMaterial color={trim} />
+        </mesh>
+      ))}
+      {new Array(14).fill(0).map((_, i) => (
+        <group key={i} position={[BX - 7.06, 0, zc - 50 + i * 7.6]}>
+          <mesh position={[0, 4.0, 0]}>
+            <boxGeometry args={[0.1, 4.2, 2.6]} />
+            <meshStandardMaterial color="#2a1a14" />
+          </mesh>
+          <mesh position={[0, 6.1, 0]} rotation-z={Math.PI / 2}>
+            <cylinderGeometry args={[1.3, 1.3, 0.12, 16, 1, false, 0, Math.PI]} />
+            <meshStandardMaterial color={trim} side={THREE.DoubleSide} />
+          </mesh>
+        </group>
+      ))}
+      {/* clock tower */}
+      <mesh position={[BX, 15, zc]} castShadow>
+        <boxGeometry args={[7, 10, 7]} />
+        <meshStandardMaterial color={brick} roughness={0.85} />
       </mesh>
-      {/* signboards facing the track */}
-      {[-60, 60].map((dz) => (
-        <group key={dz} position={[STATION.x - 6.5, 0, zc + dz]}>
-          <mesh position={[0, 4.3, 0]} rotation-y={Math.PI / 2}>
-            <planeGeometry args={[9, 1.75]} />
+      <mesh position={[BX, 21.5, zc]} castShadow>
+        <coneGeometry args={[5.4, 4.5, 4]} />
+        <meshStandardMaterial color="#5b1d1d" roughness={0.7} />
+      </mesh>
+      <mesh position={[BX - 3.52, 16.5, zc]} rotation-y={-Math.PI / 2}>
+        <circleGeometry args={[2.2, 32]} />
+        <meshStandardMaterial map={clock} />
+      </mesh>
+      {/* footbridge over the track */}
+      <group position={[STATION.x, 0, STATION.zStart - 35]}>
+        <mesh position={[0, 8.4, 0]} castShadow>
+          <boxGeometry args={[26, 0.6, 3.6]} />
+          <meshStandardMaterial color="#3b6ea5" roughness={0.6} />
+        </mesh>
+        {[-1, 1].map((k) => (
+          <mesh key={k} position={[0, 9.4, k * 1.75]}>
+            <boxGeometry args={[26, 1.6, 0.12]} />
+            <meshStandardMaterial color="#e2e8f0" />
+          </mesh>
+        ))}
+        {[-12, 12].map((x) => (
+          <mesh key={x} position={[x, 4.2, 0]} castShadow>
+            <boxGeometry args={[1, 8.4, 1]} />
+            <meshStandardMaterial color="#cbd5e1" />
+          </mesh>
+        ))}
+      </group>
+      {/* yellow station boards */}
+      {[-70, 0, 70].map((dz) => (
+        <group key={dz} position={[STATION.x - 6.9, 0, zc + dz]}>
+          <mesh position={[0, 4.6, 0]} rotation-y={Math.PI / 2}>
+            <planeGeometry args={[8, 2.8]} />
             <meshStandardMaterial map={sign} side={THREE.DoubleSide} roughness={0.6} />
           </mesh>
-          {[-3.6, 3.6].map((o) => (
-            <mesh key={o} position={[0, 2.2, o]}>
-              <cylinderGeometry args={[0.08, 0.08, 4.4, 6]} />
-              <meshStandardMaterial color="#13233A" />
+          {[-3.4, 3.4].map((o) => (
+            <mesh key={o} position={[0, 2.4, o]}>
+              <cylinderGeometry args={[0.09, 0.09, 4.8, 8]} />
+              <meshStandardMaterial color="#111" />
             </mesh>
           ))}
         </group>
       ))}
-      <instancedMesh ref={people} args={[undefined, undefined, N]} castShadow>
-        <capsuleGeometry args={[0.24, 1.1, 4, 8]} />
-        <meshStandardMaterial roughness={0.8} />
-      </instancedMesh>
+      {/* chai stall on the near platform */}
+      <group position={[STATION.x - 7.2, 1, STATION.zEnd + 70]}>
+        <mesh position={[0, 1.3, 0]} castShadow>
+          <boxGeometry args={[2.6, 2.6, 4]} />
+          <meshStandardMaterial color="#B3202A" roughness={0.6} />
+        </mesh>
+        <mesh position={[0.2, 2.9, 0]} castShadow>
+          <boxGeometry args={[3.2, 0.25, 4.6]} />
+          <meshStandardMaterial color="#F3E3C3" />
+        </mesh>
+        <mesh position={[1.32, 3.4, 0]} rotation-y={Math.PI / 2}>
+          <planeGeometry args={[4, 1.25]} />
+          <meshStandardMaterial map={stall} side={THREE.DoubleSide} />
+        </mesh>
+        {[-1, 0, 1].map((k) => (
+          <mesh key={k} position={[1.35, 2.75, k * 0.6]}>
+            <cylinderGeometry args={[0.18, 0.2, 0.35, 12]} />
+            <meshStandardMaterial color="#d4d4d8" metalness={0.8} roughness={0.25} />
+          </mesh>
+        ))}
+      </group>
+      {/* big shade trees behind the platform */}
+      {[-60, -15, 40, 95].map((dz, i) => (
+        <group key={dz} position={[STATION.x - 16 - (i % 2) * 5, 0, zc + dz]}>
+          <mesh position={[0, 3, 0]} castShadow>
+            <cylinderGeometry args={[0.6, 0.9, 6, 8]} />
+            <meshStandardMaterial color="#5b3a22" />
+          </mesh>
+          {[0, 1, 2, 3].map((k) => (
+            <mesh key={k} position={[Math.cos(k * 1.7) * 3, 8 + (k % 2) * 1.5, Math.sin(k * 1.7) * 3]} castShadow receiveShadow>
+              <sphereGeometry args={[4.2 - k * 0.4, 16, 12]} />
+              <meshStandardMaterial color={["#3f7d2c", "#4f8f35", "#356d26", "#5a9a3e"][k]} roughness={0.95} />
+            </mesh>
+          ))}
+        </group>
+      ))}
+      <OheMasts />
+      <Crowd count={130} />
     </group>
   );
 };
@@ -671,7 +931,8 @@ const Interior: React.FC<{ frame: number }> = ({ frame }) => {
 const Vehicle: React.FC<{ index: number; head: number; cutaway: number; frame: number }> = ({ index, head, cutaway, frame }) => {
   const engine = index === 0;
   const label = engine ? "" : index === S4_INDEX ? "S4" : index < S4_INDEX ? `S${index}` : `S${index}`;
-  const side = useMemo(() => makeSideTexture(engine ? "engine" : "coach", label), [engine, label]);
+  const fontsReady = useFontsReady();
+  const side = useMemo(() => makeSideTexture(engine ? "engine" : "coach", label), [engine, label, fontsReady]);
   const isS4 = index === S4_INDEX;
   const glass = isS4 && cutaway > 0;
   const L = engine ? ENGINE_LEN - 3 : COACH_LEN;
