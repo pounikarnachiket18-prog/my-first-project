@@ -1245,9 +1245,80 @@ export const World3D: React.FC<{
       <Trees />
       <Houses />
       <Station />
-      <Clouds />
+      {cam.pos.y < 250 ? <Clouds /> : null}
       {showTrain ? <Train head={head} coaches={coaches} cutaway={cutaway} /> : null}
       {children}
     </ThreeCanvas>
+  );
+};
+
+/* ======================= Map-view helpers for the day reel ======================= */
+
+export { Beam };
+
+const subCurve = (s0: number, s1: number, y: number, n = 120) => {
+  const pts: THREE.Vector3[] = [];
+  for (let i = 0; i <= n; i++) {
+    const p = poseAt(s0 + ((s1 - s0) * i) / n).p;
+    pts.push(new THREE.Vector3(p.x, y, p.z));
+  }
+  return new THREE.CatmullRomCurve3(pts);
+};
+
+/** Glowing tube along part of the track (highlights, delay segments). */
+export const TrackSegment: React.FC<{ s0: number; s1: number; color: string; r?: number; y?: number; progress?: number }> = ({
+  s0,
+  s1,
+  color,
+  r = 5,
+  y = 4,
+  progress = 1,
+}) => {
+  const geo = useMemo(() => new THREE.TubeGeometry(subCurve(s0, s1, y), 160, r, 8, false), [s0, s1, r, y]);
+  geo.setDrawRange(0, Math.floor((geo.index!.count * THREE.MathUtils.clamp(progress, 0, 1)) / 6) * 6);
+  return (
+    <mesh geometry={geo}>
+      <meshBasicMaterial color={color} toneMapped={false} />
+    </mesh>
+  );
+};
+
+/** Big glowing pill that marks the train in high map shots. */
+export const MapMarker: React.FC<{ s: number; size?: number; color?: string }> = ({ s, size = 1, color = "#FFC93C" }) => {
+  const frame = useCurrentFrame();
+  const { p, yaw } = poseAt(s);
+  return (
+    <group position={[p.x, 10, p.z]} rotation-y={yaw}>
+      <mesh rotation-z={Math.PI / 2} scale={size * (1 + Math.sin(frame / 6) * 0.05)}>
+        <capsuleGeometry args={[9, 46, 6, 16]} />
+        <meshBasicMaterial color={color} toneMapped={false} />
+      </mesh>
+      <mesh rotation-x={-Math.PI / 2} position={[0, -9, 0]} scale={size}>
+        <ringGeometry args={[30, 36, 48]} />
+        <meshBasicMaterial color={color} transparent opacity={0.45 + Math.sin(frame / 5) * 0.2} toneMapped={false} />
+      </mesh>
+    </group>
+  );
+};
+
+/** Colourful GPS "plot" dots that pop along the track. */
+export const PlotDots: React.FC<{ s0: number; s1: number; count: number; progress: number }> = ({ s0, s1, count, progress }) => {
+  const cols = ["#FFC93C", "#FF5C8A", "#3B82F6", "#22c55e", "#F97316", "#8B5CF6", "#14B8A6"];
+  return (
+    <>
+      {new Array(count).fill(0).map((_, i) => {
+        const t = i / (count - 1);
+        const vis = THREE.MathUtils.clamp(progress * count - i, 0, 1);
+        if (vis <= 0) return null;
+        const p = poseAt(s0 + (s1 - s0) * t);
+        const jitter = (random(`pd${i}`) - 0.5) * 24;
+        return (
+          <mesh key={i} position={[p.p.x + p.side.x * jitter, 6, p.p.z + p.side.z * jitter]} scale={vis}>
+            <sphereGeometry args={[6.5, 12, 10]} />
+            <meshBasicMaterial color={cols[i % cols.length]} toneMapped={false} />
+          </mesh>
+        );
+      })}
+    </>
   );
 };
