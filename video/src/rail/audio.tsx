@@ -12,7 +12,7 @@ export const VOICEOVER = { file: "audio/voiceover.mp3", volume: 1 };
 
 export const AMBIENCE = [
   // continuous train running sound under the whole video
-  { file: "audio/train-ambience.mp3", volume: 0.22 },
+  { file: "audio/train-ambience.mp3", volume: 0.45 },
 ];
 
 export const SFX: { file: string; at: number; volume?: number }[] = [
@@ -47,12 +47,16 @@ const has = (() => {
 const fadeOut = (base: number) => (f: number) =>
   base * interpolate(f, [DURATION - 6, DURATION], [1, 0], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
 
+// Train ambience: quick fade-in at the start, fade-out at the cut.
+const fadeInOut = (base: number) => (f: number) =>
+  fadeOut(base)(f) * interpolate(f, [0, 8], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+
 export const Soundtrack: React.FC = () => (
   <>
     {has(VOICEOVER.file) && <Audio src={staticFile(VOICEOVER.file)} volume={fadeOut(VOICEOVER.volume)} />}
     {AMBIENCE.filter((a) => has(a.file)).map((a) => (
       <Loop key={a.file} durationInFrames={DURATION}>
-        <Audio src={staticFile(a.file)} volume={fadeOut(a.volume)} />
+        <Audio src={staticFile(a.file)} volume={fadeInOut(a.volume)} />
       </Loop>
     ))}
     {SFX.filter((x) => has(x.file)).map((x, i) => (

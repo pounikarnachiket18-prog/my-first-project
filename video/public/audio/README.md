@@ -6,7 +6,7 @@ automatically (timings/volumes in `src/rail/audio.tsx`).
 | File | Used for |
 |---|---|
 | `voiceover.mp3` | Main narration (49.4s) — the whole video is timed to it |
-| `train-ambience.mp3` | Train running sound under the full video (vol 0.22) |
+| `train-ambience.mp3` | Train running sound under the full video (vol 0.45) |
 | `train-horn.mp3` | Opening (0.0s) and end card (44.0s) |
 | `packet-open.mp3` | Bedroll lid slides off (5.3s) |
 | `cloth-whoosh.mp3` | Chadar slides out / sheets spread (5.6s, 30.3s, 32.6s) |
