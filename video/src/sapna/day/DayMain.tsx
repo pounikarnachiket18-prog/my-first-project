@@ -74,11 +74,21 @@ const HEADLINES: { from: number; to: number; size?: number; top?: number; lines:
   { from: 102.0, to: 105.4, size: 70, lines: [{ at: 102.0, words: ["Aise", { t: "tech", c: YEL }, { t: "secrets", c: YEL }, "ke", "liye..."] }] },
 ];
 
-/** Screen position of a 3D point for the current camera. */
-const at3D = (cam: Cam, v: THREE.Vector3) => project(cam, v, W, H);
+/** Portrait UI layer: designed at 1080x1920; in 16:9 it is scaled by LS, centred, and its unused top band trimmed. */
+const LS = 0.75;
+export const PortraitLayer: React.FC<{ landscape: boolean; children: React.ReactNode }> = ({ landscape, children }) =>
+  landscape ? (
+    <div style={{ position: "absolute", top: -150 * LS, left: (1920 - W * LS) / 2, width: W, height: H, transform: `scale(${LS})`, transformOrigin: "0 0" }}>{children}</div>
+  ) : (
+    <>{children}</>
+  );
 
-export const DayMain: React.FC = () => {
+export const DayMain: React.FC<{ landscape?: boolean }> = ({ landscape = false }) => {
   const frame = useCurrentFrame();
+  const SW = landscape ? 1920 : W;
+  const SH = landscape ? 1080 : H;
+  /** Screen position of a 3D point for the current camera. */
+  const at3D = (cam: Cam, v: THREE.Vector3) => project(cam, v, SW, SH);
   const t = frame / 30;
   const shot = shotAt(t);
   const u = t - shot.from;
@@ -175,6 +185,7 @@ export const DayMain: React.FC = () => {
 
   /* ---------- anchored labels ---------- */
   const anchored: React.ReactNode[] = [];
+  const fixedUi: React.ReactNode[] = [];
   if (id === "towerRow" || id === "drone") {
     const ids = ["21433", "21447", "21425"];
     const cols = ["#60A5FA", "#C084FC", PNK];
@@ -258,7 +269,7 @@ export const DayMain: React.FC = () => {
       </Place>,
     );
     const late = t < 77 ? "12 min late" : "18 min late";
-    anchored.push(
+    fixedUi.push(
       <Place key={`late${late}`} t={t} at={t < 77 ? 76.2 : 77.0} to={t < 77 ? 77.0 : 78.2} x={W / 2} y={1330}>
         <div style={{ padding: "18px 38px", borderRadius: 999, background: C.red, color: "#fff", fontFamily: FONT, fontWeight: 800, fontSize: 52, boxShadow: "0 14px 40px rgba(255,77,77,0.5)" }}>{late}</div>
       </Place>,
@@ -272,6 +283,8 @@ export const DayMain: React.FC = () => {
     <AbsoluteFill style={{ background: "#8FD3FF" }}>
       <div style={{ position: "absolute", inset: 0, filter: blur ? `blur(${blur}px)` : undefined, scale: blur ? 1.04 : 1 }}>
         <World3D
+          width={SW}
+          height={SH}
           cam={cam}
           head={head}
           shadowFocus={focus}
@@ -284,10 +297,12 @@ export const DayMain: React.FC = () => {
         </World3D>
       </div>
       {dim ? <div style={{ position: "absolute", inset: 0, background: `rgba(10,20,38,${dim})` }} /> : null}
-      <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 700, background: "linear-gradient(180deg, rgba(8,16,30,0.55), rgba(8,16,30,0))" }} />
+      <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: (700 * SH) / H, background: "linear-gradient(180deg, rgba(8,16,30,0.55), rgba(8,16,30,0))" }} />
 
       {anchored}
 
+      <PortraitLayer landscape={landscape}>
+      {fixedUi}
       {/* ---------- UI overlays ---------- */}
       <Place t={t} at={0.1} to={3} x={W / 2} y={190}>
         <GChip color={YEL} size={24} icon={<TrainGlyph size={26} color={YEL} />}>
@@ -446,9 +461,9 @@ export const DayMain: React.FC = () => {
           FOLLOW <span style={{ color: "#fff" }}>karo!</span>
         </div>
       ) : null}
+      </PortraitLayer>
 
       {/* episode tag + progress bar like the original */}
-      <div style={{ position: "absolute", top: 0, left: 0, height: 9, width: `${(frame / DAY_FRAMES) * 100}%`, background: "#F97316" }} />
       <div style={{ position: "absolute", top: 54, left: 50, padding: "8px 20px", borderRadius: 999, background: "rgba(10,20,38,0.5)", color: "#fff", fontFamily: FONT, fontWeight: 700, fontSize: 24, letterSpacing: 3 }}>EP 12 · TECH</div>
     </AbsoluteFill>
   );

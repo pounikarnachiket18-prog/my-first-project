@@ -5,6 +5,7 @@ import { C } from "../theme";
 import { Chip, Headline, popStyle, usePop } from "../ui";
 import { World3D } from "../three/World3D";
 import { STATION } from "../three/track";
+import { PortraitLayer } from "../day/DayMain";
 
 export const INTRO_FRAMES = 150;
 
@@ -13,7 +14,7 @@ const X = STATION.x;
 const ZC = (STATION.zStart + STATION.zEnd) / 2;
 
 /** New cold open: a busy Indian Railways station as Sapna Express pulls in. */
-export const StationIntro: React.FC = () => {
+export const StationIntro: React.FC<{ landscape?: boolean }> = ({ landscape = false }) => {
   const frame = useCurrentFrame();
   const head = interpolate(frame, [0, 95], [STATION.sStart - 170, STATION.sStart + 250], { ...clamp, easing: Easing.out(Easing.cubic) });
   const rise = interpolate(frame, [80, 150], [0, 1], { ...clamp, easing: Easing.inOut(Easing.cubic) });
@@ -30,15 +31,16 @@ export const StationIntro: React.FC = () => {
 
   return (
     <AbsoluteFill>
-      <World3D cam={cam} head={head} shadowFocus={new THREE.Vector3(X, 0, ZC)} shadowSize={110} fogFar={2400} />
+      <World3D width={landscape ? 1920 : 1080} height={landscape ? 1080 : 1920} cam={cam} head={head} shadowFocus={new THREE.Vector3(X, 0, ZC)} shadowSize={110} fogFar={2400} />
       <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(8,16,30,0.45), rgba(8,16,30,0) 35%)" }} />
+      <PortraitLayer landscape={landscape}>
       <Headline
         lines={[
-          ["Har", "yatri", "ka", "sawaal:"],
+          ["Kabhi", "socha", "hai..."],
           [
-            { t: "Train", c: C.stripe },
-            { t: "kahan", c: C.stripe },
-            { t: "hai?", c: C.stripe },
+            { t: "Bina", c: C.stripe },
+            { t: "internet", c: C.stripe },
+            { t: "kaise?", c: C.stripe },
           ],
         ]}
         delay={8}
@@ -50,6 +52,7 @@ export const StationIntro: React.FC = () => {
           12345 SAPNA EXPRESS · PF 1 PAR AA RAHI HAI
         </Chip>
       </div>
+      </PortraitLayer>
       <div
         style={{
           position: "absolute",
