@@ -479,12 +479,14 @@ export const CommentCard: React.FC<{ t: number }> = ({ t }) => {
 export const FollowCard: React.FC<{ t: number }> = ({ t }) => {
   const pressed = t > 103.6;
   return (
-    <Card width={840} style={{ display: "flex", alignItems: "center", gap: 22 }}>
-      <div style={{ width: 96, height: 96, borderRadius: 48, background: "#1F6FB8", border: `4px solid ${YEL}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+    <Card width={960} style={{ display: "flex", alignItems: "center", gap: 22 }}>
+      <div style={{ flexShrink: 0, width: 96, height: 96, borderRadius: 48, background: "#1F6FB8", border: `4px solid ${YEL}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
         <TrainGlyph size={56} />
       </div>
       <div style={{ flex: 1 }}>
-        <div style={{ fontSize: 38, fontWeight: 800 }}>Tech Explained</div>
+        <div style={{ fontSize: 36, fontWeight: 800, whiteSpace: "nowrap" }}>
+          Mindset_Mode <span style={{ color: YEL }}>| Explainers</span>
+        </div>
         <Label>DAILY TECH · HINGLISH MEIN</Label>
       </div>
       <div
@@ -496,6 +498,7 @@ export const FollowCard: React.FC<{ t: number }> = ({ t }) => {
           color: pressed ? YEL : C.ink,
           fontSize: 32,
           fontWeight: 800,
+          whiteSpace: "nowrap",
           scale: pressed ? 1 : 1 + Math.max(0, Math.sin(t * 8)) * 0.05,
         }}
       >
