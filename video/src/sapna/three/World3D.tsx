@@ -27,7 +27,7 @@ const useFontsReady = () => {
   const [ready, setReady] = useState(false);
   const [handle] = useState(() => delayRender("canvas fonts"));
   useEffect(() => {
-    Promise.all([document.fonts.load(`800 60px ${FONT}`), document.fonts.load(`800 60px ${DEVA_FONT}`, "बर्धमान")])
+    Promise.all([document.fonts.load(`800 60px ${FONT}`), document.fonts.load(`800 60px ${DEVA_FONT}`, "बौनापुर समुद्र तल से ऊँचाई मी.")])
       .catch(() => undefined)
       .then(() => {
         setReady(true);
@@ -202,22 +202,26 @@ const makeSideTexture = (kind: "engine" | "coach", label: string) => {
   return t;
 };
 
-const makeSignTexture = (hindi: string, english: string) => {
+/** Indian Railways station nameboard: yellow, black border, Hindi over English, MSL line at the bottom. */
+const makeSignTexture = (hindi: string, english: string, msl: string) => {
   const c = document.createElement("canvas");
   c.width = 1024;
-  c.height = 360;
+  c.height = 440;
   const g = c.getContext("2d")!;
   g.fillStyle = "#FFD400";
-  g.fillRect(0, 0, 1024, 360);
+  g.fillRect(0, 0, 1024, 440);
   g.strokeStyle = "#111";
-  g.lineWidth = 18;
-  g.strokeRect(9, 9, 1006, 342);
+  g.lineWidth = 20;
+  g.strokeRect(10, 10, 1004, 420);
   g.fillStyle = "#111";
   g.textAlign = "center";
-  g.font = `800 120px ${DEVA_FONT}, sans-serif`;
-  g.fillText(hindi, 512, 160);
-  g.font = `800 104px ${FONT}, sans-serif`;
+  g.font = `800 132px ${DEVA_FONT}, sans-serif`;
+  g.fillText(hindi, 512, 168);
+  g.font = `800 112px ${FONT}, sans-serif`;
   g.fillText(english, 512, 300);
+  g.fillRect(60, 336, 904, 6);
+  g.font = `700 40px ${DEVA_FONT}, ${FONT}, sans-serif`;
+  g.fillText(msl, 512, 398);
   const t = new THREE.CanvasTexture(c);
   t.colorSpace = THREE.SRGBColorSpace;
   t.anisotropy = 8;
@@ -663,7 +667,7 @@ const OheMasts: React.FC = () => {
 
 const Station: React.FC = () => {
   const ready = useFontsReady();
-  const sign = useMemo(() => makeSignTexture("बर्धमान जं.", "BARDHAMAN JN."), [ready]);
+  const sign = useMemo(() => makeSignTexture("बौनापुर", "BAUNAPUR", "समुद्र तल से ऊँचाई 18.50 मी.  ·  M.S.L. 18.50 M"), [ready]);
   const stall = useMemo(makeStallTexture, [ready]);
   const clock = useMemo(makeClockTexture, []);
   const len = STATION.zStart - STATION.zEnd;
@@ -772,8 +776,8 @@ const Station: React.FC = () => {
       {[-70, 0, 70].map((dz) => (
         <group key={dz} position={[STATION.x - 6.9, 0, zc + dz]}>
           <mesh position={[0, 4.6, 0]} rotation-y={Math.PI / 2}>
-            <planeGeometry args={[8, 2.8]} />
-            <meshStandardMaterial map={sign} side={THREE.DoubleSide} roughness={0.6} />
+            <planeGeometry args={[8, 3.44]} />
+            <meshStandardMaterial map={sign} emissiveMap={sign} emissive="#ffffff" emissiveIntensity={0.45} side={THREE.DoubleSide} roughness={0.6} />
           </mesh>
           {[-3.4, 3.4].map((o) => (
             <mesh key={o} position={[0, 2.4, o]}>
@@ -783,6 +787,19 @@ const Station: React.FC = () => {
           ))}
         </group>
       ))}
+      {/* hero nameboard at the near end of the platform, angled toward the intro camera */}
+      <group position={[STATION.x - 4.7, 1, STATION.zEnd + 40]} rotation-y={Math.PI - 0.045}>
+        <mesh position={[0, 3.3, 0]} castShadow>
+          <planeGeometry args={[5, 2.15]} />
+          <meshStandardMaterial map={sign} emissiveMap={sign} emissive="#ffffff" emissiveIntensity={0.45} side={THREE.DoubleSide} roughness={0.6} />
+        </mesh>
+        {[-2.2, 2.2].map((o) => (
+          <mesh key={o} position={[o, 2.05, -0.03]} castShadow>
+            <cylinderGeometry args={[0.06, 0.06, 4.1, 8]} />
+            <meshStandardMaterial color="#111" />
+          </mesh>
+        ))}
+      </group>
       {/* chai stall on the near platform */}
       <group position={[STATION.x - 7.2, 1, STATION.zEnd + 70]}>
         <mesh position={[0, 1.3, 0]} castShadow>

@@ -236,7 +236,7 @@ export const DayMain: React.FC = () => {
     const s = at3D(cam, up(ST_CENTER, 40));
     anchored.push(
       <Place key="stn" t={t} at={65.3} to={70} x={s.x} y={s.y - 40}>
-        <div style={{ padding: "12px 26px", borderRadius: 16, background: "#FFD400", border: "5px solid #111", fontFamily: FONT, fontWeight: 800, fontSize: 38, color: "#111" }}>BARDHAMAN JN</div>
+        <div style={{ padding: "12px 26px", borderRadius: 16, background: "#FFD400", border: "5px solid #111", fontFamily: FONT, fontWeight: 800, fontSize: 38, color: "#111" }}>BAUNAPUR</div>
       </Place>,
     );
   }

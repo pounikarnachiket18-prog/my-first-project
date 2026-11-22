@@ -188,7 +188,7 @@ export const AppCard: React.FC<{ t: number }> = ({ t }) => {
           <span style={{ fontSize: 30, fontWeight: 600 }}>pehle</span>
         </div>
         <div>
-          <div style={{ fontSize: 30, fontWeight: 800 }}>BARDHAMAN JN</div>
+          <div style={{ fontSize: 30, fontWeight: 800 }}>BAUNAPUR</div>
           <Label>NEXT STATION</Label>
         </div>
       </div>
@@ -372,7 +372,7 @@ const TT = [
   ["HOWRAH JN", "20:00"],
   ["BANDEL JN", "20:42"],
   ["MEMARI", "21:18"],
-  ["BARDHAMAN JN", "21:40"],
+  ["BAUNAPUR", "21:40"],
 ];
 
 export const TimetableCard: React.FC<{ t: number }> = ({ t }) => (
@@ -440,7 +440,7 @@ export const MapsCard: React.FC<{ t: number }> = ({ t }) => {
           <div style={{ fontSize: 32, fontWeight: 800 }}>Maps</div>
           <Label>LIVE TRAIN STATUS</Label>
         </div>
-        <Label color={YEL}>BARDHAMAN</Label>
+        <Label color={YEL}>BAUNAPUR</Label>
       </div>
       <svg width={648} height={330} viewBox="0 0 648 330" style={{ marginTop: 12, borderRadius: 20, background: "#1d3557" }}>
         <path d="M0 210 C 150 140, 260 260, 420 170 S 600 120, 648 90" stroke="#3b6ea5" strokeWidth={34} fill="none" opacity={0.6} />
