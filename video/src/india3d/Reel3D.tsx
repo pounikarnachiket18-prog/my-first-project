@@ -1,7 +1,7 @@
 import React from "react";
 import { AbsoluteFill, Audio, interpolate, Sequence, staticFile } from "remotion";
 import { Captions, Fade, FontGate } from "./Overlay";
-import { CAPTIONS, S1Aerial, S2Plates, S3Ping, S4Dhaba, S5Phones, S6Fight, S7Map, S8LookAround } from "./Scenes";
+import { CAPTIONS, S1Aerial, S2Plates, S3Ping, S4Dhaba, S5Phones, S6bBerlin, S6Fight, S7Map, S8LookAround } from "./Scenes";
 
 export const SHOTS: { id: string; dur: number; C: React.FC<{ dur: number }> }[] = [
   { id: "aerial", dur: 150, C: S1Aerial },
@@ -10,6 +10,7 @@ export const SHOTS: { id: string; dur: number; C: React.FC<{ dur: number }> }[] 
   { id: "dhaba", dur: 180, C: S4Dhaba },
   { id: "phones", dur: 240, C: S5Phones },
   { id: "fight", dur: 180, C: S6Fight },
+  { id: "berlin", dur: 240, C: S6bBerlin },
   { id: "map", dur: 180, C: S7Map },
   { id: "look", dur: 180, C: S8LookAround },
   { id: "end", dur: 90, C: ({ dur }) => <S1Aerial dur={dur} titleOnly /> },

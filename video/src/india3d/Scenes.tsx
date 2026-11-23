@@ -2,7 +2,7 @@ import React, { useMemo } from "react";
 import * as THREE from "three";
 import { ThreeCanvas } from "@remotion/three";
 import { AbsoluteFill, interpolate, useCurrentFrame, useVideoConfig, Easing } from "remotion";
-import { Auto, Bus, Car, Cow, Dhaba, Gantry, MileStone, Person, Ping, Shop, Truck } from "./kit";
+import { Auto, Block, Bus, Car, Cow, Dhaba, Gantry, Glow, MileStone, Person, PhoneWagon, Ping, Shop, StreetLamp, Tree, Truck } from "./kit";
 import { CameraRig, Highway, InstancedJam, LANE_A, LANE_B, Lights, makeJam, PAL, rng, Sky, V3 } from "./World";
 import { Captions, Chip, DataCard, Header, Honk, Phrase, SpeechBubble, Title } from "./Overlay";
 
@@ -311,6 +311,84 @@ const PlatesVs: React.FC<{ from: number; to: number }> = ({ from, to }) => {
   );
 };
 
+
+// ================================================================== S6b Berlin 2020: 99 phones in a wagon (240f)
+const DE_PLATES = ["B AK 4417", "B LM 2093", "B TR 771", "B KX 5820", "B NE 3306", "B PQ 118", "B ZU 6642", "B HG 909"];
+const BERLIN = (() => {
+  const r = rng(404);
+  const blocks: { p: V3; s: V3; seed: number; col: string }[] = [];
+  const parked: { p: V3; rot: number; color: string; plate: string }[] = [];
+  const trees: V3[] = [];
+  const lamps: V3[] = [];
+  const facade = ["#C9A27E", "#B98B6E", "#D8C3A5", "#A7886F", "#C4B49A"];
+  for (const side of [-1, 1]) {
+    for (let z = 40; z > -220; z -= 13) {
+      const h = 16 + r() * 8;
+      blocks.push({ p: [side * 13.5, 0, z], s: [10, h, 12.6], seed: Math.floor(r() * 50), col: facade[Math.floor(r() * facade.length)] });
+    }
+    let k = 0;
+    for (let z = 34; z > -200; z -= 6.2) {
+      if (r() < 0.3) continue;
+      parked.push({ p: [side * 3.3, 0, z], rot: side < 0 ? 0 : Math.PI, color: COLS[Math.floor(r() * COLS.length)], plate: DE_PLATES[k++ % DE_PLATES.length] });
+    }
+    for (let z = 30; z > -200; z -= 18) {
+      trees.push([side * 5.6, 0, z + r() * 4]);
+      lamps.push([side * 5.0, 0, z - 9]);
+    }
+  }
+  return { blocks, parked, trees, lamps };
+})();
+
+export const S6bBerlin: React.FC<{ dur: number }> = ({ dur }) => {
+  const f = useCurrentFrame();
+  const t = f / 30;
+  const walkZ = -30 + t * 1.15; // walking slowly towards camera (+z)
+  const camP = lerp3([1.1, 2.3, walkZ + 6.5], [1.4, 5.5, walkZ + 12], prog(f, 120, dur));
+  return (
+    <AbsoluteFill>
+      <Stage cam={camP} target={[-0.3, 1.1, walkZ - 1.5]} fov={44} focus={[0, 0, walkZ]} fog={[30, 260]} shadow={35}>
+        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, -90]} receiveShadow>
+          <planeGeometry args={[400, 600]} />
+          <meshStandardMaterial color="#5E5660" roughness={1} />
+        </mesh>
+        {[-1, 1].map((sd) => (
+          <mesh key={sd} position={[sd * 6.2, 0.08, -90]} receiveShadow>
+            <boxGeometry args={[4.4, 0.16, 300]} />
+            <meshStandardMaterial color="#9A8F86" roughness={1} />
+          </mesh>
+        ))}
+        {BERLIN.blocks.map((b, i) => (
+          <Block key={i} position={b.p} size={b.s} seed={b.seed} color={b.col} glow={0.35} />
+        ))}
+        {BERLIN.parked.map((c, i) => (
+          <Car key={i} position={c.p} rotY={c.rot} color={c.color} plate={c.plate} plateKind="eu" glow={false} />
+        ))}
+        {BERLIN.trees.map((p, i) => (
+          <Tree key={i} position={p} s={0.8} hue="#3F5A3A" />
+        ))}
+        {BERLIN.lamps.map((p, i) => (
+          <StreetLamp key={i} position={p} />
+        ))}
+        {/* the artist + the wagon of 99 phones */}
+        <Person
+          position={[0, Math.abs(Math.sin(t * 4.2)) * 0.03, walkZ]}
+          rotY={Math.PI}
+          shirt="#C8341E"
+          pants="#2B2B33"
+          skin="#E0B08A"
+          hat="cap"
+          hatColor="#1A1A1A"
+          pose={{ walk: t * 4.2, armL: [Math.sin(t * 4.2) * 0.4, 0.1], armR: [-0.5, 0.15] }}
+        />
+        <PhoneWagon position={[0, 0, walkZ - 1.9]} t={t} />
+      </Stage>
+      <Header />
+      <Chip text="BERLIN · 2020" from={0} to={dur} dot="#FFCC00" />
+      <DataCard x={70} y={600} big="99" unit="phones" sub="1 ARTIST · 1 WAGON" from={60} to={dur} scale={0.85} bar="#5AB8FF" />
+    </AbsoluteFill>
+  );
+};
+
 // ================================================================== S7 map: road turns red, reroute (180f)
 export const S7Map: React.FC<{ dur: number }> = ({ dur }) => {
   const f = useCurrentFrame();
@@ -363,6 +441,12 @@ export const S7Map: React.FC<{ dur: number }> = ({ dur }) => {
           <boxGeometry args={[7, 0.4, 260]} />
           <meshBasicMaterial color={roadCol} toneMapped={false} />
         </mesh>
+        {/* the wagon: a slow glowing dot */}
+        <mesh position={[0, 1.2, 60 - prog(f, 0, dur) * 70]}>
+          <sphereGeometry args={[1.6, 16, 16]} />
+          <meshBasicMaterial color="#CFF3FF" toneMapped={false} />
+        </mesh>
+        <Glow position={[0, 1.5, 60 - prog(f, 0, dur) * 70]} color="#5AB8FF" size={14} opacity={0.9} />
         {/* side road used for reroute */}
         <mesh position={[24, 0.25, -10]}>
           <boxGeometry args={[3.5, 0.3, 100]} />
@@ -394,9 +478,9 @@ export const S7Map: React.FC<{ dur: number }> = ({ dur }) => {
       </ThreeCanvas>
       <Header />
       <Chip text={f < 80 ? "JAM DETECTED" : "REROUTING AROUND IT"} from={0} to={dur} dot={f < 80 ? "#FF3B30" : "#5AB8FF"} />
-      <MapLabel x={560} y={300} text="NH 48 · TO MUMBAI" />
-      <MapLabel x={560} y={1340} text="TO PUNE" />
-      <MapLabel x={190} y={880} text="Heavy traffic" sub="KATRAJ · 24 KM/H" from={40} red />
+      <MapLabel x={560} y={300} text="EMPTY STREET · BERLIN" />
+      <MapLabel x={560} y={1340} text="0 CARS · 99 PHONES" />
+      <MapLabel x={190} y={880} text="Heavy traffic" sub="99 PHONES · 3 KM/H" from={40} red />
     </AbsoluteFill>
   );
 };
@@ -458,13 +542,21 @@ export const CAPTIONS: Phrase[] = [
   { from: 734, to: 770, text: "drop from 105 to", hl: ["105"] },
   { from: 770, to: 800, text: "24 at the same", hl: ["24"] },
   { from: 800, to: 838, text: "time — that's a jam.", hl: ["jam"] },
-  { from: 1022, to: 1066, text: "Google Maps turns" },
-  { from: 1066, to: 1110, text: "that road red,", hl: ["red"] },
-  { from: 1110, to: 1154, text: "and cars start" },
-  { from: 1154, to: 1198, text: "rerouting around it." },
-  { from: 1202, to: 1244, text: "So next time" },
-  { from: 1244, to: 1290, text: "your road turns red," },
-  { from: 1290, to: 1320, text: "look around." },
-  { from: 1320, to: 1352, text: "You're one of the" },
-  { from: 1352, to: 1378, text: "sensors.", hl: ["sensors"] },
+  // 840–1020: roadside fight (speech bubbles)
+  { from: 1022, to: 1064, text: "And here's the crazy part." },
+  { from: 1064, to: 1104, text: "In Berlin, one artist", hl: ["Berlin"] },
+  { from: 1104, to: 1146, text: "put 99 phones in a", hl: ["99"] },
+  { from: 1146, to: 1190, text: "little wagon and slowly" },
+  { from: 1190, to: 1228, text: "walked it down an" },
+  { from: 1228, to: 1258, text: "empty street." },
+  { from: 1262, to: 1304, text: "Google Maps turned" },
+  { from: 1304, to: 1346, text: "that street red.", hl: ["red"] },
+  { from: 1346, to: 1382, text: "Cars started rerouting" },
+  { from: 1382, to: 1410, text: "around a traffic jam" },
+  { from: 1410, to: 1438, text: "that didn't exist." },
+  { from: 1442, to: 1484, text: "So next time" },
+  { from: 1484, to: 1530, text: "your road turns red," },
+  { from: 1530, to: 1560, text: "look around." },
+  { from: 1560, to: 1592, text: "You're one of the" },
+  { from: 1592, to: 1618, text: "sensors.", hl: ["sensors"] },
 ];

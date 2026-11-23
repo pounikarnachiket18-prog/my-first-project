@@ -32,10 +32,35 @@ const fit = (c: CanvasRenderingContext2D, text: string, font: (px: number) => st
   return s;
 };
 
-export type PlateKind = "private" | "commercial" | "ev";
+export type PlateKind = "private" | "commercial" | "ev" | "eu";
 
 export const plateTex = (text: string, kind: PlateKind = "private") =>
   canvasTex(`plate:${text}:${kind}`, 520, 124, (c) => {
+    if (kind === "eu") {
+      // German plate: EU strip with "D", black on white
+      c.fillStyle = "#111";
+      c.fillRect(0, 0, 520, 124);
+      c.fillStyle = "#FFF";
+      c.fillRect(5, 5, 510, 114);
+      c.fillStyle = "#003399";
+      c.fillRect(8, 8, 60, 108);
+      c.fillStyle = "#FFCC00";
+      for (let i = 0; i < 12; i++) {
+        const a = (i / 12) * Math.PI * 2;
+        c.beginPath();
+        c.arc(38 + Math.cos(a) * 16, 42 + Math.sin(a) * 16, 3, 0, Math.PI * 2);
+        c.fill();
+      }
+      c.fillStyle = "#FFF";
+      c.font = `800 34px ${UI}`;
+      c.textAlign = "center";
+      c.fillText("D", 38, 104);
+      c.fillStyle = "#111";
+      fit(c, text, (p) => `800 ${p}px ${UI}`, 420, 80);
+      c.textBaseline = "middle";
+      c.fillText(text, 292, 66);
+      return;
+    }
     const bg = kind === "commercial" ? "#FFD400" : kind === "ev" ? "#1E8E3E" : "#FFFFFF";
     const fg = kind === "ev" ? "#FFFFFF" : "#111111";
     c.fillStyle = "#111";

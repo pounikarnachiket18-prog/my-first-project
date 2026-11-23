@@ -225,6 +225,7 @@ export type Pose = {
   lean?: number;
   sit?: boolean;
   bob?: number;
+  walk?: number; // walk-cycle phase in radians; omit to stand still
 };
 
 export const Person: React.FC<{
@@ -238,7 +239,8 @@ export const Person: React.FC<{
   pose?: Pose;
   scale?: number;
 }> = ({ position, rotY = 0, shirt, pants = "#2D3142", skin = "#A8714A", hat = null, hatColor = "#FF9933", pose = {}, scale = 1 }) => {
-  const { armL = [0, 0.1], armR = [0, 0.1], lean = 0, sit = false, bob = 0 } = pose;
+  const { armL = [0, 0.1], armR = [0, 0.1], lean = 0, sit = false, bob = 0, walk } = pose;
+  const swing = walk === undefined ? 0 : Math.sin(walk) * 0.45;
   const hip = sit ? 0.48 : 0.9;
   return (
     <group position={position} rotation={[0, rotY, 0]} scale={scale}>
@@ -252,8 +254,12 @@ export const Person: React.FC<{
         </>
       ) : (
         <>
-          <Box size={[0.18, 0.9, 0.18]} position={[-0.11, 0.45, 0]} color={pants} />
-          <Box size={[0.18, 0.9, 0.18]} position={[0.11, 0.45, 0]} color={pants} />
+          <group position={[-0.11, 0.9, 0]} rotation={[swing, 0, 0]}>
+            <Box size={[0.18, 0.9, 0.18]} position={[0, -0.45, 0]} color={pants} />
+          </group>
+          <group position={[0.11, 0.9, 0]} rotation={[-swing, 0, 0]}>
+            <Box size={[0.18, 0.9, 0.18]} position={[0, -0.45, 0]} color={pants} />
+          </group>
         </>
       )}
       <group position={[0, hip + bob, 0]} rotation={[lean, 0, 0]}>
@@ -382,7 +388,7 @@ export const MileStone: React.FC<{ position: V3; rotY?: number }> = ({ position,
 );
 
 // City block with lit windows (like the original's skyline)
-export const Block: React.FC<{ position: V3; size: V3; seed: number; color?: string }> = ({ position, size, seed, color = "#3A3152" }) => {
+export const Block: React.FC<{ position: V3; size: V3; seed: number; color?: string; glow?: number }> = ({ position, size, seed, color = "#3A3152", glow = 0.9 }) => {
   const tex = useMemo(() => {
     const t = windowsTex(seed % 7).clone();
     t.wrapS = THREE.RepeatWrapping;
@@ -394,7 +400,7 @@ export const Block: React.FC<{ position: V3; size: V3; seed: number; color?: str
   return (
     <mesh position={[position[0], position[1] + size[1] / 2, position[2]]} castShadow receiveShadow>
       <boxGeometry args={size} />
-      <meshStandardMaterial color={color} map={tex} emissiveMap={tex} emissive="#FFFFFF" emissiveIntensity={0.9} flatShading />
+      <meshStandardMaterial color={color} map={tex} emissiveMap={tex} emissive="#FFFFFF" emissiveIntensity={glow} flatShading />
     </mesh>
   );
 };
@@ -504,6 +510,67 @@ export const Dhaba: React.FC<{
     </group>
   );
 };
+
+// ------------------------------------------------------------ Berlin: wagon with 99 phones
+export const PhoneWagon: React.FC<{ position: V3; rotY?: number; t: number }> = ({ position, rotY = 0, t }) => {
+  const phones = useMemo(() => {
+    const out: { p: V3; k: number }[] = [];
+    for (let i = 0; i < 99; i++) {
+      const r = i % 11;
+      const c = Math.floor(i / 11);
+      out.push({ p: [-0.42 + r * 0.084, 0.78 + (c % 3) * 0.02, -0.62 + c * 0.14], k: (i * 7.31) % 6.28 });
+    }
+    return out;
+  }, []);
+  return (
+    <group position={position} rotation={[0, rotY, 0]}>
+      <Box size={[1.0, 0.35, 1.45]} position={[0, 0.6, 0]} color="#C8102E" />
+      <Box size={[0.92, 0.05, 1.37]} position={[0, 0.77, 0]} color="#7A0A0A" />
+      {[
+        [-0.5, 0.22, 0.5],
+        [0.5, 0.22, 0.5],
+        [-0.5, 0.22, -0.5],
+        [0.5, 0.22, -0.5],
+      ].map((p, i) => (
+        <Wheel key={i} position={p as V3} r={0.22} w={0.1} />
+      ))}
+      {/* handle towards the artist (+z) */}
+      <Box size={[0.06, 0.06, 1.1]} position={[0, 0.75, 1.15]} rotation={[-0.35, 0, 0]} color="#333" />
+      {phones.map((ph, i) => (
+        <mesh key={i} position={ph.p}>
+          <boxGeometry args={[0.06, 0.012, 0.11]} />
+          <meshBasicMaterial color={Math.sin(t * 4 + ph.k) > 0.2 ? "#CFF3FF" : "#6FB8E0"} toneMapped={false} />
+        </mesh>
+      ))}
+      {/* sparkle cloud of location pings */}
+      {Array.from({ length: 34 }, (_, i) => {
+        const a = i * 2.399;
+        const rad = 0.3 + ((i * 37) % 10) * 0.09;
+        const y = 1.3 + ((i * 13) % 9) * 0.16 + Math.sin(t * 2 + i) * 0.08;
+        const tw = 0.5 + 0.5 * Math.sin(t * 6 + i * 1.7);
+        const pos: V3 = [Math.cos(a) * rad, y, Math.sin(a) * rad * 0.8];
+        return (
+          <group key={`s${i}`}>
+            <mesh position={pos}>
+              <sphereGeometry args={[0.035 + tw * 0.02, 6, 6]} />
+              <meshBasicMaterial color="#E6FAFF" toneMapped={false} />
+            </mesh>
+            <Glow position={pos} color="#8FE3FF" size={0.18 + tw * 0.14} opacity={0.6 * tw + 0.2} />
+          </group>
+        );
+      })}
+      <Glow position={[0, 0.95, 0]} color="#5AB8FF" size={1.8} opacity={0.45} />
+    </group>
+  );
+};
+
+export const StreetLamp: React.FC<{ position: V3 }> = ({ position }) => (
+  <group position={position}>
+    <Box size={[0.14, 4.2, 0.14]} position={[0, 2.1, 0]} color="#2B2B2B" />
+    <Box size={[0.4, 0.5, 0.4]} position={[0, 4.4, 0]} color="#2B2B2B" emissive="#FFC46B" ei={2.5} shadow={false} />
+    <Glow position={[0, 4.4, 0]} color="#FFB347" size={3} opacity={0.8} />
+  </group>
+);
 
 // ------------------------------------------------------------ Phone ping (location beacon)
 export const Ping: React.FC<{ position: V3; t: number; strength?: number }> = ({ position, t, strength = 1 }) => {
