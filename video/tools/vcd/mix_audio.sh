@@ -8,7 +8,7 @@ ffmpeg -v error -y -i "$SRC" -i "$S1" -i "$S2" -i "$S3" -i "$BRAKE" -i "$WHOOSH"
 [1:a]atrim=0.5:2.4,asetpts=PTS-STARTPTS,afade=t=in:d=0.4,afade=t=out:st=1.7:d=0.2,volume=0.4[B];
 [1:a]atrim=1.0:3.1,asetpts=PTS-STARTPTS,afade=t=in:d=0.05,afade=t=out:st=1.85:d=0.2,volume=1.0,adelay=2200|2200[C];
 [3:a]pan=stereo|c0=c0|c1=c0,atrim=5:6.95,asetpts=PTS-STARTPTS,afade=t=in:d=0.1,afade=t=out:st=1.75:d=0.15,volume=0.5,adelay=4230|4230[D];
-[2:a]atrim=6.5:9.0,asetpts=PTS-STARTPTS,afade=t=in:d=0.1,afade=t=out:st=2.25:d=0.2,volume=0.85,adelay=6130|6130[E];
+[2:a]atrim=6.5:9.0,asetpts=PTS-STARTPTS,afade=t=in:d=0.9,afade=t=out:st=2.25:d=0.2,volume=0.85,adelay=6130|6130[E];
 [3:a]pan=stereo|c0=c0|c1=c0,atrim=20:40.95,asetpts=PTS-STARTPTS,afade=t=in:d=0.15,afade=t=out:st=20.75:d=0.15,volume=0.45,adelay=8530|8530[F];
 [2:a]atrim=0:1.7,asetpts=PTS-STARTPTS,lowpass=f=1100,afade=t=out:st=1.3:d=0.4,volume=0.7,adelay=20900|20900[G];
 [1:a]atrim=3:5.95,asetpts=PTS-STARTPTS,afade=t=in:d=0.04,afade=t=out:st=1.0:d=1.9,volume=1.0,adelay=29370|29370[H];
