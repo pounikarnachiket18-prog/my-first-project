@@ -405,10 +405,8 @@ def make_sign(path):
     W, H = 2400, 420
     im = Image.new("RGB", (W, H), (10, 12, 18)); d = ImageDraw.Draw(im)
     d.rectangle([0, 0, W, 18], fill=(92, 52, 255)); d.rectangle([0, H - 18, W, H], fill=(92, 52, 255))
-    d.text((W * 0.25, H / 2), "सुरक्षा जाँच", font=pil_font(DEVA, 165), fill=(255, 255, 255), anchor="mm")
-    d.text((W * 0.75, H / 2 + 6), "SECURITY CHECK", font=pil_font(os.path.join(FONT_DIR, "Inter-ExtraBold.otf"), 120),
+    d.text((W * 0.5, H / 2 + 6), "SECURITY CHECK", font=pil_font(os.path.join(FONT_DIR, "Inter-ExtraBold.otf"), 200),
            fill=(255, 214, 90), anchor="mm")
-    d.rectangle([W * 0.495, 90, W * 0.505, H - 90], fill=(80, 84, 100))
     im.save(path)
 
 

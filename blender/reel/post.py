@@ -2,7 +2,7 @@
 Graphics pass + final encode for the reel.
 
 Takes the Cycles frames (720x1280), upscales them to 1080x1920 and draws:
-  * the cold-open typography (hook), Devanagari subtitles with highlighted key words,
+  * the cold-open typography (hook), English subtitles with highlighted key words,
   * science labels that track their 3D anchors (anchors.json), a five-step explanation tracker,
   * the "signal strength" meter for coin / belt / bigger object, the alarm edge pulse,
   * the Mindset Mode | Explainers brand bug and end card.
@@ -22,9 +22,8 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from cuts import FPS, END, CUT, ALARM, BLINK, LABELS, STEPS, METER, HOOK_TEXT, END_CARD
 
 W, H = 1080, 1920
-DEVA_B = "/usr/share/fonts/truetype/noto/NotoSansDevanagari-Bold.ttf"
-DEVA_R = "/usr/share/fonts/truetype/noto/NotoSansDevanagari-Regular.ttf"
 INTER = "/usr/share/fonts/opentype/inter/Inter-{}.otf"
+CAP = INTER.format("ExtraBold")      # caption face (English only)
 WHITE = (255, 255, 255)
 HIL = (255, 210, 64)                # highlighted words
 VIOLET = (124, 92, 255)
@@ -70,7 +69,7 @@ def parse(phrase):
 
 
 @lru_cache(64)
-def text_block(phrase, size, maxw=900, fill=WHITE, stroke=7, shadow=True, path=DEVA_B, hi=HIL, lh=1.28):
+def text_block(phrase, size, maxw=900, fill=WHITE, stroke=7, shadow=True, path=CAP, hi=HIL, lh=1.28):
     """Render a (possibly two-line) phrase with highlights, stroke and soft shadow to an RGBA image."""
     words = parse(phrase)
     f = font(path, size)
@@ -146,16 +145,17 @@ def brand_bug():
 
 
 @lru_cache(64)
-def pill(hi, en, colour):
+def pill(title, sub, colour):
     c = COL[colour]
-    fh, fe = font(DEVA_B, 44), inter("SemiBold", 26)
-    tw = max(fh.getlength(hi), fe.getlength(en.upper()) + 2 * len(en))
-    w, h = int(tw) + 64, 118
+    ft, fs_ = inter("ExtraBold", 42), inter("SemiBold", 26)
+    tw = max(ft.getlength(title), fs_.getlength(sub.upper()) + 1.5 * len(sub) if sub else 0)
+    w, h = int(tw) + 64, 112 if sub else 80
     img = Image.new("RGBA", (w, h), (0, 0, 0, 0)); d = ImageDraw.Draw(img)
     d.rounded_rectangle([0, 0, w - 1, h - 1], 22, fill=(10, 12, 20, 205), outline=c + (255,), width=3)
     d.rounded_rectangle([0, 0, 12, h - 1], 6, fill=c + (255,))
-    d.text((34, 44), hi, font=fh, fill=WHITE, anchor="lm")
-    d.text((36, 92), en.upper(), font=fe, fill=c, anchor="lm")
+    d.text((34, 40), title, font=ft, fill=WHITE, anchor="lm")
+    if sub:
+        d.text((36, 84), sub.upper(), font=fs_, fill=c, anchor="lm")
     return img
 
 
@@ -204,7 +204,7 @@ def draw_steps(canvas, f):
     d.rounded_rectangle([x0 - 110, y - 46, x1 + 110, y + 78], 30, fill=(8, 10, 18, int(150 * k)))
     d.line([(xs[0], y), (xs[-1], y)], fill=(255, 255, 255, int(90 * k)), width=4)
     d.line([(xs[0], y), (xs[cur], y)], fill=VIOLET + (al,), width=6)
-    fnt = font(DEVA_B, 30)
+    fnt = inter("Bold", 28)
     for i, (x, (s0, s1, name)) in enumerate(zip(xs, STEPS)):
         if i < cur:
             d.ellipse([x - 16, y - 16, x + 16, y + 16], fill=VIOLET + (al,))
@@ -235,8 +235,8 @@ def draw_meter(canvas, f):
     x0, y0, w, h = 120, 1010, 840, 140
     al = int(255 * k)
     d.rounded_rectangle([x0, y0, x0 + w, y0 + h], 26, fill=(8, 10, 18, int(200 * k)), outline=(255, 255, 255, int(60 * k)), width=2)
-    d.text((x0 + 30, y0 + 40), "सिग्नल", font=font(DEVA_B, 34), fill=(255, 255, 255, int(170 * k)), anchor="lm")
-    d.text((x0 + w - 30, y0 + 40), item, font=font(DEVA_B, 38), fill=HIL + (al,), anchor="rm")
+    d.text((x0 + 30, y0 + 40), "SIGNAL", font=inter("Bold", 30), fill=(255, 255, 255, int(170 * k)), anchor="lm")
+    d.text((x0 + w - 30, y0 + 40), item, font=inter("ExtraBold", 36), fill=HIL + (al,), anchor="rm")
     shown = min(lvl, (f - a) / 1.2)
     for i in range(10):
         c = (60, 230, 120) if i < 4 else ((255, 165, 40) if i < 7 else (255, 60, 50))
@@ -251,10 +251,10 @@ def draw_hook(canvas, f):
         if not (a <= f < b):
             continue
         out = min(1.0, (b - f) / 4) if b < 90 or f > 85 else 1.0
-        if lines[-1] == "*कैसे?*":
+        if lines[-1] == "*HOW?*":
             k = ease_out((f - a) / 5)
-            img1 = text_block(lines[0], 96, 900, stroke=8)
-            img2 = text_block(lines[1], 210, 900, stroke=12)
+            img1 = text_block(lines[0], 100, 900, stroke=8)
+            img2 = text_block(lines[1], 230, 960, stroke=12)
             paste_center(canvas, img1, W / 2, 700, k * out)
             paste_center(canvas, img2, W / 2, 880, k * out, 1.0 + 0.35 * (1 - ease_back((f - a) / 7)))
         else:
@@ -263,7 +263,7 @@ def draw_hook(canvas, f):
                 if t <= 0:
                     continue
                 k = ease_out(t)
-                img = text_block(ln, 88, 940, stroke=8)
+                img = text_block(ln, 82, 960, stroke=8)
                 paste_center(canvas, img, W / 2, 470 + i * 118 + (1 - k) * 30, k * out)
 
 
@@ -271,7 +271,7 @@ def draw_subs(canvas, f, phrases):
     t = f / FPS
     for p in phrases:
         if p["start"] <= t < p["end"]:
-            img = text_block(p["text"], 70, 880)
+            img = text_block(p["text"], 64, 860)
             age = (t - p["start"]) * FPS
             s = 0.9 + 0.1 * ease_back(age / 5)
             paste_center(canvas, img, W / 2, SUB_Y, min(1.0, age / 3 + 0.25), s)
@@ -288,8 +288,8 @@ def end_card():
     sub = "E X P L A I N E R S"
     d.text((cx, 360), sub, font=inter("SemiBold", 40), fill=VIOLET_L, anchor="mm")
     d.line([(cx - 260, 420), (cx + 260, 420)], fill=(255, 255, 255, 80), width=2)
-    d.text((cx, 490), "ऐसे और एक्सप्लेनर्स के लिए", font=font(DEVA_B, 44), fill=WHITE, anchor="mm")
-    d.text((cx, 556), "फ़ॉलो करें", font=font(DEVA_B, 52), fill=HIL, anchor="mm")
+    d.text((cx, 490), "Follow for more", font=inter("Bold", 46), fill=WHITE, anchor="mm")
+    d.text((cx, 556), "explainers like this", font=inter("ExtraBold", 50), fill=HIL, anchor="mm")
     return img
 
 

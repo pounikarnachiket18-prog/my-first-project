@@ -6,7 +6,7 @@ untouched. The source video and the earlier render are not modified.
 
 ## What it shows
 
-The film explains the science in five steps, and an on-screen tracker follows along:
+The voice is the original Hindi narration; captions are in English. The film explains the science in five steps, and an on-screen tracker follows along:
 
 1. **Field.** The left panel holds a flat transmitter coil. Current pulses round it, slowed down so the eye can
    follow, and it sends a magnetic field (cyan) across the walkway. The right panel holds the receiver coil.
@@ -19,13 +19,13 @@ The film explains the science in five steps, and an on-screen tracker follows al
    hip height, where the metal is. A meter then compares a coin, a belt and a bigger metal object.
 
 The colours carry meaning: cyan is the transmitter field, amber is induced current, rose is the metal's own field
-and red is the alarm. Labels name each part in Hindi with English underneath.
+and red is the alarm. All on-screen text is English: the captions, labels, step tracker, meter and end card.
 
 ## Pipeline
 
 | Step | Script | Output |
 |---|---|---|
-| Narration: shorter pauses, 1.2× speed with pitch preserved, 3 s cold open, subtitle timing | `prep_audio.py` | `build/narration.wav`, `build/timeline.json` |
+| Narration: shorter pauses, 1.2× speed with pitch preserved, 3 s cold open, English caption timing | `prep_audio.py` | `build/narration.wav`, `build/timeline.json` |
 | 3D scene: set, character, gate, physics visuals, 29 cameras on timeline markers | `build_reel.py` | `build/reel.blend` |
 | Screen positions of the label anchors | `anchors.py` | `build/anchors.json` |
 | Cycles frames, 720×1280 (resumable) | `../render.py` | `build/frames/` |
@@ -37,7 +37,6 @@ graphics all read their timing from it.
 
 ```bash
 pip install bpy==5.3.0 pillow            # Blender as a Python module (Python 3.13); numpy comes with bpy
-apt-get install fonts-noto-core          # Noto Sans Devanagari for the Hindi text
 PYTHON=python ./make_reel.sh <original_video.mp4>
 ```
 

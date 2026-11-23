@@ -46,32 +46,32 @@ BLINK = 8
 WALKS = [(0, 56, 2.05), (90, 146, 1.9), (701, 754, 1.9)]
 
 # On-screen labels (post.py draws them, sound.py adds a soft tick when each appears):
-# (first frame, last frame, anchor (LBL_* empty), Hindi, English, colour, (dx, dy) pill offset in 1080x1920 px)
+# (first frame, last frame, anchor (LBL_* empty), label, small caption, colour, (dx, dy) pill offset in 1080x1920 px)
 LABELS = [
-    (408, 466, "METAL", "मेटल", "metal", "white", (170, -300)),
-    (474, 506, "SCREEN", "रिस्पॉन्स सिग्नल", "response signal", "white", (0, -430)),
-    (566, 596, "TX", "ट्रांसमीटर कॉइल", "transmitter coil", "cyan", (230, -330)),
-    (594, 610, "RX", "रिसीवर कॉइल", "receiver coil", "white", (-230, -330)),
-    (614, 652, "TX", "ट्रांसमीटर कॉइल", "transmitter coil", "cyan", (250, 330)),
-    (622, 652, "RX", "रिसीवर कॉइल", "receiver coil", "white", (-200, -250)),
-    (656, 700, "FIELD", "मैग्नेटिक फ़ील्ड", "magnetic field", "cyan", (0, -330)),
-    (796, 834, "POCKET", "मेटल", "metal", "amber", (240, -240)),
-    (836, 872, "POCKET", "फ़ील्ड में बदलाव", "the field changes", "amber", (240, -240)),
-    (938, 994, "EDDY", "एडी करंट्स", "eddy currents", "amber", (110, -330)),
-    (1000, 1024, "SEC", "मेटल का अपना फ़ील्ड", "the metal's own field", "rose", (40, -300)),
-    (1027, 1042, "RX", "रिसीवर कॉइल", "receiver coil", "amber", (-160, -300)),
-    (1082, 1128, "BAR", "सिग्नल स्ट्रेंथ", "signal strength", "white", (0, -420)),
-    (1134, 1174, "ZONE", "मेटल कहाँ है", "zone lights show where", "white", (-150, -330)),
-    (1192, 1259, "GAUGE", "साइज़: 27 मिमी", "how big is the metal", "white", (0, -320)),
+    (408, 466, "METAL", "Metal", "", "white", (170, -300)),
+    (474, 506, "SCREEN", "Response signal", "", "white", (0, -430)),
+    (566, 596, "TX", "Transmitter coil", "sends the field", "cyan", (230, -330)),
+    (594, 610, "RX", "Receiver coil", "listens", "white", (-230, -330)),
+    (614, 652, "TX", "Transmitter coil", "sends the field", "cyan", (250, 330)),
+    (622, 652, "RX", "Receiver coil", "listens", "white", (-200, -250)),
+    (656, 700, "FIELD", "Magnetic field", "", "cyan", (0, -330)),
+    (796, 834, "POCKET", "Metal", "", "amber", (240, -240)),
+    (836, 872, "POCKET", "Field changes", "", "amber", (240, -240)),
+    (938, 994, "EDDY", "Eddy currents", "induced in the coin", "amber", (110, -330)),
+    (1000, 1024, "SEC", "The metal's own field", "opposes the original", "rose", (40, -300)),
+    (1027, 1042, "RX", "Receiver coil", "picks it up", "amber", (-160, -300)),
+    (1082, 1128, "BAR", "Signal strength", "", "white", (0, -420)),
+    (1134, 1174, "ZONE", "Zone lights", "show where the metal is", "white", (-150, -330)),
+    (1192, 1259, "GAUGE", "Size: 27 mm", "", "white", (0, -320)),
 ]
 
 # The five-step explanation tracker shown during the physics section: (start, end, label)
-STEPS = [(611, 701, "फ़ील्ड"), (701, 873, "मेटल"), (873, 995, "करंट"), (995, 1043, "सेंसर"), (1043, 1129, "अलार्म")]
+STEPS = [(611, 701, "Field"), (701, 873, "Metal"), (873, 995, "Current"), (995, 1043, "Sensor"), (1043, 1129, "Alarm")]
 
 # Signal meter HUD for "coin, belt, or a bigger metal object": (start, end, item, level 0-10)
-METER = [(1287, 1300, "कॉइन", 3), (1300, 1312, "बेल्ट", 5), (1312, 1352, "बड़ा मेटल ऑब्जेक्ट", 9)]
+METER = [(1287, 1300, "Coin", 3), (1300, 1312, "Belt", 5), (1312, 1352, "Bigger metal object", 9)]
 
 # Cold-open typography (frames)
-HOOK_TEXT = [(4, 57, ["एयरपोर्ट की ये मशीन", "कपड़ों में छुपा *मेटल*", "भी पकड़ लेती है"]),
-             (57, 90, ["लेकिन आख़िर", "*कैसे?*"])]
+HOOK_TEXT = [(4, 57, ["This airport machine", "catches *metal* hidden", "inside your clothes."]),
+             (57, 90, ["But", "*HOW?*"])]
 END_CARD = 1388

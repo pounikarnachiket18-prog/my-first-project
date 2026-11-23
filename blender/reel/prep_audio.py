@@ -8,8 +8,9 @@ Prepare the narration for the Instagram reel.
 
     python prep_audio.py --src original.mp4 --out build/   ->  build/narration.wav, build/timeline.json
 
-The subtitle script below is the cleaned-up transcript of the original Hindi narration. Each phrase carries its
-start time (seconds) in the ORIGINAL recording; highlighted words are wrapped in *stars*.
+The script below is the cleaned-up transcript of the original Hindi narration with the English caption shown for
+each phrase. Each phrase carries its start time (seconds) in the ORIGINAL recording; highlighted caption words are
+wrapped in *stars*.
 """
 import argparse, json, os, subprocess
 
@@ -24,26 +25,49 @@ FPS = 30
 PAUSES = [(8.951, 9.225), (9.974, 10.452), (17.309, 17.599), (25.143, 25.467), (32.265, 32.507),
           (40.518, 40.809), (47.843, 48.030)]
 
-# (original start time, phrase); a sentence ends where the next one starts
+# (original start time, Hindi phrase as spoken, English caption); a phrase ends where the next one starts
 SCRIPT = [
-    (0.00, "यह गेट तो"), (0.76, "लगभग हर इंसान पर"), (1.90, "*बीप* करता है"),
-    (2.98, "फिर सिक्योरिटी गार्ड्स को"), (4.60, "*कैसे* पता चलता है"),
-    (5.74, "कि किसी के पास"), (6.54, "*सिक्का* है, *बंदूक* है,"), (7.98, "*बम* है, या *बेल्ट*?"),
-    (8.92, "चलिए समझते हैं"),
-    (10.36, "असल में,"), (11.26, "यह मशीन सिर्फ़ *बीप* नहीं करती"),
-    (12.88, "बल्कि *मेटल* की मौजूदगी"), (14.42, "और उसके *इलेक्ट्रोमैग्नेटिक*"), (15.68, "*रिस्पॉन्स* को भी"),
-    (16.38, "*डिटेक्ट* करती है"),
-    (17.24, "इस वॉक-थ्रू मेटल डिटेक्टर के अंदर"),
-    (19.60, "ख़ास *कॉइल्स* लगी होती हैं"), (21.62, "जो लगातार एक"), (22.52, "इनविज़िबल *इलेक्ट्रोमैग्नेटिक*"),
-    (23.96, "*फ़ील्ड* बनाती रहती हैं"),
-    (25.20, "जैसे ही कोई व्यक्ति"), (26.36, "इसके अंदर से गुज़रता है"),
-    (27.84, "उसके पास मौजूद *मेटल*"), (28.98, "इस इलेक्ट्रोमैग्नेटिक फ़ील्ड में"), (30.96, "*बदलाव* पैदा करता है"),
-    (32.30, "इस बदलाव की वजह से"), (33.98, "मेटल के अंदर छोटे-छोटे"), (35.52, "*इलेक्ट्रिक करंट्स* पैदा होते हैं"),
-    (37.34, "मशीन के *सेंसर्स*"), (38.52, "इस बदलाव को"), (39.24, "*तुरंत* डिटेक्ट कर लेते हैं"),
-    (40.60, "फिर सिग्नल की *स्ट्रेंथ*"), (41.94, "और *रिस्पॉन्स* के आधार पर"), (42.88, "मशीन को अंदाज़ा होता है"),
-    (44.72, "कि मेटल ऑब्जेक्ट"), (45.70, "कितना *बड़ा* या"), (46.68, "कितना *सिग्निफ़िकेंट* है"),
-    (48.20, "इसी वजह से सिस्टम"), (49.28, "*कॉइन*, *बेल्ट*, या"), (50.30, "किसी बड़े मेटल ऑब्जेक्ट के लिए"),
-    (51.90, "*अलग-अलग* रिस्पॉन्स दे सकता है"),
+    (0.00, 'यह गेट तो', 'This gate...'),
+    (0.76, 'लगभग हर इंसान पर', 'for almost everyone,'),
+    (1.90, '*बीप* करता है', 'it *beeps*.'),
+    (2.98, 'फिर सिक्योरिटी गार्ड्स को', 'So how do security guards'),
+    (4.60, '*कैसे* पता चलता है', '*know*'),
+    (5.74, 'कि किसी के पास', 'whether someone has'),
+    (6.54, '*सिक्का* है, *बंदूक* है,', 'a *coin*, a *gun*,'),
+    (7.98, '*बम* है, या *बेल्ट*?', 'a *bomb*, or a *belt*?'),
+    (8.92, 'चलिए समझते हैं', "Let's find out."),
+    (10.36, 'असल में,', 'Actually,'),
+    (11.26, 'यह मशीन सिर्फ़ *बीप* नहीं करती', "this machine doesn't just *beep*."),
+    (12.88, 'बल्कि *मेटल* की मौजूदगी', 'It detects the presence of *metal*'),
+    (14.42, 'और उसके *इलेक्ट्रोमैग्नेटिक*', 'and its *electromagnetic*'),
+    (15.68, '*रिस्पॉन्स* को भी', '*response*'),
+    (16.38, '*डिटेक्ट* करती है', 'as well.'),
+    (17.24, 'इस वॉक-थ्रू मेटल डिटेक्टर के अंदर', 'Inside this walk-through metal detector'),
+    (19.60, 'ख़ास *कॉइल्स* लगी होती हैं', 'are special *coils*'),
+    (21.62, 'जो लगातार एक', 'that constantly create'),
+    (22.52, 'इनविज़िबल *इलेक्ट्रोमैग्नेटिक*', 'an invisible *electromagnetic*'),
+    (23.96, '*फ़ील्ड* बनाती रहती हैं', '*field*.'),
+    (25.20, 'जैसे ही कोई व्यक्ति', 'As soon as someone'),
+    (26.36, 'इसके अंदर से गुज़रता है', 'walks through it,'),
+    (27.84, 'उसके पास मौजूद *मेटल*', "the *metal* they're carrying"),
+    (28.98, 'इस इलेक्ट्रोमैग्नेटिक फ़ील्ड में', 'changes this electromagnetic'),
+    (30.96, '*बदलाव* पैदा करता है', '*field*.'),
+    (32.30, 'इस बदलाव की वजह से', 'Because of this change,'),
+    (33.98, 'मेटल के अंदर छोटे-छोटे', 'tiny'),
+    (35.52, '*इलेक्ट्रिक करंट्स* पैदा होते हैं', '*electric currents* form inside the metal.'),
+    (37.34, 'मशीन के *सेंसर्स*', "The machine's *sensors*"),
+    (38.52, 'इस बदलाव को', 'pick up this change'),
+    (39.24, '*तुरंत* डिटेक्ट कर लेते हैं', '*instantly*.'),
+    (40.60, 'फिर सिग्नल की *स्ट्रेंथ*', "Then, from the signal's *strength*"),
+    (41.94, 'और *रिस्पॉन्स* के आधार पर', 'and *response*,'),
+    (42.88, 'मशीन को अंदाज़ा होता है', 'the machine can tell'),
+    (44.72, 'कि मेटल ऑब्जेक्ट', 'whether the metal object'),
+    (45.70, 'कितना *बड़ा* या', 'is *big*'),
+    (46.68, 'कितना *सिग्निफ़िकेंट* है', 'or *significant*.'),
+    (48.20, 'इसी वजह से सिस्टम', "That's why the system"),
+    (49.28, '*कॉइन*, *बेल्ट*, या', 'can respond to a *coin*, a *belt*,'),
+    (50.30, 'किसी बड़े मेटल ऑब्जेक्ट के लिए', 'or a bigger metal object'),
+    (51.90, '*अलग-अलग* रिस्पॉन्स दे सकता है', '*differently*.'),
 ]
 
 
@@ -84,9 +108,9 @@ def main():
     speech_end = remap(SPEECH_END, segs)
     total = speech_end + OUTRO
     phrases = []
-    for i, (t0, txt) in enumerate(SCRIPT):
+    for i, (t0, hi, en) in enumerate(SCRIPT):
         t1 = SCRIPT[i + 1][0] if i + 1 < len(SCRIPT) else SPEECH_END
-        phrases.append(dict(text=txt, start=round(remap(t0, segs), 3), end=round(remap(t1, segs), 3)))
+        phrases.append(dict(text=en, hindi=hi, start=round(remap(t0, segs), 3), end=round(remap(t1, segs), 3)))
     tl = dict(fps=FPS, hook=HOOK, speech_end=round(speech_end, 3), duration=round(total, 3),
               frames=int(round(total * FPS)), phrases=phrases,
               remap={f"{t:.2f}": round(remap(t, segs), 3) for t in [p[0] for p in SCRIPT] + [SPEECH_END]})
