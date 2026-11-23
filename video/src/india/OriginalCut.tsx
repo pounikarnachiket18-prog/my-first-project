@@ -3,7 +3,7 @@ import { AbsoluteFill, Audio, interpolate, OffthreadVideo, Sequence, staticFile,
 import { Highway } from "./Highway";
 import { DhabaWrap, FightWrap, oncoming, TR_CAM, TR_HONKS, TR_SIDE, TR_VEH } from "./IndiaReel";
 import { Caption, Chip, Grade, Vignette } from "./Overlay";
-import { DUSK, F, SIGN_GREEN } from "./theme";
+import { DUSK, F, SIGN_GREEN, useIndiaFonts } from "./theme";
 import tracking from "./tracking.json";
 
 // Hybrid cut: the user's original reel (colour-graded, voice removed) with Indian
@@ -252,6 +252,7 @@ const Insert: React.FC<{ id: "dhaba" | "plates" | "fight"; dur: number }> = ({ i
 };
 
 export const OriginalCut: React.FC = () => {
+  useIndiaFonts();
   let t = 0;
   const seqs = PLAN.map((s, i) => {
     const dur = s.kind === "orig" ? s.to - s.from : s.dur;

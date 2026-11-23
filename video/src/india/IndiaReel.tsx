@@ -4,7 +4,7 @@ import { DhabaScene } from "./DhabaScene";
 import { FightScene } from "./FightScene";
 import { Camera, Highway, Honk, LANES, Oncoming, ONC_LANES, Roadside, Vehicle } from "./Highway";
 import { Caption, Chip, Flash, Grade, TopBar, Vignette } from "./Overlay";
-import { DUSK, F, NIGHT, SAFFRON } from "./theme";
+import { DUSK, F, NIGHT, SAFFRON, useIndiaFonts } from "./theme";
 
 // ---------------------------------------------------------------- timeline
 export const SCENES = {
@@ -241,6 +241,7 @@ const FadeIn: React.FC<{ children: React.ReactNode; dur: number }> = ({ children
 };
 
 export const IndiaReel: React.FC<{ withAudio?: boolean }> = ({ withAudio = true }) => {
+  useIndiaFonts();
   const { fps } = useVideoConfig();
   const list: [keyof typeof SCENES, React.FC, boolean][] = [
     ["hook", HookScene, false],

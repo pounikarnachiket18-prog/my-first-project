@@ -1,24 +1,46 @@
+import { useState, useEffect } from "react";
 import { continueRender, delayRender, staticFile } from "remotion";
 import faces from "./fontFaces.json";
 
 // Fonts are self-hosted in public/fonts (Montserrat, Baloo 2, Noto Sans Devanagari)
-// so rendering works offline and behind proxies.
-if (typeof document !== "undefined" && typeof FontFace !== "undefined") {
-  const handle = delayRender("Loading India reel fonts", { timeoutInMilliseconds: 120000 });
-  Promise.all(
-    faces.map((f) => {
-      const face = new FontFace(f.family, `url(${staticFile(`fonts/${f.file}`)}) format("woff2")`, {
-        weight: f.weight,
-        unicodeRange: f.unicodeRange,
-        display: "block",
-      });
-      document.fonts.add(face);
-      return Promise.race([face.load(), new Promise((r) => setTimeout(r, 20000))]);
-    }),
-  )
-    .catch((e) => console.error("Font load failed", e))
-    .finally(() => continueRender(handle));
+// and declared with plain CSS @font-face, so rendering works offline and behind proxies.
+if (typeof document !== "undefined" && !document.getElementById("india-fonts")) {
+  const style = document.createElement("style");
+  style.id = "india-fonts";
+  style.textContent = faces
+    .map(
+      (f) =>
+        `@font-face{font-family:'${f.family}';font-weight:${f.weight};font-display:block;` +
+        `src:url(${staticFile(`fonts/${f.file}`)}) format("woff2");unicode-range:${f.unicodeRange};}`,
+    )
+    .join("\n");
+  document.head.appendChild(style);
 }
+
+// Call once in each top-level composition: holds the frame until the fonts are ready.
+export const useIndiaFonts = () => {
+  const [handle] = useState(() => delayRender("India reel fonts", { timeoutInMilliseconds: 60000 }));
+  useEffect(() => {
+    let done = false;
+    const finish = () => {
+      if (!done) {
+        done = true;
+        continueRender(handle);
+      }
+    };
+    Promise.all([
+      document.fonts.load("800 40px Montserrat"),
+      document.fonts.load("900 40px Montserrat"),
+      document.fonts.load("700 40px Montserrat"),
+      document.fonts.load("800 40px 'Baloo 2'", "Ab ढाबा"),
+      document.fonts.load("800 40px 'Noto Sans Devanagari'", "ढाबा"),
+    ])
+      .catch(() => undefined)
+      .finally(finish);
+    const t = setTimeout(finish, 15000);
+    return () => clearTimeout(t);
+  }, [handle]);
+};
 
 const montserrat = "Montserrat";
 const baloo = "'Baloo 2'";
