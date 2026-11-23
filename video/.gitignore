@@ -3,4 +3,4 @@ out/
 *.log
 .env
 .env.local
-public/mindset/*.mp4
+public/vcd/*.mp4

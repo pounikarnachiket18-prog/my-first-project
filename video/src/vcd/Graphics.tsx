@@ -5,160 +5,6 @@ import { brand, display, sans } from "./theme";
 
 const clamp = { extrapolateLeft: "clamp", extrapolateRight: "clamp" } as const;
 
-/* ---------------- Brand logo mark ---------------- */
-export const LogoMark: React.FC<{ size: number; spin?: number }> = ({ size, spin = 0 }) => (
-  <svg width={size} height={size} viewBox="0 0 64 64" style={{ flexShrink: 0 }}>
-    <defs>
-      <linearGradient id="mm-g" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0%" stopColor={brand.violetHot} />
-        <stop offset="100%" stopColor={brand.violet} />
-      </linearGradient>
-      <linearGradient id="mm-r" x1="0" y1="0" x2="1" y2="0">
-        <stop offset="0%" stopColor={brand.gold} />
-        <stop offset="100%" stopColor={brand.violetHot} />
-      </linearGradient>
-    </defs>
-    <circle cx="32" cy="32" r="30" fill={brand.ink} />
-    <circle
-      cx="32"
-      cy="32"
-      r="28"
-      fill="none"
-      stroke="url(#mm-r)"
-      strokeWidth="3"
-      strokeDasharray="120 56"
-      transform={`rotate(${spin} 32 32)`}
-      strokeLinecap="round"
-    />
-    {/* stylised "M" built from two rising chevrons = mindset going up */}
-    <path d="M16 44 L16 22 L32 36 L48 22 L48 44" fill="none" stroke="url(#mm-g)" strokeWidth="6" strokeLinejoin="round" strokeLinecap="round" />
-    <circle cx="32" cy="18" r="4" fill={brand.gold} />
-  </svg>
-);
-
-/* ---------------- Persistent bottom brand bar ---------------- */
-export const BrandBar: React.FC<{ hideFrom: number }> = ({ hideFrom }) => {
-  const frame = useCurrentFrame();
-  const { fps, durationInFrames } = useVideoConfig();
-  const enter = spring({ frame: frame - 8, fps, config: { damping: 16, mass: 0.7 } });
-  const exit = interpolate(frame, [hideFrom - 6, hideFrom + 4], [1, 0], clamp);
-  const o = enter * exit;
-  // shimmer sweep every 5s
-  const cycle = (frame % 150) / 150;
-  const sweep = interpolate(cycle, [0, 0.22], [-40, 140], clamp);
-  const progress = frame / durationInFrames;
-  return (
-    <div
-      style={{
-        position: "absolute",
-        left: 0,
-        right: 0,
-        bottom: 34,
-        display: "flex",
-        justifyContent: "center",
-        opacity: o,
-        transform: `translateY(${(1 - enter) * 40}px)`,
-      }}
-    >
-      <div
-        style={{
-          position: "relative",
-          display: "flex",
-          alignItems: "center",
-          gap: 10,
-          padding: "8px 18px 8px 8px",
-          borderRadius: 999,
-          background: brand.inkSoft,
-          border: `1.5px solid rgba(167,139,250,0.65)`,
-          boxShadow: "0 6px 24px rgba(0,0,0,0.45), 0 0 18px rgba(139,92,246,0.35)",
-          overflow: "hidden",
-        }}
-      >
-        <LogoMark size={34} spin={frame * 2} />
-        <span style={{ fontFamily: sans, fontWeight: 900, fontSize: 17, letterSpacing: 2.2, color: brand.white }}>
-          MINDSET MODE
-        </span>
-        <span style={{ width: 2, height: 20, background: brand.gold, borderRadius: 2 }} />
-        <span style={{ fontFamily: sans, fontWeight: 700, fontSize: 14, letterSpacing: 3, color: brand.gold }}>
-          EXPLAINERS
-        </span>
-        <div
-          style={{
-            position: "absolute",
-            top: 0,
-            bottom: 0,
-            left: `${sweep}%`,
-            width: "28%",
-            background: "linear-gradient(100deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.28) 50%, rgba(255,255,255,0) 100%)",
-          }}
-        />
-        {/* progress */}
-        <div style={{ position: "absolute", left: 0, bottom: 0, height: 2.5, width: `${progress * 100}%`, background: `linear-gradient(90deg, ${brand.gold}, ${brand.violetHot})` }} />
-      </div>
-    </div>
-  );
-};
-
-/* ---------------- End plate that replaces the old channel name ---------------- */
-export const EndPlate: React.FC<{ start: number }> = ({ start }) => {
-  const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
-  if (frame < start) return null;
-  const f = frame - start;
-  const pop = spring({ frame: f, fps, config: { damping: 12, stiffness: 180, mass: 0.6 } });
-  const textIn = interpolate(f, [4, 14], [0, 1], { ...clamp, easing: Easing.out(Easing.cubic) });
-  const glow = 0.55 + 0.25 * Math.sin(f / 6);
-  const orbit = (f * 4) % 360;
-  return (
-    <div
-      style={{
-        position: "absolute",
-        left: 360 - 215,
-        top: 196,
-        width: 430,
-        height: 88,
-        transform: `scale(${0.85 + pop * 0.15})`,
-        opacity: interpolate(f, [0, 3], [0, 1], clamp),
-      }}
-    >
-      {/* rotating gradient border */}
-      <div
-        style={{
-          position: "absolute",
-          inset: -2.5,
-          borderRadius: 20,
-          background: `conic-gradient(from ${orbit}deg, ${brand.gold}, ${brand.violetHot}, ${brand.violet}, ${brand.gold})`,
-          boxShadow: `0 0 ${26 * glow}px rgba(139,92,246,${glow}), 0 0 ${40 * glow}px rgba(255,201,64,${glow * 0.4})`,
-        }}
-      />
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          borderRadius: 18,
-          background: `linear-gradient(160deg, #191338 0%, ${brand.ink} 70%)`,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: 12,
-        }}
-      >
-        <div style={{ transform: `scale(${pop}) rotate(${(1 - pop) * -90}deg)` }}>
-          <LogoMark size={52} spin={f * 3} />
-        </div>
-        <div style={{ display: "flex", flexDirection: "column", lineHeight: 1, opacity: textIn, transform: `translateX(${(1 - textIn) * 18}px)` }}>
-          <span style={{ fontFamily: sans, fontWeight: 900, fontSize: 30, letterSpacing: 2.5, color: brand.white }}>MINDSET MODE</span>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 6 }}>
-            <span style={{ height: 2, width: 26, background: brand.gold }} />
-            <span style={{ fontFamily: sans, fontWeight: 700, fontSize: 15, letterSpacing: 6, color: brand.gold }}>EXPLAINERS</span>
-            <span style={{ height: 2, width: 26, background: brand.gold }} />
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
 /* ---------------- Character name tag with leader line ---------------- */
 export const NameTag: React.FC<{
   name: string;
@@ -228,34 +74,6 @@ export const NameTag: React.FC<{
     </div>
   );
 };
-
-/* ---------------- Loco side decal (brand sticker over the old logo) ---------------- */
-export const Decal: React.FC<{ x: number; y: number; skew: number; scale: number }> = ({ x, y, skew, scale }) => (
-  <div
-    style={{
-      position: "absolute",
-      left: x,
-      top: y,
-      transform: `translate(-50%, -50%) skewY(${skew}deg) scale(${scale})`,
-      width: 70,
-      height: 30,
-      borderRadius: 5,
-      background: `linear-gradient(135deg, #1a1236, ${brand.ink})`,
-      border: `1.5px solid ${brand.gold}`,
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      gap: 3,
-      boxShadow: "0 0 6px rgba(0,0,0,0.5)",
-    }}
-  >
-    <LogoMark size={18} />
-    <div style={{ display: "flex", flexDirection: "column", lineHeight: 0.95 }}>
-      <span style={{ fontFamily: sans, fontWeight: 900, fontSize: 8.5, color: brand.white, letterSpacing: 0.4 }}>MINDSET</span>
-      <span style={{ fontFamily: sans, fontWeight: 900, fontSize: 8.5, color: brand.gold, letterSpacing: 0.4 }}>MODE</span>
-    </div>
-  </div>
-);
 
 /* ---------------- Speed lines for the running-train shots ---------------- */
 export const SpeedLines: React.FC<{ from: number; to: number; dir?: 1 | -1; intensity?: number }> = ({ from, to, dir = -1, intensity = 1 }) => {
@@ -457,5 +275,250 @@ export const LightLeak: React.FC<{ from: number; to: number }> = ({ from, to }) 
         background: `radial-gradient(circle at ${10 + p * 90}% ${20 + p * 15}%, rgba(255,150,60,0.55), rgba(255,90,140,0.25) 25%, rgba(139,92,246,0) 55%)`,
       }}
     />
+  );
+};
+
+/* ---------------- Speedometer for the emergency brake ---------------- */
+export const SpeedGauge: React.FC<{ from: number; to: number; keys: [number, number][] }> = ({ from, to, keys }) => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  if (frame < from || frame >= to) return null;
+  const f = frame - from;
+  const enter = spring({ frame: f, fps, config: { damping: 14 } });
+  const out = interpolate(frame, [to - 6, to], [1, 0], clamp);
+  const speed = interpolate(frame, keys.map((k) => k[0]), keys.map((k) => k[1]), { ...clamp, easing: Easing.out(Easing.quad) });
+  const max = 130;
+  const ang = -120 + (speed / max) * 240; // degrees
+  const R = 74;
+  const cx = 100;
+  const cy = 100;
+  const arc = (a0: number, a1: number, r: number) => {
+    const p = (a: number) => [cx + r * Math.sin((a * Math.PI) / 180), cy - r * Math.cos((a * Math.PI) / 180)];
+    const [x0, y0] = p(a0);
+    const [x1, y1] = p(a1);
+    return `M${x0} ${y0} A${r} ${r} 0 ${a1 - a0 > 180 ? 1 : 0} 1 ${x1} ${y1}`;
+  };
+  const danger = speed > 60;
+  return (
+    <div style={{ position: "absolute", left: 360 - 100, top: 1010, width: 200, height: 170, opacity: enter * out, transform: `scale(${0.7 + enter * 0.3})` }}>
+      <svg width={200} height={170} viewBox="0 0 200 170">
+        <circle cx={cx} cy={cy} r={92} fill="rgba(10,8,24,0.72)" />
+        <path d={arc(-120, 120, R)} stroke="rgba(255,255,255,0.18)" strokeWidth={12} fill="none" strokeLinecap="round" />
+        <path d={arc(-120, ang, R)} stroke={danger ? brand.alert : brand.gold} strokeWidth={12} fill="none" strokeLinecap="round" style={{ filter: `drop-shadow(0 0 6px ${danger ? brand.alert : brand.gold})` }} />
+        {new Array(14).fill(0).map((_, i) => {
+          const a = -120 + i * (240 / 13);
+          const r0 = 58;
+          const r1 = i % 2 ? 52 : 48;
+          const s0 = Math.sin((a * Math.PI) / 180);
+          const c0 = Math.cos((a * Math.PI) / 180);
+          return <line key={i} x1={cx + r0 * s0} y1={cy - r0 * c0} x2={cx + r1 * s0} y2={cy - r1 * c0} stroke="rgba(255,255,255,0.6)" strokeWidth={2} />;
+        })}
+        <g transform={`rotate(${ang} ${cx} ${cy})`}>
+          <path d={`M${cx - 4} ${cy} L${cx} ${cy - 66} L${cx + 4} ${cy} Z`} fill="#fff" />
+        </g>
+        <circle cx={cx} cy={cy} r={8} fill={brand.alert} stroke="#fff" strokeWidth={2} />
+        <text x={cx} y={cy + 40} textAnchor="middle" fontFamily={display} fontSize={34} fill="#fff">
+          {Math.round(speed)}
+        </text>
+        <text x={cx} y={cy + 56} textAnchor="middle" fontFamily={sans} fontWeight={800} fontSize={10} letterSpacing={2} fill={brand.goldSoft}>
+          KM/H
+        </text>
+      </svg>
+    </div>
+  );
+};
+
+/* ---------------- Wheel sparks under braking ---------------- */
+export const Sparks: React.FC<{ from: number; to: number; points: { x: number; y: number }[] }> = ({ from, to, points }) => {
+  const frame = useCurrentFrame();
+  if (frame < from || frame >= to) return null;
+  const strength = interpolate(frame, [from, from + 4, to - 20, to], [0, 1, 0.8, 0], clamp);
+  const sparks: React.ReactNode[] = [];
+  points.forEach((p, pi) => {
+    for (let i = 0; i < 14; i++) {
+      const life = 10 + Math.floor(random(`sl${pi}${i}`) * 8);
+      const birth = Math.floor(random(`sb${pi}${i}`) * life);
+      const t = ((frame - from + birth) % life) / life;
+      const vx = -(4 + random(`svx${pi}${i}`) * 9);
+      const vy = -(2 + random(`svy${pi}${i}`) * 6);
+      const x = p.x + vx * t * life;
+      const y = p.y + vy * t * life + 0.35 * (t * life) ** 2;
+      const len = 6 + random(`slen${pi}${i}`) * 10;
+      const ang = (Math.atan2(vy + 0.7 * t * life, vx) * 180) / Math.PI;
+      sparks.push(
+        <div
+          key={`${pi}-${i}`}
+          style={{
+            position: "absolute",
+            left: x,
+            top: y,
+            width: len,
+            height: 2,
+            borderRadius: 2,
+            background: "linear-gradient(90deg, rgba(255,250,210,1), rgba(255,150,40,0))",
+            transform: `rotate(${ang}deg)`,
+            transformOrigin: "0 50%",
+            opacity: (1 - t) * strength,
+            boxShadow: "0 0 6px rgba(255,170,60,0.9)",
+          }}
+        />
+      );
+    }
+    sparks.push(
+      <div
+        key={`g${pi}`}
+        style={{
+          position: "absolute",
+          left: p.x - 22,
+          top: p.y - 12,
+          width: 44,
+          height: 24,
+          borderRadius: "50%",
+          background: "radial-gradient(ellipse, rgba(255,210,120,0.9), rgba(255,140,40,0))",
+          opacity: strength * (0.6 + 0.4 * random(`fl${pi}${frame}`)),
+        }}
+      />
+    );
+  });
+  return <div style={{ position: "absolute", inset: 0, mixBlendMode: "screen" }}>{sparks}</div>;
+};
+
+/* ---------------- Tap / press pulse on a button ---------------- */
+export const TapPulse: React.FC<{ from: number; to: number; x: number; y: number; r: number; color: string; period?: number; label?: string; delay?: number }> = ({
+  from,
+  to,
+  x,
+  y,
+  r,
+  color,
+  period = 24,
+  label,
+  delay = 0,
+}) => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  if (frame < from + delay || frame >= to) return null;
+  const f = frame - from - delay;
+  const fade = interpolate(frame, [from + delay, from + delay + 6, to - 6, to], [0, 1, 1, 0], clamp);
+  const pop = spring({ frame: f, fps, config: { damping: 12 } });
+  return (
+    <div style={{ position: "absolute", inset: 0, opacity: fade }}>
+      {[0, 1, 2].map((i) => {
+        const t = ((f + (i * period) / 3) % period) / period;
+        return (
+          <div
+            key={i}
+            style={{
+              position: "absolute",
+              left: x - r * (1 + t * 0.9),
+              top: y - r * (1 + t * 0.9),
+              width: r * 2 * (1 + t * 0.9),
+              height: r * 2 * (1 + t * 0.9),
+              borderRadius: "50%",
+              border: `3px solid ${color}`,
+              opacity: (1 - t) * 0.9,
+              boxShadow: `0 0 12px ${color}`,
+            }}
+          />
+        );
+      })}
+      {label && (
+        <div
+          style={{
+            position: "absolute",
+            left: x,
+            top: y + r + 16,
+            transform: `translateX(-50%) scale(${pop})`,
+            padding: "4px 10px",
+            borderRadius: 8,
+            background: color,
+            color: brand.ink,
+            fontFamily: sans,
+            fontWeight: 900,
+            fontSize: 17,
+            letterSpacing: 2,
+            whiteSpace: "nowrap",
+            boxShadow: `0 0 14px ${color}`,
+          }}
+        >
+          {label}
+        </div>
+      )}
+    </div>
+  );
+};
+
+/* ---------------- Pilot alertness meter ---------------- */
+export const AlertMeter: React.FC<{ from: number; to: number; keys: [number, number][] }> = ({ from, to, keys }) => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  if (frame < from || frame >= to) return null;
+  const enter = spring({ frame: frame - from, fps, config: { damping: 15 } });
+  const out = interpolate(frame, [to - 6, to], [1, 0], clamp);
+  const lvl = interpolate(frame, keys.map((k) => k[0]), keys.map((k) => k[1]), clamp);
+  const col = lvl > 0.6 ? "#34D399" : lvl > 0.3 ? brand.gold : brand.alert;
+  const blink = lvl < 0.3 ? 0.6 + 0.4 * Math.sin(frame / 2.5) : 1;
+  const segs = 10;
+  return (
+    <div style={{ position: "absolute", left: 18, top: 520, width: 46, opacity: enter * out, transform: `translateX(${(1 - enter) * -60}px)` }}>
+      <div style={{ padding: "8px 6px", borderRadius: 12, background: "rgba(10,8,24,0.7)", border: `1.5px solid ${col}`, boxShadow: `0 0 12px ${col}66` }}>
+        <div style={{ display: "flex", flexDirection: "column-reverse", gap: 3 }}>
+          {new Array(segs).fill(0).map((_, i) => (
+            <div key={i} style={{ height: 14, borderRadius: 3, background: i / segs < lvl ? col : "rgba(255,255,255,0.12)", opacity: i / segs < lvl ? blink : 1, boxShadow: i / segs < lvl ? `0 0 6px ${col}` : "none" }} />
+          ))}
+        </div>
+        <div style={{ marginTop: 6, textAlign: "center", fontFamily: display, fontSize: 17, color: col }}>{Math.round(lvl * 100)}%</div>
+      </div>
+      <div style={{ marginTop: 5, fontFamily: sans, fontWeight: 900, fontSize: 8.5, letterSpacing: 1.2, color: "#fff", textAlign: "center", textShadow: "0 1px 3px #000" }}>ALERT</div>
+    </div>
+  );
+};
+
+/* ---------------- Flashing warning badge ---------------- */
+export const WarningBadge: React.FC<{ from: number; to: number; x: number; y: number }> = ({ from, to, x, y }) => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  if (frame < from || frame >= to) return null;
+  const f = frame - from;
+  const pop = spring({ frame: f, fps, config: { damping: 8, stiffness: 200 } });
+  const pulse = 0.5 + 0.5 * Math.cos((f / 15) * Math.PI * 2);
+  const out = interpolate(frame, [to - 5, to], [1, 0], clamp);
+  return (
+    <div style={{ position: "absolute", left: x - 40, top: y - 40, width: 80, height: 80, opacity: out, transform: `scale(${pop * (1 + pulse * 0.08)}) rotate(${Math.sin(f / 3) * 4}deg)` }}>
+      <svg width={80} height={80} viewBox="0 0 80 80" style={{ filter: `drop-shadow(0 0 ${8 + pulse * 10}px rgba(255,59,78,0.9))` }}>
+        <path d="M40 6 L76 70 L4 70 Z" fill={brand.alert} stroke="#fff" strokeWidth="4" strokeLinejoin="round" />
+        <rect x="36" y="26" width="8" height="26" rx="4" fill="#fff" />
+        <circle cx="40" cy="60" r="4.5" fill="#fff" />
+      </svg>
+    </div>
+  );
+};
+
+/* ---------------- Bouncing comment bubble for the CTA ---------------- */
+export const CommentBubble: React.FC<{ from: number; x: number; y: number }> = ({ from, x, y }) => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  if (frame < from) return null;
+  const f = frame - from;
+  const pop = spring({ frame: f, fps, config: { damping: 9, stiffness: 180 } });
+  const bounce = Math.abs(Math.sin(f / 7)) * -8;
+  return (
+    <div style={{ position: "absolute", left: x - 30, top: y - 30 + bounce, width: 60, height: 60, transform: `scale(${pop})` }}>
+      <svg width={60} height={60} viewBox="0 0 60 60" style={{ filter: "drop-shadow(0 4px 8px rgba(0,0,0,0.5))" }}>
+        <path d="M8 10 H52 a6 6 0 0 1 6 6 V38 a6 6 0 0 1 -6 6 H26 L14 54 V44 H8 a6 6 0 0 1 -6 -6 V16 a6 6 0 0 1 6 -6 Z" fill="#fff" />
+        {[0, 1, 2].map((i) => (
+          <circle key={i} cx={18 + i * 12} cy={27 - Math.max(0, Math.sin(f / 4 - i * 0.9)) * 4} r={3.6} fill={brand.ink} />
+        ))}
+      </svg>
+      {/* little hearts floating up */}
+      {[0, 1, 2].map((i) => {
+        const t = ((f + i * 14) % 42) / 42;
+        return (
+          <span key={i} style={{ position: "absolute", left: 40 + i * 6 + Math.sin(t * 6 + i) * 6, top: -t * 60, fontSize: 14, opacity: Math.sin(t * Math.PI), color: brand.alert }}>
+            ❤
+          </span>
+        );
+      })}
+    </div>
   );
 };

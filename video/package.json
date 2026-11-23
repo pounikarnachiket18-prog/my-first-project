@@ -10,7 +10,7 @@
     "thumbs": "remotion still Thumb16x9 out/thumb-16x9.png && remotion still Thumb9x16 out/thumb-9x16.png",
     "all": "npm run render && npm run render:mobile && npm run thumbs",
     "upgrade": "remotion upgrade",
-    "render:mindset": "remotion render src/mindset/index.ts MindsetVCD out/mindset-vcd-silent.mp4 --browser-executable=/opt/pw-browsers/chromium_headless_shell --codec=h264 --crf=16 --muted"
+    "render:vcd": "remotion render src/vcd/index.ts VCDExplainer out/vcd-explainer-silent.mp4 --browser-executable=/opt/pw-browsers/chromium_headless_shell --codec=h264 --crf=16 --muted"
   },
   "dependencies": {
     "@fontsource/bebas-neue": "^5.1.0",

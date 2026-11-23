@@ -1,6 +1,6 @@
 import { staticFile } from "remotion";
 
-// Mindset Mode | Explainers brand tokens
+// Palette for the VCD explainer overlays
 export const brand = {
   ink: "#0D0A1E",
   inkSoft: "rgba(13, 10, 30, 0.78)",
@@ -9,7 +9,7 @@ export const brand = {
   gold: "#FFC940",
   goldSoft: "#FFE08A",
   white: "#FFFFFF",
-  abhi: "#FF8A1F", // saffron, matches ABHI's recoloured shirt
+  abhi: "#3FCB7A", // green, matches ABHI's recoloured shirt
   nachi: "#22D3EE", // cyan for NACHI
   alert: "#FF3B4E",
 };
