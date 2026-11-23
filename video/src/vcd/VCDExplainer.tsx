@@ -23,6 +23,7 @@ import {
   Zzz,
 } from "./Graphics";
 import { Shout, Uncle } from "./Uncle";
+import { FollowCard } from "./FollowCard";
 
 const clamp = { extrapolateLeft: "clamp", extrapolateRight: "clamp" } as const;
 
@@ -270,6 +271,8 @@ const Overlays: React.FC = () => {
       <NameTag name="ABHI" role="LOCO PILOT" color={brand.abhi} anchor={{ x: 172, y: 640 }} tag={{ x: 420, y: 780 }} from={1050} to={FINAL} />
 
       <CommentBubble from={CTA + 4} x={360} y={250} />
+      {/* end card: FOLLOW Mindset Mode | Explainers – button gets tapped on the voice's "follow karo" */}
+      <FollowCard from={CTA + 4} tapAt={1288} y={1108} />
 
       <LightLeak from={0} to={40} />
       <CutFlash cuts={CUTS} />
