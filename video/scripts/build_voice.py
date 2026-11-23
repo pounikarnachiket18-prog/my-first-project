@@ -1,22 +1,26 @@
 """Synthesize the Hindi narration with Piper and write the caption/scene timeline.
 
-usage: python3 build_voice.py <piper_model.onnx> <out_dir>
-writes <out_dir>/voice.wav and <out_dir>/../../src/navy/timeline.json
+usage: python3 build_voice.py <piper_model.onnx> <out_dir> [script_module] [timeline_path]
+v1 (defaults): navy_script -> <out_dir>/voice.wav + src/navy/timeline.json
+v2:            navy_script_v2 src/navy/v2/timeline.json (writes VOICE_FILE from the module)
 """
+import importlib
 import json, os, re, sys
 import numpy as np, librosa, soundfile as sf
 from piper import PiperVoice, SynthesisConfig
 
 sys.path.insert(0, os.path.dirname(__file__))
-from navy_script import LINES, SCENES
-
 MODEL, OUT = sys.argv[1], sys.argv[2]
+mod = importlib.import_module(sys.argv[3] if len(sys.argv) > 3 else "navy_script")
+LINES, SCENES = mod.LINES, mod.SCENES
+P = getattr(mod, "PACE", {})
 SR_OUT = 44100
 FPS = 30
-LEAD, CLAUSE_GAP, LINE_GAP, SCENE_GAP, TAIL = 0.4, 0.11, 0.24, 0.45, 1.8
+LEAD, CLAUSE_GAP, LINE_GAP, SCENE_GAP, TAIL = (P.get(k, d) for k, d in (("lead", 0.4), ("clause", 0.11), ("line", 0.24), ("scene", 0.45), ("tail", 1.8)))
+GAP_AFTER = getattr(mod, "SCENE_GAP_AFTER", {})
 
 voice = PiperVoice.load(MODEL)
-cfg = SynthesisConfig(length_scale=0.8, noise_scale=0.6, noise_w_scale=0.75)
+cfg = SynthesisConfig(length_scale=P.get("length_scale", 0.8), noise_scale=0.6, noise_w_scale=0.75)
 
 
 def synth(text):
@@ -36,7 +40,7 @@ t = LEAD
 lines_out, prev_scene = [], None
 for i, (scene, hi, rom) in enumerate(LINES):
     if prev_scene is not None:
-        g = SCENE_GAP if scene != prev_scene else LINE_GAP
+        g = (SCENE_GAP + GAP_AFTER.get(prev_scene, 0)) if scene != prev_scene else LINE_GAP
         audio.append(np.zeros(int(g * SR_OUT), np.float32)); t += g
     prev_scene = scene
     hi_cl = [c.strip() for c in hi.split(",") if c.strip()]
@@ -64,7 +68,7 @@ audio.append(np.zeros(int(TAIL * SR_OUT), np.float32)); t += TAIL
 v = np.concatenate(audio)
 v = v / (np.abs(v).max() + 1e-9) * 0.89
 os.makedirs(OUT, exist_ok=True)
-sf.write(os.path.join(OUT, "voice.wav"), v, SR_OUT)
+sf.write(os.path.join(OUT, getattr(mod, "VOICE_FILE", "voice.wav")), v, SR_OUT)
 
 # caption chunks: <=4 words, never crossing a clause comma when avoidable
 chunks = []
@@ -96,7 +100,7 @@ for k in range(len(scenes)):
     scenes[k]["end"] = scenes[k + 1]["start"] if k + 1 < len(scenes) else round(t, 3)
 
 tl = {"fps": FPS, "duration": round(t, 3), "frames": int(np.ceil(t * FPS)), "lines": lines_out, "captions": cap, "scenes": scenes}
-dst = os.path.join(os.path.dirname(__file__), "..", "src", "navy", "timeline.json")
+dst = sys.argv[4] if len(sys.argv) > 4 else os.path.join(os.path.dirname(__file__), "..", "src", "navy", "timeline.json")
 os.makedirs(os.path.dirname(dst), exist_ok=True)
 json.dump(tl, open(dst, "w"), ensure_ascii=False, indent=1)
 print("total", round(t, 2), "s", tl["frames"], "frames")

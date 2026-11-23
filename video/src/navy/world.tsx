@@ -154,13 +154,25 @@ export type CarrierProps = {
   wake?: number;
   outlineGlow?: number;
   dimDeckMarks?: number;
+  /** v2 cinematic rendering: depth-sorted hull, shaded deck, sea shadow, waterline foam */
+  v2?: boolean;
+  gid?: string; // unique id prefix for gradients/clips when several carriers share an svg
+  parkedType?: "tejas" | "mig";
+  /** 0..1 open the deck around the arresting wires to show cables + arresting engines below */
+  cutaway?: number;
+  /** 0..1 energy pulses running from the caught wire into the arresting engines */
+  wireEnergy?: number;
 };
 
-export const Carrier: React.FC<CarrierProps> = ({ cam, t, rampGlow = 0, wireGlow = 0, wireRed = [], catch: ct = null, parked = true, wake = 0, outlineGlow = 0 }) => {
-  const sides = TOP.map((a, i) => {
+export const Carrier: React.FC<CarrierProps> = ({ cam, t, rampGlow = 0, wireGlow = 0, wireRed = [], catch: ct = null, parked = true, wake = 0, outlineGlow = 0, v2 = false, gid = "cv", parkedType = "tejas", cutaway = 0, wireEnergy = 0 }) => {
+  const sides0 = TOP.map((a, i) => {
     const j = (i + 1) % TOP.length;
-    return { pts: poly(cam, [TOP[i], TOP[j], BOT[j], BOT[i]]), col: sideShade(TOP[i], TOP[j]) };
+    const mid: V3 = [(TOP[i][0] + TOP[j][0]) / 2, (TOP[i][1] + TOP[j][1]) / 2, -H / 2];
+    return { pts: poly(cam, [TOP[i], TOP[j], BOT[j], BOT[i]]), col: sideShade(TOP[i], TOP[j]), d: depthOf(cam, mid) };
   });
+  const sides = v2 ? [...sides0].sort((u, v) => v.d - u.d) : sides0;
+  const stern = project(cam, [0, 0, 0]), bow = project(cam, [0, L, 0]);
+  const port = project(cam, [-35, 130, 0]), stbd = project(cam, [30, 130, 0]);
   const inner = OUT.map(([x, y]) => [x * 0.9 - 0.5, 4 + y * 0.97, deckZ(4 + y * 0.97)] as V3);
   const rampLines = [RAMP0, 218, 228, 237, 245, 252, 258].map((y) => {
     const [a, b] = xRange(y);
@@ -175,14 +187,27 @@ export const Carrier: React.FC<CarrierProps> = ({ cam, t, rampGlow = 0, wireGlow
 
   return (
     <g>
+      {v2 && (
+        <defs>
+          <linearGradient id={`${gid}-deck`} gradientUnits="userSpaceOnUse" x1={stern[0]} y1={stern[1]} x2={bow[0]} y2={bow[1]}>
+            <stop offset="0" stopColor="#3f4a5a" /><stop offset="0.55" stopColor="#4f5b6c" /><stop offset="1" stopColor="#5d6a7d" />
+          </linearGradient>
+          <linearGradient id={`${gid}-sheen`} gradientUnits="userSpaceOnUse" x1={port[0]} y1={port[1]} x2={stbd[0]} y2={stbd[1]}>
+            <stop offset="0" stopColor="#ffffff" stopOpacity={0.07} /><stop offset="0.5" stopColor="#ffffff" stopOpacity={0} /><stop offset="1" stopColor="#000000" stopOpacity={0.12} />
+          </linearGradient>
+        </defs>
+      )}
+      {v2 && <polygon points={poly(cam, BOT.map(([x, y]) => [x + 10, y - 7, SEA] as V3))} fill="rgba(0,0,0,0.45)" filter="url(#shadow)" />}
       {wake > 0 && <Wake cam={cam} amt={wake} t={t} />}
       {/* hull */}
       <polygon points={poly(cam, BOT)} fill={C.hullA} />
       {sides.map((s, i) => <polygon key={i} points={s.pts} fill={s.col} stroke={s.col} strokeWidth={0.6} />)}
+      {v2 && <path d={path(cam, BOT, true)} fill="none" stroke="rgba(200,225,245,0.28)" strokeWidth={Math.max(1, cam.zoom * 0.5)} filter="url(#shadow)" />}
       {/* gallery band */}
       <path d={path(cam, TOP.map(([x, y, z]) => [x * 0.99, y, z - 2.2] as V3), true)} fill="none" stroke="rgba(0,0,0,0.25)" strokeWidth={lw} />
       {/* deck */}
-      <polygon points={poly(cam, TOP)} fill={C.deck} />
+      <polygon points={poly(cam, TOP)} fill={v2 ? `url(#${gid}-deck)` : C.deck} />
+      {v2 && <polygon points={poly(cam, TOP)} fill={`url(#${gid}-sheen)`} />}
       <polygon points={poly(cam, rampPoly)} fill={C.deckHi} opacity={0.55} />
       {outlineGlow > 0 && <polygon points={poly(cam, TOP)} fill="none" stroke={C.cyan} strokeWidth={lw * 1.6} opacity={outlineGlow} filter="url(#glow)" />}
       <polygon points={poly(cam, inner)} fill="none" stroke={C.lineDim} strokeWidth={lw * 0.8} strokeDasharray={`${cam.zoom * 3} ${cam.zoom * 3}`} />
@@ -210,12 +235,13 @@ export const Carrier: React.FC<CarrierProps> = ({ cam, t, rampGlow = 0, wireGlow
         }
         return <path key={i} d={path(cam, [a, b])} stroke={col} strokeWidth={lw * (glow ? 1.8 : 1.1)} filter={glow ? "url(#glow)" : undefined} />;
       })}
+      {cutaway > 0 && <ArrestingGear cam={cam} gid={gid} amt={cutaway} energy={wireEnergy} t={t} caughtWire={ct && ct.amt > 0 ? ct.wire : -1} />}
       {/* island */}
       <Box cam={cam} b={{ x0: 21, x1: 30, y0: 116, y1: 160, z0: 0, z1: 12 }} />
       <Box cam={cam} b={{ x0: 22.5, x1: 29, y0: 124, y1: 152, z0: 12, z1: 21, top: "#6a778b" }} />
       <Box cam={cam} b={{ x0: 23.5, x1: 28, y0: 134, y1: 146, z0: 21, z1: 27, top: "#72809a" }} />
       <MastFlag cam={cam} base={[25.8, 140, 38]} size={3.2} t={t} />
-      {parked && <Parked cam={cam} />}
+      {parked && (parkedType === "mig" ? <ParkedMig cam={cam} /> : <Parked cam={cam} />)}
     </g>
   );
 };
@@ -227,6 +253,68 @@ const Parked: React.FC<{ cam: Cam }> = ({ cam }) => (
     ))}
   </g>
 );
+
+const ParkedMig: React.FC<{ cam: Cam }> = ({ cam }) => (
+  <g>
+    {[[22, 60, 128], [22, 80, 128], [21, 178, 128], [21, 196, 128], [-26, 108, 52]].map(([x, y, h], i) => (
+      <MigJet key={i} cam={cam} pos={[x, y, 0.4]} heading={h} />
+    ))}
+  </g>
+);
+
+// MiG-29K (the fighter that operates from INS Vikrant) — parked, wings spread, top-down silhouette
+const MIG_HALF: [number, number][] = [
+  [0, 8.6], [0.45, 7.2], [0.75, 5.4], [1.05, 3.8], [2.3, 1.2], [5.6, -2.0], [5.7, -2.9], [2.4, -2.6], [1.9, -3.9],
+  [3.9, -6.3], [3.95, -7.2], [1.6, -6.7], [1.0, -8.5], [0, -8.3],
+];
+export const MigJet: React.FC<{ cam: Cam; pos: V3; heading: number; scale?: number }> = ({ cam, pos, heading, scale = 1.15 }) => {
+  const W = (lp: V3) => jetLocal(lp, pos, heading, 0, scale);
+  const body = [...MIG_HALF.map(([x, y]) => [x, y, 0] as V3), ...[...MIG_HALF].reverse().map(([x, y]) => [-x, y, 0] as V3)].map(W);
+  const fins = [-1, 1].map((sx) => ([[sx * 1.5, -3.8, 0.3], [sx * 1.9, -6.6, 3.4], [sx * 1.9, -7.6, 3.4], [sx * 1.6, -8.0, 0.3]] as V3[]).map(W));
+  const sh = body.map(([x, y]) => [x + 1.0, y - 0.6, 0.05] as V3);
+  return (
+    <g>
+      <polygon points={poly(cam, sh)} fill="rgba(0,0,0,0.4)" filter="url(#shadow)" />
+      <polygon points={poly(cam, body)} fill="#8a96a6" stroke="rgba(20,28,40,0.35)" strokeWidth={0.7} />
+      <polygon points={poly(cam, ([[0, 6.0, 0.4], [0.35, 4.9, 0.5], [0, 4.2, 0.45], [-0.35, 4.9, 0.5]] as V3[]).map(W))} fill="#3b4656" />
+      {fins.map((f, i) => <polygon key={i} points={poly(cam, f)} fill="#9fabbb" stroke="rgba(20,28,40,0.3)" strokeWidth={0.5} />)}
+    </g>
+  );
+};
+
+/** cutaway of the arresting gear: cables run from the wire ends over sheaves, down into hydraulic engines below deck */
+const ArrestingGear: React.FC<{ cam: Cam; gid: string; amt: number; energy: number; t: number; caughtWire: number }> = ({ cam, gid, amt, energy, t, caughtWire }) => {
+  const hole: V3[] = [angPoint(28, -16, 0.05), angPoint(28, 16, 0.05), angPoint(74, 16, 0.05), angPoint(74, -16, 0.05)];
+  const lw = Math.max(1, cam.zoom * 0.3);
+  const engines = WIRES.map((s, i) => {
+    const a = angPoint(s, -12, 0), b = angPoint(s, 12, 0);
+    const ea = angPoint(s - 6, -10, -9), eb = angPoint(s - 6, 10, -9);
+    return { i, a, b, ea, eb };
+  });
+  return (
+    <g opacity={amt}>
+      <clipPath id={`${gid}-hole`}><polygon points={poly(cam, hole)} /></clipPath>
+      <polygon points={poly(cam, hole)} fill="#0b111a" stroke={C.orange} strokeOpacity={0.5} strokeWidth={lw} strokeDasharray="8 6" />
+      <g clipPath={`url(#${gid}-hole)`}>
+        {engines.map((e) => {
+          const hot = e.i === caughtWire;
+          const col = hot ? C.orange : "#aab6c6";
+          return (
+            <g key={e.i}>
+              {[e.ea, e.eb].map((p, k) => (
+                <g key={k}>
+                  <Box cam={cam} b={{ x0: p[0] - 2.2, x1: p[0] + 2.2, y0: p[1] - 5, y1: p[1] + 1, z0: -12, z1: -7, top: hot ? "#9a6a3c" : "#56637a" }} />
+                  <path d={path(cam, [k ? e.b : e.a, [(k ? e.b : e.a)[0], (k ? e.b : e.a)[1], -6.5], p])} stroke={col} strokeWidth={lw * 1.3} fill="none"
+                    strokeDasharray={hot && energy > 0 ? "10 8" : undefined} strokeDashoffset={-t * 6} filter={hot && energy > 0 ? "url(#glow)" : undefined} />
+                </g>
+              ))}
+            </g>
+          );
+        })}
+      </g>
+    </g>
+  );
+};
 
 const Wake: React.FC<{ cam: Cam; amt: number; t: number }> = ({ cam, amt, t }) => {
   const lines = [-1, 1].map((s) => {
@@ -254,7 +342,14 @@ const TJ_FIN: [number, number][] = [[-2.4, 0.4], [-5.5, 3.6], [-6.2, 3.6], [-6.4
 export type JetProps = {
   cam: Cam; pos: V3; heading?: number; pitch?: number; bank?: number; scale?: number;
   exhaust?: number; hook?: number; hookDown?: number; groundZ?: number; dim?: boolean; ghost?: boolean; shadow?: number; t?: number;
+  /** v2: landing gear extension 0..1 (wheels sit 1.75*scale m below pos) */
+  gear?: number;
+  /** v2: draw the fuselage side profile so the jet has volume at low camera angles */
+  volume?: boolean;
+  opacity?: number;
 };
+/** height of the jet's reference point above the ground when standing on its wheels */
+export const GEAR_H = 1.75;
 
 export const jetLocal = (lp: V3, pos: V3, heading: number, pitch: number, scale: number, bank = 0): V3 => {
   let [x, y, z] = [lp[0] * scale, lp[1] * scale, lp[2] * scale];
@@ -266,7 +361,7 @@ export const jetLocal = (lp: V3, pos: V3, heading: number, pitch: number, scale:
   return [r[0] + pos[0], r[1] + pos[1], r[2] + pos[2]];
 };
 
-export const Jet: React.FC<JetProps> = ({ cam, pos, heading = 0, pitch = 0, bank = 0, scale = 1.5, exhaust = 0, hook = 0, hookDown = 0, groundZ, dim = false, ghost = false, shadow = 1, t = 0 }) => {
+export const Jet: React.FC<JetProps> = ({ cam, pos, heading = 0, pitch = 0, bank = 0, scale = 1.5, exhaust = 0, hook = 0, hookDown = 0, groundZ, dim = false, ghost = false, shadow = 1, t = 0, gear = 0, volume = false, opacity = 1 }) => {
   const W = (lp: V3) => jetLocal(lp, pos, heading, pitch, scale, bank);
   const right = TJ_HALF.map(([x, y]) => [x, y, 0] as V3);
   const left = [...TJ_HALF].reverse().map(([x, y]) => [-x, y, 0] as V3);
@@ -275,7 +370,7 @@ export const Jet: React.FC<JetProps> = ({ cam, pos, heading = 0, pitch = 0, bank
   const fin = TJ_FIN.map(([y, z]) => W([0, y, z]));
   const canopy = ([[0, 5.3, 0.45], [0.33, 4.4, 0.5], [0.3, 3.2, 0.5], [0, 2.7, 0.45], [-0.3, 3.2, 0.5], [-0.33, 4.4, 0.5]] as V3[]).map(W);
   const gz = groundZ ?? (onDeck(pos[0], pos[1]) ? deckZ(pos[1]) : SEA);
-  const alt = pos[2] - gz;
+  const alt = Math.max(0, pos[2] - gz - (gear > 0 ? GEAR_H * scale * gear : 0));
   const sh = (p: V3): V3 => [p[0] + alt * 0.55 + 1.0, p[1] - alt * 0.35 - 0.6, gz + 0.05];
   const shadowPts = body.map(sh);
   const col = ghost ? "rgba(255,77,94,0.55)" : dim ? "#8f9bab" : C.jet;
@@ -290,8 +385,13 @@ export const Jet: React.FC<JetProps> = ({ cam, pos, heading = 0, pitch = 0, bank
   const rp = project(cam, r0[0]);
   const rr = Math.max(0.5, Math.hypot(...(project(cam, r0[1]).map((v, i) => v - rp[i]) as [number, number])) / 2);
   const rpL = project(cam, roundel(-2.4)[0]);
+  const PROFILE: [number, number][] = [[6.7, 0], [5.6, 0.45], [4.8, 0.95], [3.3, 1.05], [2.2, 0.75], [-5.4, 0.6], [-6.4, 0.3], [-6.4, -0.45], [-4.2, -0.75], [2.6, -0.8], [5.2, -0.45]];
+  const prof = PROFILE.map(([y, z]) => W([0, y, z]));
+  const gl = 1.4 * gear;
+  const legs = gear > 0 ? ([[0, 4.2], [1.25, -1.2], [-1.25, -1.2]] as [number, number][]).map(([x, y]) => ({ top: W([x, y, -0.55]), bot: W([x, y, -0.55 - gl]) })) : [];
+  const wr = Math.max(1.5, cam.zoom * (cam.boost ?? 1) * scale * 0.33);
   return (
-    <g>
+    <g opacity={opacity}>
       {shadow > 0 && !ghost && <polygon points={poly(cam, shadowPts)} fill="rgba(0,0,0,0.5)" opacity={shadow * Math.max(0.25, 1 - alt / 140)} filter="url(#shadow)" />}
       {exhaust > 0 && (
         <g>
@@ -305,6 +405,16 @@ export const Jet: React.FC<JetProps> = ({ cam, pos, heading = 0, pitch = 0, bank
           <circle cx={hx} cy={hy} r={Math.max(3, cam.zoom * 0.6)} fill={C.orange} filter="url(#glow)" />
         </g>
       )}
+      {legs.map((g, i) => {
+        const a = project(cam, g.top), b = project(cam, g.bot);
+        return (
+          <g key={i}>
+            <line x1={a[0]} y1={a[1]} x2={b[0]} y2={b[1]} stroke="#7d8898" strokeWidth={Math.max(1.2, wr * 0.35)} />
+            <ellipse cx={b[0]} cy={b[1]} rx={wr * 0.55} ry={wr} fill="#1c232d" stroke="#5c6878" strokeWidth={Math.max(0.6, wr * 0.15)} />
+          </g>
+        );
+      })}
+      {volume && !ghost && <polygon points={poly(cam, prof)} fill={dim ? "#6f7b8b" : "#a9b4c3"} stroke="rgba(20,28,40,0.35)" strokeWidth={0.6} />}
       <polygon points={poly(cam, body)} fill={col} stroke={ghost ? C.red : "rgba(20,28,40,0.35)"} strokeWidth={ghost ? 1.5 : 0.8} strokeDasharray={ghost ? "6 5" : undefined} />
       {!ghost && <polygon points={poly(cam, halfR)} fill={colR} opacity={0.55} />}
       {!ghost && !dim && rr > 1.2 && (
