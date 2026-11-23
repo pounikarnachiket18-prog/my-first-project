@@ -11,7 +11,9 @@
     "all": "npm run render && npm run render:mobile && npm run thumbs",
     "upgrade": "remotion upgrade",
     "studio:rail": "remotion studio src/rail/index.ts",
-    "render:rail": "remotion render src/rail/index.ts RailKambal out/bharatiya-rail-kambal.mp4"
+    "render:rail": "remotion render src/rail/index.ts RailKambal out/bharatiya-rail-kambal.mp4",
+    "studio:remix": "remotion studio src/remix/index.ts",
+    "render:remix": "remotion render src/remix/index.ts Remix out/mindset-mode-remix.mp4"
   },
   "dependencies": {
     "@remotion/cli": "4.0.469",

@@ -8,3 +8,6 @@ out/
 public/audio/*.mp3
 public/audio/*.wav
 public/audio/*.m4a
+
+# Source video (not for the public repo)
+public/video/
