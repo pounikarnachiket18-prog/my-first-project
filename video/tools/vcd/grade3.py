@@ -18,7 +18,7 @@ CAPTIONS = [
     (411, 487, 50, 650, 190, 305, 'mg'),
     (487, 671, 50, 700, 85, 440, 'gm'),
     (671, 729, 440, 690, 145, 375, 'gm'),
-    (729, 805, 140, 570, 185, 415, 'gs'),
+    (729, 805, 140, 570, 185, 415, 'gsm'),
     (729, 805, 360, 700, 470, 850, 's'),
     (805, 881, 50, 540, 105, 265, 'gs'),
     (881, 967, 120, 610, 200, 285, 's'),
@@ -37,7 +37,7 @@ def recolor_captions(a, n):
         nh = h.copy(); ns = s.copy(); m = np.zeros_like(h)
         if 'g' in kinds:   # gold / yellow text
             mg = band(h, 32, 62, 6) * np.clip((s - 0.25) / 0.1, 0, 1) * np.clip((v - 0.42) / 0.1, 0, 1)
-            nh = np.where(mg > 0, CYAN, nh); ns = np.where(mg > 0, np.clip(s * 1.15, 0, 0.9), ns); m = np.maximum(m, mg)
+            nh = np.where(mg > 0, CYAN, nh); ns = np.where(mg > 0, np.clip(np.maximum(s, 0.45) * 1.6, 0, 0.88), ns); m = np.maximum(m, mg)
         if 'm' in kinds:   # mint / pale green / pale blue text & rings
             mm = band(h, 85, 212, 8) * np.clip((s - 0.1) / 0.06, 0, 1) * np.clip((v - 0.52) / 0.08, 0, 1) * (1 - m)
             nh = np.where(mm > 0, LIME, nh); ns = np.where(mm > 0, np.clip(np.maximum(s, 0.5) * 1.1, 0, 0.85), ns); m = np.maximum(m, mm)
