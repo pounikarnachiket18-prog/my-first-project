@@ -378,6 +378,13 @@ export const CoachBackdrop: React.FC<{ lamp?: boolean }> = ({ lamp = true }) => 
 /* Text overlays                                                       */
 /* ------------------------------------------------------------------ */
 
+/**
+ * Title look. "band" = fade band at the top (default).
+ * "spot" = Mindset Mode Explainers style: soft white spotlight ellipse,
+ * last line in the accent colour, blue underline swoosh.
+ */
+export const TitleStyle = React.createContext<"band" | "spot">("band");
+
 /** Big two-line title. Wrap highlighted words in *asterisks*. */
 export const Title: React.FC<{ text: string; inAt?: number; outAt?: number; y?: number }> = ({
   text,
@@ -387,9 +394,61 @@ export const Title: React.FC<{ text: string; inAt?: number; outAt?: number; y?: 
 }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
+  const look = React.useContext(TitleStyle);
   const lines = text.split("\n");
   const out = interpolate(frame, [outAt - 8, outAt], [1, 0], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
   let wi = 0;
+  if (look === "spot") {
+    const bg = spring({ frame: frame - inAt, fps, config: { damping: 16, stiffness: 120 } });
+    const swoosh = interpolate(frame, [inAt + 10, inAt + 24], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+    return (
+      <AbsoluteFill style={{ pointerEvents: "none", opacity: out }}>
+        <div
+          style={{
+            position: "absolute",
+            top: y - 90,
+            left: 20,
+            right: 20,
+            height: lines.length * 118 + 170,
+            borderRadius: "50%",
+            background: "radial-gradient(ellipse at 50% 50%, rgba(255,255,255,0.97) 0%, rgba(255,255,255,0.9) 45%, rgba(255,255,255,0) 72%)",
+            transform: `scale(${0.6 + 0.4 * bg})`,
+            opacity: bg,
+          }}
+        />
+        <div style={{ position: "absolute", top: y, left: 40, right: 40, textAlign: "center" }}>
+          {lines.map((line, li) => {
+            const last = li === lines.length - 1 && lines.length > 1;
+            return (
+              <div key={li} style={{ fontFamily: FONT.title, fontWeight: 800, fontSize: 104, lineHeight: 1.05, color: last ? C.accent : C.ink }}>
+                {line.split(" ").map((word, i) => {
+                  const clean = word.replace(/\*/g, "");
+                  const p = spring({ frame: frame - inAt - wi++ * 3, fps, config: { damping: 14, stiffness: 160 } });
+                  return (
+                    <span key={i} style={{ display: "inline-block", marginRight: 24, transform: `translateY(${(1 - p) * 50}px)`, opacity: p }}>
+                      {clean}
+                    </span>
+                  );
+                })}
+              </div>
+            );
+          })}
+          <svg width="640" height="40" viewBox="0 0 640 40" style={{ display: "block", margin: "6px auto 0" }}>
+            <path
+              d="M 10 26 Q 320 2 630 22"
+              fill="none"
+              stroke="#2F44E0"
+              strokeWidth="9"
+              strokeLinecap="round"
+              pathLength={1}
+              strokeDasharray={1}
+              strokeDashoffset={1 - swoosh}
+            />
+          </svg>
+        </div>
+      </AbsoluteFill>
+    );
+  }
   return (
     <AbsoluteFill style={{ pointerEvents: "none" }}>
       <div
