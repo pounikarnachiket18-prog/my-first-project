@@ -4,3 +4,4 @@ out/
 .env
 .env.local
 public/vcd/*.mp4
+public/vcd/thumb/
