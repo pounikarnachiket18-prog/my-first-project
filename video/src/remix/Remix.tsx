@@ -41,7 +41,7 @@ export const BASE_FRAMES = 1308; // 43.6s base video
 export const OUTRO_FRAMES = 60;
 export const REMIX_FRAMES = BASE_FRAMES + OUTRO_FRAMES;
 const f = (sec: number) => Math.round(sec * FPS);
-const BASE = "video/remix-base.mp4";
+const BASE = "video/remix-base-maroon.mp4";
 
 // Scene changes in the reel → flash + punch. Extra punches on key beats.
 const FLASHES = [8.6, 11.35, 16.0, 20.0, 27.0, 38.0];
@@ -105,7 +105,7 @@ const Outro: React.FC = () => {
           <OffthreadVideo src={staticFile(BASE)} muted style={{ width: 1080, height: 1920, objectFit: "cover" }} />
         </AbsoluteFill>
       </Freeze>
-      <AbsoluteFill style={{ background: `linear-gradient(180deg, rgba(47,68,224,0.55), rgba(21,23,28,0.75))`, opacity: inP }} />
+      <AbsoluteFill style={{ background: `linear-gradient(180deg, rgba(163,25,46,0.6), rgba(21,23,28,0.78))`, opacity: inP }} />
       <AbsoluteFill style={{ alignItems: "center", justifyContent: "center", gap: 60, opacity: inP }}>
         <BrandBadge big />
         <div
@@ -163,7 +163,7 @@ export const Remix: React.FC = () => {
 
         {/* 11.2–16 laundry */}
         <At at={11.4} dur={4.6}>{(d) => <Bubbles dur={d} top={300} bottom={1700} />}</At>
-        <At at={11.8} dur={4.0}>{(d) => <Sticker text="Laundry time" emoji="🧼" x={330} y={1680} dur={d} tilt={5} bg={K.blue} color="#FFFFFF" size={50} />}</At>
+        <At at={11.8} dur={4.0}>{(d) => <Sticker text="Laundry time" emoji="🧼" x={330} y={1680} dur={d} tilt={5} bg={K.brand} color="#FFFFFF" size={50} />}</At>
 
         {/* 16–20 "Toh kambal bhi?" */}
         <At at={16.3} dur={3.6}>
@@ -194,7 +194,7 @@ export const Remix: React.FC = () => {
         <At at={34.8} dur={3.1}>{(d) => <Banner tag="💡 PRO TIP" text="Chadar ko cover bana lo" y={1640} dur={d} />}</At>
 
         {/* 38–43.6 printed cover */}
-        <At at={39.6} dur={3.9}>{(d) => <Stamp text="✔ ALAG SE DHULTA" x={540} y={760} dur={d} color={K.blue} tilt={-8} size={64} />}</At>
+        <At at={39.6} dur={3.9}>{(d) => <Stamp text="✔ ALAG SE DHULTA" x={540} y={760} dur={d} color={K.brand} tilt={-8} size={64} />}</At>
         <At at={39.8} dur={3.0}>{(d) => <Sparkles cx={540} cy={760} r={330} dur={d} n={10} />}</At>
 
         {/* transitions */}

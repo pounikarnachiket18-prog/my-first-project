@@ -8,7 +8,7 @@ import { AbsoluteFill, interpolate, random, spring, useCurrentFrame, useVideoCon
 import { FONT } from "../rail/theme";
 
 export const K = {
-  blue: "#2F44E0",
+  brand: "#A3192E", // maroon (matches the recoloured reel)
   yellow: "#FFD23F",
   red: "#FF3B4E",
   green: "#1DB954",
@@ -220,7 +220,7 @@ export const QuestionMarks: React.FC<{ dur: number; spots: [number, number, numb
               fontFamily: FONT.title,
               fontWeight: 800,
               fontSize: 150 - i * 20,
-              color: i % 2 ? K.blue : K.red,
+              color: i % 2 ? K.brand : K.red,
               WebkitTextStroke: "6px #FFFFFF",
               textShadow: "0 10px 24px rgba(0,0,0,0.3)",
             }}
@@ -423,7 +423,7 @@ export const Banner: React.FC<{ tag: string; text: string; y: number; dur: numbe
       <div style={{ background: K.yellow, color: K.ink, fontSize: 50, padding: "16px 28px 12px 50px" }}>{tag}</div>
       <div
         style={{
-          background: K.blue,
+          background: K.brand,
           color: "#FFFFFF",
           fontSize: 50,
           padding: "16px 44px 12px 28px",
@@ -498,7 +498,7 @@ export const BrandBadge: React.FC<{ big?: boolean }> = ({ big }) => {
           width: 56 * k,
           height: 56 * k,
           borderRadius: "50%",
-          background: K.blue,
+          background: K.brand,
           color: "#FFFFFF",
           display: "flex",
           alignItems: "center",
@@ -518,11 +518,11 @@ export const BrandBadge: React.FC<{ big?: boolean }> = ({ big }) => {
           left: shineX,
           width: 70,
           transform: "skewX(-20deg)",
-          background: "linear-gradient(90deg, rgba(47,68,224,0), rgba(47,68,224,0.14), rgba(47,68,224,0))",
+          background: "linear-gradient(90deg, rgba(163,25,46,0), rgba(163,25,46,0.14), rgba(163,25,46,0))",
         }}
       />
       <span style={{ position: "relative" }}>
-        Mindset <span style={{ color: K.blue }}>Mode</span> Explainers
+        Mindset <span style={{ color: K.brand }}>Mode</span> Explainers
       </span>
     </div>
   );
@@ -536,7 +536,7 @@ export const ProgressBar: React.FC<{ total: number }> = ({ total }) => {
   const w = interpolate(frame, [0, total], [0, 1080], clamp);
   return (
     <div style={{ position: "absolute", left: 0, bottom: 0, width: 1080, height: 12, background: "rgba(0,0,0,0.15)" }}>
-      <div style={{ width: w, height: "100%", background: `linear-gradient(90deg, ${K.blue}, #7C4DFF, ${K.yellow})` }} />
+      <div style={{ width: w, height: "100%", background: `linear-gradient(90deg, ${K.brand}, #F07C1E, ${K.yellow})` }} />
     </div>
   );
 };

@@ -26,3 +26,13 @@ python swap_video.py "$SRC" . 1308 track.log \
 - `swap_video.py`: head tracking + compositing, streams raw frames to ffmpeg
 - `badge.py`: "Mindset Mode Explainers" badge (Baloo 2, SIL Open Font License)
 - Train volume: `volume=0.35`. End cut: `1308` frames / `43.6`s
+
+## Recolour (blue → maroon)
+
+```bash
+python recolor_video.py ../public/video/remix-base.mp4 350 . 1.05 0.85 \
+ | ffmpeg -y -f rawvideo -pix_fmt rgb24 -s 720x1280 -r 30 -i - -i ../public/video/remix-base.mp4 \
+     -map 0:v -map 1:a -c:v libx264 -crf 16 -pix_fmt yuv420p -c:a copy ../public/video/remix-base-maroon.mp4
+```
+
+Shifts only saturated blues (hue ~195–260°) to the target hue; skin, hair, greys and whites are untouched.
