@@ -72,7 +72,8 @@ export const HUD: React.FC = () => {
   const sc = timeline.scenes.find((s) => t >= s.start && t < s.end) ?? timeline.scenes[timeline.scenes.length - 1];
   const sec = SECTIONS.find((s) => s.scenes.includes(sc.id))!;
   const p = clamp01(t / timeline.duration);
-  const intro = interpolate(f, [0, 12], [0, 1], { extrapolateRight: "clamp" });
+  const hookEnd = Math.round(timeline.scenes[0].end * fps);
+  const intro = interpolate(f, [hookEnd, hookEnd + 12], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
   const y = 250;
   return (
     <g opacity={intro}>

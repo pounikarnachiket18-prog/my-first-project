@@ -10,4 +10,6 @@ Pipeline
    Voice model: Piper `hi_IN-rohan-medium` (e.g. from the sherpa-onnx `tts-models` release).
 3. `python3 scripts/build_mix.py` – synthesized music bed + SFX mixed under the voice
    -> `public/navy/mix.wav` (then loudness-normalised to -14 LUFS with ffmpeg `loudnorm`).
-4. `npm run render:navy` (set `REMOTION_CHROME` to a chrome-headless-shell binary if needed).
+4. `python3 scripts/add_hook_offset.py` – delays the narration so it starts over the
+   live-action hook clips (`public/navy/hookA.mp4`, `hookB.mp4`), then re-run step 3.
+5. `npm run render:navy` (set `REMOTION_CHROME` to a chrome-headless-shell binary if needed).

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { AbsoluteFill, Sequence, Audio, staticFile, continueRender, delayRender } from "remotion";
+import { AbsoluteFill, Sequence, Audio, staticFile, continueRender, delayRender, useCurrentFrame } from "remotion";
 import "@fontsource/inter/600.css";
 import "@fontsource/inter/700.css";
 import "@fontsource/jetbrains-mono/400.css";
@@ -48,7 +48,7 @@ export const NavyVideo: React.FC<{ captions?: boolean }> = ({ captions = true })
             <stop offset="1" stopColor="#000" stopOpacity={0.55} />
           </radialGradient>
         </defs>
-        <rect width={1080} height={1920} fill="url(#vig)" />
+        <rect width={1080} height={1920} fill="url(#vig)" opacity={useCurrentFrame() < Math.round(timeline.scenes[0].end * timeline.fps) ? 0.4 : 1} />
         <HUD />
       </svg>
       {captions && <Captions />}

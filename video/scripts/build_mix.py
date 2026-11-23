@@ -76,7 +76,8 @@ for b in range(int(N / SR / beat) + 1):
         m = c[(b * 4 + s) % 3] + 12
         place(music, np.sin(2 * np.pi * m2f(m) * at) * np.exp(-at * 18) * 0.12, t0 + s * beat / 4)
 # energy: quieter in intro, lift in twist
-lift = np.interp(tt, [0, 2, scene["twist"]["start"], scene["twist"]["start"] + 1, scene["backup"]["start"], tl["duration"] - 3, tl["duration"]], [0.5, 0.8, 0.8, 1.0, 0.85, 0.85, 0.0])
+hook_end = scene["hook"]["end"]
+lift = np.interp(tt, [0, hook_end - 0.3, hook_end + 0.6, scene["twist"]["start"], scene["twist"]["start"] + 1, scene["backup"]["start"], tl["duration"] - 3, tl["duration"]], [0.0, 0.0, 0.8, 0.8, 1.0, 0.85, 0.85, 0.0])
 music *= lift
 # duck under narration
 venv = np.sqrt(np.maximum(lp(voice.astype(np.float64) ** 2, 6), 0))
@@ -153,7 +154,7 @@ def shimmer(g=1.0):
 for s in tl["scenes"][1:]:
     place(sfx, whoosh(0.7, 400, 2500, 0.35), s["start"] - 0.45)
 # launches
-launch_times = [W(2, 7) - 6 / 30, W(5, 3) - 2 / 30, W(12, 1) + 4 / 30, Ls(28)]
+launch_times = [W(5, 3) - 2 / 30, W(12, 1) + 4 / 30, Ls(28)]
 for t in launch_times:
     place(sfx, jet(2.8, 0.55), t - 0.1)
     place(sfx, whoosh(1.4, 250, 3500, 0.5), t + 0.2)
@@ -176,13 +177,27 @@ place(sfx, splash(0.5), Ls(29) - 4 / 30 + 1.0)
 place(sfx, boom(0.6), W(31, 2) - 2 / 30)
 place(sfx, shimmer(0.35), Ls(35) - 0.2)
 # label blips
-for t in [0.2, W(1, 3), W(7, 7), Ls(8) + 4 / 30, W(9, 4), W(11, 3), W(18, 4), W(20, 4)]:
+for t in [W(7, 7), Ls(8) + 4 / 30, W(9, 4), W(11, 3), W(18, 4), W(20, 4)]:
     place(sfx, blip(1500, 0.18), t)
 
+
+# live-action hook clips: their own sound, ducked a little under the narration
+import subprocess
+hook = np.zeros(N)
+t_clip = 0.0
+for name in ("hookA", "hookB"):
+    path = os.path.join(HERE, "..", "public", "navy", name + ".mp4")
+    raw = subprocess.check_output(["ffmpeg", "-v", "error", "-i", path, "-ac", "1", "-ar", str(SR), "-f", "f32le", "-"])
+    a = np.frombuffer(raw, np.float32).astype(np.float64)
+    place(hook, a * env(len(a), 0.02, 0.25), t_clip)
+    t_clip += tl["hookClips"][name]
+hook *= 1 - 0.45 * np.clip(venv / (venv.max() * 0.25), 0, 1)
+hook = hook / (np.abs(hook).max() + 1e-9) * 0.5
+place(sfx, boom(0.5), hook_end - 0.05)  # hit on the cut into the animation
 sfx = lp(sfx, 9000)
 sfx = sfx / (np.abs(sfx).max() + 1e-9) * 0.30
 
-mix = voice.astype(np.float64) * 0.95 + music + sfx
+mix = voice.astype(np.float64) * 0.95 + music + sfx + hook
 mix = np.tanh(mix * 1.1) / np.tanh(1.1)
 mix = mix / np.abs(mix).max() * 0.95
 stereo = np.stack([mix, mix], 1).astype(np.float32)

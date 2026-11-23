@@ -1,5 +1,5 @@
 import React from "react";
-import { useCurrentFrame } from "remotion";
+import { useCurrentFrame, AbsoluteFill, Sequence, OffthreadVideo, staticFile } from "remotion";
 import timeline from "./timeline.json";
 import { Cam, V3, camAt, prog, lerp, clamp01, project, easeOut, BASE_CAM } from "./engine";
 import { C, Carrier, Jet, Runway, Trail, Label, Defs, Box, L, RAMP0, RAMP_H, deckZ, SEA, angPoint, ANG_HEADING, WIRES, jetLocal } from "./world";
@@ -52,28 +52,32 @@ const Bg: React.FC<{ children: React.ReactNode; fadeIn?: number }> = ({ children
 
 const shake = (f: number, amt: number): Partial<Cam> => ({ cx: 540 + Math.sin(f * 1.9) * amt, cy: 900 + Math.cos(f * 2.3) * amt });
 
-// ======================= 1. HOOK =======================
+// ======================= 1. HOOK (live-action clips) =======================
 export const HookScene: React.FC = () => {
-  const { f, Ls, W, dur } = useS("hook");
-  const cam = camAt(f, { tx: -20, ty: 150, zoom: 2.9, yaw: -28, pitch: 36, cy: 900 }, [
-    { f: 0 },
-    { f: Ls(1) - 4, tx: -25, ty: 165, zoom: 2.7 },
-    { f: Ls(1) + 26, tx: -75, ty: 330, zoom: 1.45 },
-    { f: dur, tx: -70, ty: 380, zoom: 1.35 },
-  ]);
-  const rel = W(2, 7) - 6;
-  const T = 1.4;
-  const st = skiLaunch((f - rel) / FPS, T);
-  const tr = trailOf((t) => skiLaunch(t, T).pos, (f - rel) / FPS, 0.9);
+  const { f, dur } = useS("hook");
+  const aF = Math.round(timeline.hookClips.hookA * FPS);
+  // gentle push-in on each clip + quick flash on the cut
+  const zA = 1 + 0.04 * clamp01(f / aF);
+  const zB = 1 + 0.05 * clamp01((f - aF) / (dur - aF));
+  const flash = f >= aF ? 1 - clamp01((f - aF) / 6) : 0;
+  const out = clamp01((f - (dur - 8)) / 8);
+  const fill: React.CSSProperties = { position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" };
   return (
-    <Bg>
-      <Runway cam={cam} x={-112} y0={-140} y1={1500} />
-      <Carrier cam={cam} t={f} wake={0.6} />
-      {f > rel && <Trail cam={cam} pts={tr} width={6} />}
-      <Jet cam={cam} pos={st.pos} pitch={st.pitch} scale={JET_SCALE} exhaust={f > rel - 10 ? 1 : 0} t={f} />
-      <Label cam={cam} anchor={[20, 105, 0]} dx={150} dy={-60} text="INS VIKRANT DECK" p={prog(f, 6, 26)} />
-      <Label cam={cam} anchor={[-112, 520, 0]} dx={-30} dy={-110} text="AIRPORT RUNWAY" p={prog(f, W(1, 3) - 4, W(1, 3) + 16)} />
-    </Bg>
+    <AbsoluteFill>
+      <Sequence durationInFrames={aF} layout="none">
+        <AbsoluteFill style={{ transform: `scale(${zA})` }}>
+          <OffthreadVideo src={staticFile("navy/hookA.mp4")} muted style={fill} />
+        </AbsoluteFill>
+      </Sequence>
+      <Sequence from={aF} layout="none">
+        <AbsoluteFill style={{ transform: `scale(${zB})` }}>
+          <OffthreadVideo src={staticFile("navy/hookB.mp4")} muted style={fill} />
+        </AbsoluteFill>
+      </Sequence>
+      <AbsoluteFill style={{ background: "linear-gradient(180deg, rgba(0,0,0,0) 62%, rgba(5,8,13,0.55) 100%)" }} />
+      <AbsoluteFill style={{ background: "#fff", opacity: flash * 0.35 }} />
+      <AbsoluteFill style={{ background: "#0b1019", opacity: out }} />
+    </AbsoluteFill>
   );
 };
 
