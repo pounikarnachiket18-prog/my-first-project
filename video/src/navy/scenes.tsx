@@ -18,7 +18,7 @@ export const useS = (id: string) => {
   return { f, Ls, Le, W, dur };
 };
 
-const JET_SCALE = 1.5;
+const JET_SCALE = 2.1;
 
 /** ski-jump launch. t = seconds since release, T = seconds to reach the bow */
 export const skiLaunch = (t: number, T: number, y0 = 150, x0 = -4) => {
@@ -71,7 +71,7 @@ export const HookScene: React.FC = () => {
       <Carrier cam={cam} t={f} wake={0.6} />
       {f > rel && <Trail cam={cam} pts={tr} width={6} />}
       <Jet cam={cam} pos={st.pos} pitch={st.pitch} scale={JET_SCALE} exhaust={f > rel - 10 ? 1 : 0} t={f} />
-      <Label cam={cam} anchor={[8, 70, 0]} dx={110} dy={150} text="INS VIKRANT DECK" p={prog(f, 6, 26)} />
+      <Label cam={cam} anchor={[20, 105, 0]} dx={150} dy={-60} text="INS VIKRANT DECK" p={prog(f, 6, 26)} />
       <Label cam={cam} anchor={[-112, 520, 0]} dx={-30} dy={-110} text="AIRPORT RUNWAY" p={prog(f, W(1, 3) - 4, W(1, 3) + 16)} />
     </Bg>
   );
@@ -84,7 +84,7 @@ export const ImagineScene: React.FC = () => {
   if (f < cut) {
     const cam = camAt(f, { tx: 0, ty: 150, zoom: 4.2, yaw: -30, pitch: 40 }, [
       { f: 0 },
-      { f: cut, zoom: 0.62, ty: 90, pitch: 34 },
+      { f: cut, zoom: 0.95, ty: 110, pitch: 34 },
     ]);
     return (
       <Bg>
@@ -140,7 +140,7 @@ export const RunwayScene: React.FC = () => {
       {t > 0 && <Trail cam={cam} pts={rtrail} width={5} />}
       <Jet cam={cam} pos={rpos} pitch={rz > 0 ? 8 : 0} scale={JET_SCALE} exhaust={t > 0 ? 0.8 : 0} t={f} />
       <Label cam={cam} anchor={[-112, 760, 0]} dx={-20} dy={-120} text="AIRPORT RUNWAY" p={prog(f, W(7, 7) - 6, W(7, 7) + 12) * (1 - prog(f, Ls(9), Ls(9) + 10))} />
-      <Label cam={cam} anchor={[22, 60, 0]} dx={110} dy={40} text="INS VIKRANT DECK" p={prog(f, Ls(8) + 4, Ls(8) + 20) * (1 - prog(f, Ls(9), Ls(9) + 10))} />
+      <Label cam={cam} anchor={[25, 170, 0]} dx={130} dy={-70} text="INS VIKRANT DECK" p={prog(f, Ls(8) + 4, Ls(8) + 20) * (1 - prog(f, Ls(9), Ls(9) + 10))} />
       <Label cam={cam} anchor={[-1, 246, deckZ(246)]} dx={80} dy={-190} text="SKI-JUMP" p={prog(f, W(9, 4) - 2, W(9, 4) + 14)} color={C.cyan} />
     </Bg>
   );
@@ -193,7 +193,7 @@ const FlatDeck: React.FC<{ cam: Cam; p: number; t: number }> = ({ cam, p, t }) =
     <g>
       <Box cam={cam} b={{ x0: -22, x1: 22, y0: 0, y1: 150, z0: -12, z1: 0, top: C.deck }} />
       <path d={`M${project(cam, [0, 18, 0]).join(" ")} L${project(cam, [0, 148, 0]).join(" ")}`} stroke={C.cyan} strokeWidth={4} opacity={0.35 + 0.65 * Math.min(1, p * 4)} filter="url(#glow)" />
-      <Jet cam={cam} pos={[0, y, z]} scale={1.5} exhaust={0.6} t={t} groundZ={y < 150 ? 0 : -12} />
+      <Jet cam={cam} pos={[0, y, z]} scale={2.1} exhaust={0.6} t={t} groundZ={y < 150 ? 0 : -12} />
     </g>
   );
 };
@@ -204,8 +204,8 @@ export const CompareScene: React.FC = () => {
   const row1 = lerp(1, 0.32, a2), row2 = lerp(0.32, 1, a2);
   const p1 = clamp01((f - 6) / (Le(15) - 6));
   const p2 = clamp01((f - Ls(16)) / (Le(16) - Ls(16)));
-  const camFlat: Cam = { ...BASE_CAM, tx: 0, ty: 80, zoom: 2.1, yaw: -32, pitch: 44, cx: 250, cy: 650 };
-  const camVik: Cam = { ...BASE_CAM, tx: -2, ty: 215, zoom: 3.4, yaw: -32, pitch: 46, cx: 250, cy: 1100 };
+  const camFlat: Cam = { ...BASE_CAM, tx: 0, ty: 80, zoom: 2.1, yaw: -32, pitch: 44, cx: 250, cy: 650, boost: 1.15 };
+  const camVik: Cam = { ...BASE_CAM, tx: -2, ty: 215, zoom: 3.4, yaw: -32, pitch: 46, cx: 250, cy: 1100, boost: 1.15 };
   const loop = (p: number) => (p * 1.25) % 1;
   return (
     <Bg>
@@ -227,7 +227,7 @@ export const CompareScene: React.FC = () => {
         <rect x={60} y={960} width={220 * a2} height={5} fill={C.cyan} />
         <g clipPath="url(#r2)">
           <Carrier cam={camVik} t={f} rampGlow={a2} parked={false} />
-          <Jet cam={camVik} pos={skiLaunch(loop(p2) * 2.6 - 0.2, 1.6, 170).pos} pitch={skiLaunch(loop(p2) * 2.6 - 0.2, 1.6, 170).pitch} scale={1.5} exhaust={1} t={f} />
+          <Jet cam={camVik} pos={skiLaunch(loop(p2) * 2.6 - 0.2, 1.6, 170).pos} pitch={skiLaunch(loop(p2) * 2.6 - 0.2, 1.6, 170).pitch} scale={2.1} exhaust={1} t={f} />
         </g>
         <SideCard kind="skijump" x={530} y={900} w={490} h={300} p={loop(p2)} t={f} caption="illustration" />
       </g>
@@ -240,7 +240,7 @@ export const LandingScene: React.FC = () => {
   const { f, Ls, Le, W, dur } = useS("landing");
   const catchF = W(21, 4);
   // s(f): piecewise slow-motion approach, then real time catch + 2 s stop
-  const sKeys: [number, number][] = [[0, -430], [Ls(18), -300], [Ls(19), -250], [Ls(20), -120], [Ls(21), -55], [catchF, WIRES[1] + 10]];
+  const sKeys: [number, number][] = [[0, -430], [Ls(18), -300], [Ls(19), -170], [Ls(20), -90], [Ls(21), -35], [catchF, WIRES[1] + 10]];
   let s: number;
   if (f >= catchF) {
     const k = clamp01((f - catchF) / (2 * FPS));
@@ -261,7 +261,8 @@ export const LandingScene: React.FC = () => {
     { f: Ls(18) - 10, tx: -22, ty: 60, zoom: 2.0 },
     { f: Ls(18) + 14, ...camF },
     { f: Ls(19) - 4, ...camF },
-    { f: Ls(19) + 26, ...{ tx: angPoint(48)[0], ty: angPoint(48)[1], tz: 0, zoom: 4.6, yaw: -28, pitch: 44 } },
+    { f: Ls(19) + 26, ...{ tx: angPoint(-25)[0], ty: angPoint(-25)[1], tz: 0, zoom: 3.4, yaw: -28, pitch: 44, cy: 980 } },
+    { f: W(21, 4) - 10, tx: angPoint(40)[0], ty: angPoint(40)[1], zoom: 4.2, cy: 900 },
     { f: dur, tx: angPoint(80)[0], ty: angPoint(80)[1], zoom: 4.4 },
   ]);
   // when the close-up follows the jet, lock target to it
@@ -287,7 +288,7 @@ export const TwistScene: React.FC = () => {
   const td = W(24, 4);
   const full = W(25, 4);
   const go = Ls(28);
-  const sKeys: [number, number][] = [[0, -170], [td, 12], [Ls(27), 30], [go, 70]];
+  const sKeys: [number, number][] = [[0, -100], [td, 12], [Ls(27), 30], [go, 70]];
   let s: number;
   if (f >= go) {
     const t = (f - go) / FPS;
@@ -301,11 +302,11 @@ export const TwistScene: React.FC = () => {
   const sAt = (ss: number): V3 => (ss < edge ? glide(ss) : (() => { const p = angPoint(ss, 0, 0.5); return [p[0], p[1], 0.5 + (ss - edge) * 0.14 + 0.0004 * Math.pow(ss - edge, 2)] as V3; })());
   const pos = sAt(s);
   const pitch = s < 0 ? 4 : s > edge ? 12 : 1;
-  const hookS = s - 11;
+  const hookS = s - 8.5 * JET_SCALE;
   const wireRed = WIRES.map((w) => (f >= Ls(27) && hookS > w - 2 ? 1 : 0));
   const follow = prog(f, go, go + 50);
   const edgeP = angPoint(edge + 10);
-  const camBase = camAt(f, { tx: angPoint(40)[0], ty: angPoint(40)[1], zoom: 3.6, yaw: -26, pitch: 42 }, [
+  const camBase = camAt(f, { tx: angPoint(-35)[0], ty: angPoint(-35)[1], zoom: 3.2, yaw: -26, pitch: 42 }, [
     { f: 0 },
     { f: td, tx: angPoint(28)[0], ty: angPoint(28)[1], zoom: 5.2 },
     { f: Ls(27), tx: angPoint(45)[0], ty: angPoint(45)[1], zoom: 5.0 },
@@ -351,8 +352,8 @@ export const BackupScene: React.FC = () => {
   const cam = camAt(f, { tx: angPoint(78)[0], ty: angPoint(78)[1], zoom: 4.8, yaw: -24, pitch: 46 }, [
     { f: 0 },
     { f: out - 6, zoom: 5.6 },
-    { f: out + 110, tx: 0, ty: 120, zoom: 1.05, pitch: 38, cy: 1000 },
-    { f: dur, tx: 0, ty: 110, zoom: 0.62, pitch: 36, cy: 1020 },
+    { f: out + 110, tx: 0, ty: 125, zoom: 1.6, pitch: 38, cy: 950 },
+    { f: dur, tx: 0, ty: 125, zoom: 1.3, pitch: 36, cy: 950 },
   ]);
   const s = 62 + 58;
   const pos = glide(s);

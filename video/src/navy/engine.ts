@@ -9,9 +9,10 @@ export type Cam = {
   zoom: number; // px per metre at the target
   cx: number; cy: number; // screen position of the target
   F: number; // perspective distance (m)
+  boost?: number; // global size multiplier on top of zoom
 };
 
-export const BASE_CAM: Cam = { tx: 0, ty: 130, tz: 0, yaw: -28, pitch: 38, zoom: 3, cx: 540, cy: 900, F: 1400 };
+export const BASE_CAM: Cam = { tx: 0, ty: 130, tz: 0, yaw: -28, pitch: 38, zoom: 3, cx: 540, cy: 900, F: 1400, boost: 1.4 };
 
 const D = Math.PI / 180;
 
@@ -23,7 +24,8 @@ export const project = (c: Cam, p: V3): [number, number] => {
   const up = y1 * Math.cos(pt) + z * Math.sin(pt);
   const depth = y1 * Math.sin(pt) - z * Math.cos(pt);
   const s = c.F / Math.max(80, c.F + depth);
-  return [c.cx + c.zoom * s * x1, c.cy - c.zoom * s * up];
+  const zm = c.zoom * (c.boost ?? 1);
+  return [c.cx + zm * s * x1, c.cy - zm * s * up];
 };
 
 export const depthOf = (c: Cam, p: V3) => {

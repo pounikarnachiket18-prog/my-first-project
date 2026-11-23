@@ -223,7 +223,7 @@ export const Carrier: React.FC<CarrierProps> = ({ cam, t, rampGlow = 0, wireGlow
 const Parked: React.FC<{ cam: Cam }> = ({ cam }) => (
   <g>
     {[[23, 62, 225], [23, 76, 225], [22, 176, 225], [22, 192, 225], [19, 206, 230]].map(([x, y, h], i) => (
-      <Jet key={i} cam={cam} pos={[x, y, 0.4]} heading={h} scale={0.9} groundZ={0} dim />
+      <Jet key={i} cam={cam} pos={[x, y, 0.4]} heading={h} scale={1.25} groundZ={0} dim />
     ))}
   </g>
 );

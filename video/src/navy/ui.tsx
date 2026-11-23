@@ -156,7 +156,7 @@ export const SideCard: React.FC<{ kind: "catapult" | "skijump" | "hook" | "burne
     const pts = Array.from({ length: 40 }, (_, i) => traj((i / 39) * p));
     extra = <polyline points={pts.map(([a, b]) => `${a},${b}`).join(" ")} fill="none" stroke={C.cyan} strokeWidth={2.5} strokeDasharray="6 5" opacity={0.85} />;
     const [jx, jy, r] = traj(p);
-    jet = <TejasSide x={jx - 50 * s * 0.85} y={jy - 6 * s} s={s * 0.85} rot={r} burner={1} t={t} />;
+    jet = <TejasSide x={jx - 50 * s * 1.05} y={jy - 6 * s} s={s * 1.05} rot={r} burner={1} t={t} />;
   } else if (kind === "catapult") {
     deck = <rect x={-10} y={deckY} width={w * 0.8} height={sea - deckY} fill="#4a5567" />;
     const u = Math.pow(Math.min(1, p / 0.6), 2);
@@ -168,7 +168,7 @@ export const SideCard: React.FC<{ kind: "catapult" | "skijump" | "hook" | "burne
         {Array.from({ length: 6 }, (_, i) => <circle key={i} cx={w * 0.08 + i * 14 * s} cy={deckY - 8 - i * 3} r={(8 + i * 3) * s * Math.min(1, p * 3)} fill="#dfe7ef" opacity={0.25 * (1 - p)} />)}
       </g>
     );
-    jet = <TejasSide x={jx - 60 * s} y={jy - 4 * s} s={s * 0.85} rot={p > 0.6 ? -8 : 0} t={t} />;
+    jet = <TejasSide x={jx - 60 * s} y={jy - 4 * s} s={s * 1.05} rot={p > 0.6 ? -8 : 0} t={t} />;
   } else if (kind === "hook") {
     deck = <rect x={-10} y={deckY} width={w + 20} height={sea - deckY} fill="#4a5567" />;
     const wires = [0.42, 0.52, 0.62].map((u) => w * u);
@@ -182,10 +182,10 @@ export const SideCard: React.FC<{ kind: "catapult" | "skijump" | "hook" | "burne
         {caught && <path d={`M${wires[0] - 20} ${deckY} L${jx + 4 * s} ${deckY + 1} L${wires[2] + 20} ${deckY}`} stroke={C.orange} strokeWidth={2.5} fill="none" filter="url(#glow)" />}
       </g>
     );
-    jet = <TejasSide x={jx - 20 * s} y={jy - 4 * s} s={s * 0.85} rot={caught ? 0 : 4} hook={1} t={t} />;
+    jet = <TejasSide x={jx - 20 * s} y={jy - 4 * s} s={s * 1.05} rot={caught ? 0 : 4} hook={1} t={t} />;
   } else {
     deck = <rect x={-10} y={deckY} width={w + 20} height={sea - deckY} fill="#4a5567" />;
-    jet = <TejasSide x={w * 0.36} y={deckY - 8 * s} s={s * 0.9} burner={p} t={t * 0.9} />;
+    jet = <TejasSide x={w * 0.36} y={deckY - 8 * s} s={s * 1.1} burner={p} t={t * 0.9} />;
     extra = Array.from({ length: 5 }, (_, i) => (
       <path key={i} d={`M${w * 0.4 - 10 - i * 18} ${deckY - 14 + Math.sin(t * 0.4 + i) * 4} q -8 -6 -16 0`} stroke="rgba(56,198,255,0.4)" fill="none" strokeWidth={2} opacity={p} />
     ));
