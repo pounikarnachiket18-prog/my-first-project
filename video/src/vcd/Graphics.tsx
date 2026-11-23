@@ -97,7 +97,7 @@ export const SpeedLines: React.FC<{ from: number; to: number; dir?: 1 | -1; inte
           width: len,
           height: 1.5 + random(`h${i}`) * 2,
           borderRadius: 2,
-          background: "linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,0.75), rgba(255,255,255,0))",
+          background: "linear-gradient(90deg, rgba(34,230,255,0), rgba(200,250,255,0.8), rgba(34,230,255,0))",
           opacity: 0.25 + random(`o${i}`) * 0.4,
         }}
       />
@@ -205,7 +205,7 @@ export const CutFlash: React.FC<{ cuts: number[] }> = ({ cuts }) => {
   const flash = interpolate(f, [0, 2, 8], [0.42, 0.22, 0], clamp);
   return (
     <>
-      <div style={{ position: "absolute", inset: 0, background: `radial-gradient(circle at 50% 45%, rgba(255,255,255,${flash}), rgba(167,139,250,${flash * 0.6}) 60%, rgba(139,92,246,0) 100%)`, mixBlendMode: "screen" }} />
+      <div style={{ position: "absolute", inset: 0, background: `radial-gradient(circle at 50% 45%, rgba(255,255,255,${flash}), rgba(34,230,255,${flash * 0.6}) 60%, rgba(255,46,147,0) 100%)`, mixBlendMode: "screen" }} />
       <div
         style={{
           position: "absolute",
@@ -214,7 +214,7 @@ export const CutFlash: React.FC<{ cuts: number[] }> = ({ cuts }) => {
           width: 220,
           height: 1900,
           transform: "rotate(18deg)",
-          background: "linear-gradient(90deg, rgba(255,201,64,0), rgba(255,220,140,0.45), rgba(167,139,250,0.35), rgba(139,92,246,0))",
+          background: "linear-gradient(90deg, rgba(34,230,255,0), rgba(34,230,255,0.45), rgba(255,46,147,0.38), rgba(255,46,147,0))",
           mixBlendMode: "screen",
           opacity: 1 - p * 0.6,
           filter: "blur(8px)",
@@ -236,8 +236,8 @@ export const AlertEdge: React.FC<{ from: number; to: number; period: number; str
       style={{
         position: "absolute",
         inset: 0,
-        boxShadow: `inset 0 0 ${90 + pulse * 60}px rgba(255,40,60,${a}), inset 0 0 12px rgba(255,60,80,${a})`,
-        background: `radial-gradient(circle at 50% 50%, rgba(255,0,30,0) 55%, rgba(255,20,50,${a * 0.45}) 100%)`,
+        boxShadow: `inset 0 0 ${90 + pulse * 60}px rgba(255,46,147,${a}), inset 0 0 12px rgba(255,80,170,${a})`,
+        background: `radial-gradient(circle at 50% 50%, rgba(255,46,147,0) 55%, rgba(255,46,147,${a * 0.45}) 100%)`,
       }}
     />
   );
@@ -272,7 +272,7 @@ export const LightLeak: React.FC<{ from: number; to: number }> = ({ from, to }) 
         inset: 0,
         mixBlendMode: "screen",
         opacity: o,
-        background: `radial-gradient(circle at ${10 + p * 90}% ${20 + p * 15}%, rgba(255,150,60,0.55), rgba(255,90,140,0.25) 25%, rgba(139,92,246,0) 55%)`,
+        background: `radial-gradient(circle at ${10 + p * 90}% ${20 + p * 15}%, rgba(255,46,147,0.5), rgba(34,230,255,0.25) 25%, rgba(34,230,255,0) 55%)`,
       }}
     />
   );
@@ -456,7 +456,7 @@ export const AlertMeter: React.FC<{ from: number; to: number; keys: [number, num
   const enter = spring({ frame: frame - from, fps, config: { damping: 15 } });
   const out = interpolate(frame, [to - 6, to], [1, 0], clamp);
   const lvl = interpolate(frame, keys.map((k) => k[0]), keys.map((k) => k[1]), clamp);
-  const col = lvl > 0.6 ? "#34D399" : lvl > 0.3 ? brand.gold : brand.alert;
+  const col = lvl > 0.6 ? brand.lime : lvl > 0.3 ? brand.cyan : brand.magenta;
   const blink = lvl < 0.3 ? 0.6 + 0.4 * Math.sin(frame / 2.5) : 1;
   const segs = 10;
   return (
@@ -505,7 +505,7 @@ export const CommentBubble: React.FC<{ from: number; x: number; y: number }> = (
   return (
     <div style={{ position: "absolute", left: x - 30, top: y - 30 + bounce, width: 60, height: 60, transform: `scale(${pop})` }}>
       <svg width={60} height={60} viewBox="0 0 60 60" style={{ filter: "drop-shadow(0 4px 8px rgba(0,0,0,0.5))" }}>
-        <path d="M8 10 H52 a6 6 0 0 1 6 6 V38 a6 6 0 0 1 -6 6 H26 L14 54 V44 H8 a6 6 0 0 1 -6 -6 V16 a6 6 0 0 1 6 -6 Z" fill="#fff" />
+        <path d="M8 10 H52 a6 6 0 0 1 6 6 V38 a6 6 0 0 1 -6 6 H26 L14 54 V44 H8 a6 6 0 0 1 -6 -6 V16 a6 6 0 0 1 6 -6 Z" fill={brand.cyan} />
         {[0, 1, 2].map((i) => (
           <circle key={i} cx={18 + i * 12} cy={27 - Math.max(0, Math.sin(f / 4 - i * 0.9)) * 4} r={3.6} fill={brand.ink} />
         ))}
@@ -519,6 +519,94 @@ export const CommentBubble: React.FC<{ from: number; x: number; y: number }> = (
           </span>
         );
       })}
+    </div>
+  );
+};
+
+/* ---------------- Dashboard speedometer that replaces the source's speed readouts ---------------- */
+export const Speedometer: React.FC<{
+  from: number;
+  to: number;
+  /** panel rectangle (covers the old readout completely) */
+  x0: number;
+  y0: number;
+  w: number;
+  h: number;
+  keys: [number, number][];
+  alarm?: boolean;
+}> = ({ from, to, x0, y0, w, h, keys, alarm }) => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  if (frame < from || frame >= to) return null;
+  const f = frame - from;
+  const speed = interpolate(frame, keys.map((k) => k[0]), keys.map((k) => k[1]), clamp);
+  const max = 140;
+  const a0 = -125;
+  const a1 = 125;
+  const ang = a0 + (Math.min(speed, max) / max) * (a1 - a0);
+  const R = Math.min(w, h * 1.25) * 0.36;
+  const cx = w / 2;
+  const cy = h * 0.52;
+  const pt = (a: number, r: number) => [cx + r * Math.sin((a * Math.PI) / 180), cy - r * Math.cos((a * Math.PI) / 180)];
+  const arc = (b0: number, b1: number, r: number) => {
+    const [xa, ya] = pt(b0, r);
+    const [xb, yb] = pt(b1, r);
+    return `M${xa} ${ya} A${r} ${r} 0 ${b1 - b0 > 180 ? 1 : 0} 1 ${xb} ${yb}`;
+  };
+  const hot = speed > 100 || alarm;
+  const accent = hot ? brand.magenta : brand.cyan;
+  const glowPulse = alarm ? 0.6 + 0.4 * Math.sin(f / 2.2) : 0.8;
+  const pop = spring({ frame: f, fps, config: { damping: 14 } });
+  const shown = Math.round(speed);
+  return (
+    <div style={{ position: "absolute", left: x0, top: y0, width: w, height: h }}>
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          borderRadius: 26,
+          background: "radial-gradient(circle at 50% 40%, #241450 0%, #120A2A 55%, #07050c 100%)",
+          border: `2.5px solid ${accent}`,
+          boxShadow: `0 0 ${20 * glowPulse}px ${accent}, inset 0 0 30px rgba(0,0,0,0.6)`,
+        }}
+      />
+      <svg width={w} height={h} style={{ position: "absolute", inset: 0 }}>
+        {/* coloured zones */}
+        <path d={arc(a0, a0 + (a1 - a0) * (60 / max), R)} stroke={brand.lime} strokeOpacity={0.35} strokeWidth={R * 0.1} fill="none" />
+        <path d={arc(a0 + (a1 - a0) * (60 / max), a0 + (a1 - a0) * (100 / max), R)} stroke={brand.cyan} strokeOpacity={0.35} strokeWidth={R * 0.1} fill="none" />
+        <path d={arc(a0 + (a1 - a0) * (100 / max), a1, R)} stroke={brand.magenta} strokeOpacity={0.4} strokeWidth={R * 0.1} fill="none" />
+        {/* live arc */}
+        <path d={arc(a0, Math.max(a0 + 0.5, ang), R)} stroke={accent} strokeWidth={R * 0.1} fill="none" strokeLinecap="round" style={{ filter: `drop-shadow(0 0 6px ${accent})` }} />
+        {/* ticks + numbers */}
+        {new Array(15).fill(0).map((_, i) => {
+          const v = i * 10;
+          const a = a0 + (v / max) * (a1 - a0);
+          const major = i % 2 === 0;
+          const [xa, ya] = pt(a, R * 0.84);
+          const [xb, yb] = pt(a, R * (major ? 0.7 : 0.76));
+          const [xt, yt] = pt(a, R * 0.56);
+          return (
+            <g key={i}>
+              <line x1={xa} y1={ya} x2={xb} y2={yb} stroke="#fff" strokeOpacity={major ? 0.9 : 0.5} strokeWidth={major ? 2.4 : 1.4} />
+              {major && (
+                <text x={xt} y={yt + R * 0.04} textAnchor="middle" fontFamily={sans} fontWeight={700} fontSize={R * 0.11} fill="rgba(255,255,255,0.75)">
+                  {v}
+                </text>
+              )}
+            </g>
+          );
+        })}
+        {/* needle */}
+        <g transform={`rotate(${ang} ${cx} ${cy})`}>
+          <path d={`M${cx - R * 0.035} ${cy + R * 0.12} L${cx} ${cy - R * 0.9} L${cx + R * 0.035} ${cy + R * 0.12} Z`} fill={accent} style={{ filter: `drop-shadow(0 0 5px ${accent})` }} />
+        </g>
+        <circle cx={cx} cy={cy} r={R * 0.1} fill="#120A2A" stroke={accent} strokeWidth={3} />
+      </svg>
+      {/* digital readout */}
+      <div style={{ position: "absolute", left: 0, right: 0, top: cy + R * 0.28, textAlign: "center", lineHeight: 1, transform: `scale(${0.8 + 0.2 * pop})` }}>
+        <div style={{ fontFamily: display, fontSize: R * 0.48, color: "#fff", textShadow: `0 0 12px ${accent}`, letterSpacing: 2 }}>{shown}</div>
+        <div style={{ fontFamily: sans, fontWeight: 800, fontSize: R * 0.11, letterSpacing: 3, color: accent, marginTop: 2 }}>KM/H</div>
+      </div>
     </div>
   );
 };

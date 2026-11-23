@@ -1,13 +1,17 @@
 # VCD (dead-man switch) explainer – remaster pipeline
 
-1. **Colour + character recolour + logo paint-out** – `run_grade3.py` (uses `grade2.py`, `grade.py`, `tracks.json`)
+1. **Colour + character recolour + logo paint-out + caption palette + Rajdhani livery** – `run_grade4.py`
+   (uses `grade3.py`, `grade2.py`, `grade.py`, `tracks.json`). `grade3.py` recolours the source's burned-in
+   captions per shot/region (gold→cyan, mint→lime, salmon→magenta) and repaints the train
+   (loco crimson & cream incl. the nose inside a tracked box, coaches maroon).
+   Older pass (v2): `run_grade3.py`.
    - ABHI's shirt: light blue → forest green, shading-preserving, per-shot spatial gates;
      during the red-alarm shot the mask comes from the untinted pulse frames.
    - Train keeps its original Bharatiya Rail livery; the old channel logo on the loco side and the
      channel name on the end card are painted out (inpainted).
    - Grade: violet/indigo nights, warm cream cab interior.
    ```
-   python3 run_grade3.py tools/vcd source.mp4 public/vcd/graded.mp4
+   python3 run_grade4.py tools/vcd source.mp4 public/vcd/graded.mp4
    ```
 2. **Tracking** – `track2.py` produced the headlight tracks (`src/vcd/tracks.ts`) and the logo
    positions (`tracks.json`) used for the paint-out.

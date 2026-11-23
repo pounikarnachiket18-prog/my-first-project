@@ -2,7 +2,8 @@ import React from "react";
 import { AbsoluteFill, Easing, interpolate, OffthreadVideo, staticFile, useCurrentFrame } from "remotion";
 import { noise2D } from "@remotion/noise";
 import { brand, CUTS, fontCss, sampleTrack, SRC_W } from "./theme";
-import { openTrack, frontTrack } from "./tracks";
+import { openTrack, frontTrack, decalATrack, decalBTrack } from "./tracks";
+import { FrontLedBoard, SideLettering, TrainTitle } from "./Rajdhani";
 import { LampGlow, LightBeam, finalLamps } from "./Headlight";
 import {
   AlertEdge,
@@ -14,7 +15,7 @@ import {
   LightLeak,
   NameTag,
   Sparks,
-  SpeedGauge,
+  Speedometer,
   SpeedLines,
   Stars,
   TapPulse,
@@ -95,10 +96,22 @@ const Overlays: React.FC = () => {
     const on = interpolate(frame, [FINAL, FINAL + 5], [0.4, 1], clamp);
     // headlight flashes brighter with the horn
     const hornBoost = interpolate(frame, [HORN_SCARE, HORN_SCARE + 3, HORN_SCARE + 24], [1, 1.5, 1], clamp);
+    lamps.push(<FrontLedBoard key="led" x={L.roof.x} y={L.roof.y + L.spacing * 0.1} w={L.spacing * 0.92} on={on} />);
     lamps.push(<LightBeam key="lb" x={L.roof.x} y={L.lowerL.y} topW={L.spacing * 1.2} bottomW={900} opacity={0.3 * on * hornBoost} />);
     lamps.push(<LampGlow key="r" x={L.roof.x} y={L.roof.y} size={sz} seed="roof" intensity={on * hornBoost} />);
     lamps.push(<LampGlow key="l1" x={L.lowerL.x} y={L.lowerL.y} size={sz * 0.6} seed="l1" rays={false} intensity={0.8 * on} />);
     lamps.push(<LampGlow key="l2" x={L.lowerR.x} y={L.lowerR.y} size={sz * 0.6} seed="l2" rays={false} intensity={0.8 * on} />);
+  }
+
+  // painted "RAJDHANI EXPRESS" on the loco side (where the old logo was painted out)
+  let lettering: React.ReactNode = null;
+  if (frame >= 66 && frame < 127) {
+    const d = sampleTrack(decalATrack, Math.max(frame, 67));
+    if (d) lettering = <SideLettering x={d.x} y={d.y} skew={-11} scale={0.95} />;
+  }
+  if (frame >= BRAKE && frame < BRAKE_END) {
+    const d = sampleTrack(decalBTrack, Math.max(frame, 882));
+    if (d) lettering = <SideLettering x={d.x} y={d.y} skew={-28} scale={0.85} />;
   }
 
   // speed curve that matches the on-screen numbers (110 -> 95 -> 35)
@@ -169,7 +182,7 @@ const Overlays: React.FC = () => {
                   width: r * 2,
                   height: r * 1.2,
                   borderRadius: "50%",
-                  border: "3px solid rgba(255,235,180,0.8)",
+                  border: "3px solid rgba(34,230,255,0.85)",
                   opacity: (1 - t) * (t > 0 ? 1 : 0),
                 }}
               />
@@ -179,6 +192,24 @@ const Overlays: React.FC = () => {
       )}
 
       {lamps}
+      {lettering}
+      <TrainTitle from={72} to={127} y={1030} />
+      {/* speedometer over the source's "110 KM/H" box in the opening side shot: needle sweeps up to 110 */}
+      <Speedometer
+        from={66}
+        to={127}
+        x0={184}
+        y0={169}
+        w={352}
+        h={298}
+        keys={[
+          [66, 0],
+          [84, 118],
+          [92, 108],
+          [98, 110],
+        ]}
+      />
+      <NameTag name="RAJDHANI" role="EXPRESS" color={brand.cyan} anchor={{ x: 350, y: 628 }} tag={{ x: 545, y: 520 }} from={6} to={62} />
 
       {/* speed lines on running shots */}
       <SpeedLines from={66} to={127} dir={-1} intensity={0.8} />
@@ -190,8 +221,8 @@ const Overlays: React.FC = () => {
       <Dust from={967} to={FINAL} count={22} />
 
       {/* VCD close-up: show which button the pilot must press */}
-      <TapPulse from={340} to={411} x={213} y={733} r={58} color={brand.gold} label="ACK = PRESS" delay={10} />
-      <TapPulse from={355} to={411} x={520} y={653} r={50} color="#FFF3C4" period={30} />
+      <TapPulse from={340} to={411} x={213} y={733} r={58} color={brand.cyan} label="ACK = PRESS" delay={10} />
+      <TapPulse from={355} to={411} x={520} y={653} r={50} color={brand.lime} period={30} />
 
       {/* alertness drains as ABHI dozes off */}
       <AlertMeter
@@ -227,7 +258,8 @@ const Overlays: React.FC = () => {
           { x: 560, y: 700 },
         ]}
       />
-      <SpeedGauge from={BRAKE + 2} to={BRAKE_END} keys={speedKeys} />
+      {/* replaces the source's numeric speed readout in the brake shot */}
+      <Speedometer from={BRAKE} to={BRAKE_END} x0={226} y0={292} w={268} h={196} keys={speedKeys} alarm />
 
       {/* ---- names: ABHI (loco pilot) & NACHI (assistant loco pilot) ---- */}
       <NameTag name="ABHI" role="LOCO PILOT" color={brand.abhi} anchor={{ x: 300, y: 760 }} tag={{ x: 150, y: 1010 }} from={132} to={184} />

@@ -1,17 +1,22 @@
 import { staticFile } from "remotion";
 
-// Palette for the VCD explainer overlays
+// Palette for the VCD explainer overlays: electric cyan / hot magenta / lime on deep violet
+// (token names kept for the components; values are the new neon scheme)
 export const brand = {
-  ink: "#0D0A1E",
-  inkSoft: "rgba(13, 10, 30, 0.78)",
-  violet: "#8B5CF6",
-  violetHot: "#A78BFA",
-  gold: "#FFC940",
-  goldSoft: "#FFE08A",
+  ink: "#120A2A",
+  inkSoft: "rgba(18, 10, 42, 0.8)",
+  violet: "#FF2E93", // hot magenta
+  violetHot: "#FF6FB8",
+  gold: "#22E6FF", // electric cyan (primary accent)
+  goldSoft: "#A6F5FF",
   white: "#FFFFFF",
-  abhi: "#3FCB7A", // green, matches ABHI's recoloured shirt
-  nachi: "#22D3EE", // cyan for NACHI
-  alert: "#FF3B4E",
+  abhi: "#B8FF3C", // lime, sits with ABHI's green shirt
+  nachi: "#FF2E93", // magenta for NACHI
+  alert: "#FF2E93",
+  lime: "#B8FF3C",
+  cyan: "#22E6FF",
+  magenta: "#FF2E93",
+  led: "#FF9A1F", // amber LED destination board
 };
 
 export const FPS = 30;

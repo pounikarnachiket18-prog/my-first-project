@@ -285,8 +285,8 @@ export const Uncle: React.FC<Props> = ({ x, y, height, from, to, look = 0, facin
             top: -34 * s,
             fontFamily: "'Bebas Neue', sans-serif",
             fontSize: 46 * s,
-            color: "#FF3B4E",
-            textShadow: "0 0 10px rgba(255,59,78,0.8), 0 2px 0 #fff",
+            color: "#FF2E93",
+            textShadow: "0 0 10px rgba(255,46,147,0.85), 0 2px 0 #fff",
             transform: `scale(${spring({ frame: sf, fps, config: { damping: 8, stiffness: 220 } })}) rotate(${Math.sin(sf / 2 + seed) * 8}deg)`,
           }}
         >
@@ -311,13 +311,13 @@ export const Shout: React.FC<{ text: string; x: number; y: number; from: number;
       <svg width={size * 5.4} height={size * 2.4} viewBox="0 0 216 96" style={{ position: "absolute", left: -size * 0.6, top: -size * 0.55 }}>
         <path
           d="M8 48 L28 30 L20 8 L50 22 L72 4 L86 24 L114 6 L124 28 L158 10 L160 34 L200 22 L186 48 L210 66 L176 70 L184 92 L150 78 L128 94 L112 74 L80 92 L74 70 L38 86 L44 64 L6 66 Z"
-          fill="#FFD23F"
-          stroke="#1b1410"
+          fill="#B8FF3C"
+          stroke="#120A2A"
           strokeWidth="4"
           strokeLinejoin="round"
         />
       </svg>
-      <div style={{ position: "relative", fontFamily: "'Bebas Neue', sans-serif", fontSize: size, color: "#E0262F", letterSpacing: 2, WebkitTextStroke: "1.5px #1b1410", whiteSpace: "nowrap", paddingLeft: size * 0.55, paddingTop: size * 0.12 }}>
+      <div style={{ position: "relative", fontFamily: "'Bebas Neue', sans-serif", fontSize: size, color: "#FF2E93", letterSpacing: 2, WebkitTextStroke: "1.5px #120A2A", whiteSpace: "nowrap", paddingLeft: size * 0.55, paddingTop: size * 0.12 }}>
         {text}
       </div>
     </div>
