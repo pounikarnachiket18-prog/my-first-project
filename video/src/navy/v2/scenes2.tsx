@@ -390,7 +390,7 @@ export const Catapult: React.FC = () => {
         <MigJet cam={cam} pos={[6, jy, jz]} heading={0} scale={1.6} />
         {lab("STEAM CYLINDERS", [7.2, 200, -3.2], 14, 110, 170, C.cyan)}
         {lab("SHUTTLE", [6, 163, 0.6], Ls(16), -100, -170, C.orange)}
-        {lab("WATER BRAKE", [6, 297, -3], Ls(16) + 14, 90, -150)}
+        {lab("WATER BRAKE", [6, 297, -3], Ls(16) + 14, -60, -170)}
         <Keyword text="CATAPULT" f={f} at={W(16, 6) - 2} until={cut - 2} y={470} size={96} color={C.cyan} />
         <Tag text="GENERIC CATOBAR CARRIER · NOT INS VIKRANT" x={48} y={1180} p={prog(f, 4, 14)} color="#c0c8d4" />
       </Stage>
