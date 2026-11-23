@@ -21,7 +21,7 @@ import {
   WarningBadge,
   Zzz,
 } from "./Graphics";
-import { Uncle } from "./Uncle";
+import { Shout, Uncle } from "./Uncle";
 
 const clamp = { extrapolateLeft: "clamp", extrapolateRight: "clamp" } as const;
 
@@ -29,7 +29,25 @@ const BRAKE = 881; // emergency brake shot
 const BRAKE_END = 967;
 const FINAL = 1121; // train approaching camera
 const HORN_SCARE = 1182; // horn blows (audio at 39.3s)
-const UNCLE_RUNS = 1203;
+const UNCLE_RUNS = 1200; // first (front) uncle bolts
+
+type GangMember = { x: number; y: number; height: number; look: number; facing: "left" | "right" };
+// opening "RAAT 03:00 AM" shot – far from the train, nobody suspects anything
+// opening "RAAT 03:00 AM" shot – they hum, the horn blows at 0.8s, and they scatter before the first cut
+const OPEN_HORN = 24;
+const OPENING_GANG: (GangMember & { scareAt: number; runAt: number })[] = [
+  { x: 62, y: 858, height: 102, look: 2, facing: "left", scareAt: 29, runAt: 36 },
+  { x: 350, y: 818, height: 88, look: 1, facing: "left", scareAt: 27, runAt: 44 },
+  { x: 240, y: 892, height: 118, look: 3, facing: "left", scareAt: 28, runAt: 48 },
+  { x: 108, y: 995, height: 152, look: 0, facing: "left", scareAt: 26, runAt: 40 },
+];
+// finale – ordered far -> near so nearer uncles draw on top
+const FINAL_GANG: (GangMember & { scareAt: number; runAt: number; lit: number })[] = [
+  { x: 70, y: 872, height: 92, look: 2, facing: "left", scareAt: 1187, runAt: 1196, lit: 0.85 }, // dada is somehow the fastest
+  { x: 610, y: 862, height: 92, look: 1, facing: "right", scareAt: 1184, runAt: 1203, lit: 0.7 },
+  { x: 262, y: 912, height: 112, look: 3, facing: "left", scareAt: 1185, runAt: 1207, lit: 0.9 },
+  { x: 135, y: 1030, height: 150, look: 0, facing: "left", scareAt: 1181, runAt: UNCLE_RUNS, lit: 0.95 },
+];
 const CTA = 1236; // "COMMENT KARO"
 
 /** Zoom-punch at every cut + camera shake during the emergency brake. */
@@ -98,19 +116,43 @@ const Overlays: React.FC = () => {
     <>
       <Stars ranges={[[0, 66], [184, 256], [FINAL, 1320]]} />
 
-      {/* the uncle by the tracks: opening (unaware) and finale (horn scares him off) */}
-      <Uncle x={165} y={915} height={124} from={0} to={66} seed={1} lit={(f) => interpolate(f, [0, 65], [0.2, 0.32], clamp)} />
-      <Uncle
-        x={150}
-        y={1000}
-        height={150}
-        from={FINAL}
-        to={UNCLE_RUNS + 20}
-        seed={2}
-        lit={(f) => interpolate(f, [FINAL, HORN_SCARE, HORN_SCARE + 4], [0.25, 0.6, 0.95], clamp)}
-        scareAt={HORN_SCARE}
-        runAt={UNCLE_RUNS}
-      />
+      {/* the four uncles by the tracks: opening (unaware) ... */}
+      {OPENING_GANG.map((u, i) => (
+        <Uncle
+          key={`o${i}`}
+          x={u.x}
+          y={u.y}
+          height={u.height}
+          look={u.look}
+          facing={u.facing}
+          from={0}
+          to={66}
+          seed={10 + i}
+          lit={(f) => interpolate(f, [0, 65], [0.2, 0.32], clamp)}
+          scareAt={u.scareAt}
+          runAt={u.runAt}
+        />
+      ))}
+      <Shout text="BHAAGO!!" x={300} y={1080} from={OPEN_HORN + 5} to={44} rot={-8} size={38} />
+      {/* ... and the finale: the horn blows, chain-reaction panic, everybody bolts (lotas left behind) */}
+      {FINAL_GANG.map((u, i) => (
+        <Uncle
+          key={`f${i}`}
+          x={u.x}
+          y={u.y}
+          height={u.height}
+          look={u.look}
+          facing={u.facing}
+          from={FINAL}
+          to={u.runAt + 20}
+          seed={20 + i}
+          lit={(f) => interpolate(f, [FINAL, HORN_SCARE, HORN_SCARE + 4], [u.lit * 0.3, u.lit * 0.65, u.lit], clamp)}
+          scareAt={u.scareAt}
+          runAt={u.runAt}
+        />
+      ))}
+      <Shout text="BHAAGO!!" x={300} y={1065} from={HORN_SCARE + 3} to={UNCLE_RUNS + 6} rot={-10} size={40} />
+      <Shout text="TRAIN AAYI!" x={555} y={735} from={HORN_SCARE + 7} to={1203} rot={8} size={26} />
       {frame >= HORN_SCARE && frame < HORN_SCARE + 20 && L && (
         // horn shock-wave rings from the loco
         <div style={{ position: "absolute", inset: 0, mixBlendMode: "screen" }}>
