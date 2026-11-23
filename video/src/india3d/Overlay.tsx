@@ -47,7 +47,7 @@ export const Header: React.FC = () => (
       color: "rgba(255,255,255,0.5)",
     }}
   >
-    <span>HOW IT SECRETLY WORKS · #18</span>
+    <span style={{ color: "rgba(255,255,255,0.88)", fontWeight: 700, fontSize: 21, textShadow: "0 1px 4px rgba(0,0,0,0.6)" }}>MINDSET MODE | EXPLAINERS</span>
     <span>ILLUSTRATIVE</span>
   </div>
 );
