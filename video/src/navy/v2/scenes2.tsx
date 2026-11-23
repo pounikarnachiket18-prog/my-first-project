@@ -246,7 +246,7 @@ export const Runway: React.FC = () => {
   }
   // fast push-in to the ski-jump
   const g = f - cutB;
-  const cam = camAt(g, { tx: -6, ty: 140, zoom: 2.3, yaw: -6, pitch: 8, F: 3000 }, [{ f: 0 }, { f: 16, tx: -2, ty: 238, tz: 4, zoom: 6.0, yaw: 70, pitch: 79, F: 520 }, { f: dur - cutB, tx: -2, ty: 240, tz: 4, zoom: 6.4, yaw: 76, pitch: 80, F: 520 }]);
+  const cam = camAt(g, { tx: -6, ty: 140, zoom: 2.3, yaw: -6, pitch: 8, F: 3000 }, [{ f: 0 }, { f: 16, tx: -2, ty: 232, tz: 4, zoom: 9.0, yaw: 64, pitch: 77, F: 480, cy: 980 }, { f: dur - cutB, tx: -2, ty: 236, tz: 4, zoom: 9.8, yaw: 72, pitch: 78, F: 480, cy: 980 }]);
   return (
     <Stage dur={dur} enter="cut">
       <SkyHorizon cam={cam} />
@@ -584,7 +584,7 @@ export const Twist: React.FC = () => {
     );
   }
   if (f < c5) {
-    const cam = cam0({ tx: pos[0], ty: Math.min(pos[1], angPoint(edge + 30)[1]) - 6, tz: Math.min(pos[2], 30), yaw: -AH + 90, pitch: 78, zoom: 4.2, F: 520 });
+    const cam = cam0({ tx: pos[0], ty: Math.min(pos[1], angPoint(edge + 110)[1]) - 6, tz: Math.min(pos[2], 45), yaw: -AH + 90, pitch: 78, zoom: 4.2, F: 520 });
     return (
       <Stage dur={dur} enter="cut" exit="cut">
         <SkyHorizon cam={cam} />

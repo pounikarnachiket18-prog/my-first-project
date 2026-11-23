@@ -141,7 +141,7 @@ export const Keyword: React.FC<{ text: string; f: number; at: number; until: num
       <g opacity={1 - out} transform={`translate(0,${-out * 14})`}>
         {lines.map((ln, li) => {
           const chars = ln.split("");
-          const adv = (ch: string) => size * (ch === " " ? 0.36 : ch === "I" || ch === "!" || ch === "?" ? 0.42 : ch === "-" ? 0.5 : /[MW]/.test(ch) ? 1.02 : 0.8);
+          const adv = (ch: string) => size * (ch === " " ? 0.36 : ch === "I" || ch === "!" || ch === "?" ? 0.42 : ch === "-" ? 0.55 : /[MW]/.test(ch) ? 1.1 : 0.86);
           const offs: number[] = [];
           let acc = 0;
           chars.forEach((ch) => { offs.push(acc); acc += adv(ch); });
