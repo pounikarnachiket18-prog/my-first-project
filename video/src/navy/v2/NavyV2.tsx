@@ -5,11 +5,16 @@ import "@fontsource/inter/700.css";
 import "@fontsource/jetbrains-mono/400.css";
 import "@fontsource/jetbrains-mono/600.css";
 import "@fontsource/unbounded/800.css";
-import timeline from "./timeline.json";
+import tlNight from "./timeline.json";
+import tlDay from "../v3/timeline.json";
+import { TimelineCtx, MotionCtx, TL } from "./ctx";
+import { ThemeCtx, NIGHT, DAY } from "../theme";
+import { FastLabels } from "../world";
 import { HUD2, Captions2 } from "./ui2";
 import { SCENES_V2 } from "./scenes2";
 
-export const NAVY_V2_FRAMES = timeline.frames;
+export const NAVY_V2_FRAMES = tlNight.frames;
+export const NAVY_V3_FRAMES = tlDay.frames;
 
 const useFonts = () => {
   const [handle] = useState(() => delayRender("fonts"));
@@ -22,10 +27,18 @@ const useFonts = () => {
   }, [handle]);
 };
 
-export const NavyV2: React.FC<{ audio?: boolean }> = ({ audio = true }) => {
+type Props = { audio?: boolean; variant?: "v2-night" | "v3-day" };
+export const NavyV2: React.FC<Props> = ({ audio = true, variant = "v2-night" }) => {
   useFonts();
+  const v3 = variant === "v3-day";
+  const timeline: TL = (v3 ? tlDay : tlNight) as TL;
+  const theme = v3 ? DAY : NIGHT;
   return (
-    <AbsoluteFill style={{ background: "radial-gradient(ellipse 85% 60% at 50% 45%, #14202f 0%, #0b121c 55%, #05080d 100%)", overflow: "hidden" }}>
+    <ThemeCtx.Provider value={theme}>
+    <TimelineCtx.Provider value={timeline}>
+    <MotionCtx.Provider value={{ fast: v3 }}>
+    <FastLabels.Provider value={v3}>
+    <AbsoluteFill style={{ background: theme.bgCss, overflow: "hidden" }}>
       {timeline.scenes.map((s) => {
         const from = Math.round(s.start * timeline.fps);
         const to = Math.round(s.end * timeline.fps);
@@ -40,14 +53,18 @@ export const NavyV2: React.FC<{ audio?: boolean }> = ({ audio = true }) => {
         <defs>
           <radialGradient id="vig2" cx="50%" cy="46%" r="78%">
             <stop offset="0.55" stopColor="#000" stopOpacity={0} />
-            <stop offset="1" stopColor="#000" stopOpacity={0.6} />
+            <stop offset="1" stopColor="#000" stopOpacity={theme.vignette} />
           </radialGradient>
         </defs>
         <rect width={1080} height={1920} fill="url(#vig2)" />
         <HUD2 />
       </svg>
       <Captions2 />
-      {audio && <Audio src={staticFile("navy/mix_v2.wav")} />}
+      {audio && <Audio src={staticFile(v3 ? "navy/mix_v3.wav" : "navy/mix_v2.wav")} />}
     </AbsoluteFill>
+    </FastLabels.Provider>
+    </MotionCtx.Provider>
+    </TimelineCtx.Provider>
+    </ThemeCtx.Provider>
   );
 };

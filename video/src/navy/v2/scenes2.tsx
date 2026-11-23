@@ -1,14 +1,16 @@
 import React from "react";
 import { useCurrentFrame } from "remotion";
-import timeline from "./timeline.json";
+import { useTL } from "./ctx";
+import { useTheme } from "../theme";
 import { Cam, V3, camAt, prog, lerp, clamp01, project, path, poly, BASE_CAM, mixColor } from "../engine";
 import { C, Carrier, Jet, MigJet, Trail, Label, Box, L, RAMP0, RAMP_H, deckZ, SEA, angPoint, ANG_HEADING, WIRES, jetLocal, GEAR_H } from "../world";
 import { Timer, IndianFlag } from "../ui";
-import { Ocean, SkyHorizon, LightRays, Keyword, Tag, Sparks, Puffs, Stage, shakeCam, slowmo, horizonY } from "./fx";
+import { Ocean, SkyHorizon, LightRays, Keyword, Tag, Sparks, Puffs, Stage, shakeCam, slowmo, horizonY, SpeedLines, FocusBrackets } from "./fx";
 
-const FPS = timeline.fps;
-const sceneOf = (id: string) => timeline.scenes.find((s) => s.id === id)!;
+const FPS = 30;
 export const useS = (id: string) => {
+  const timeline = useTL();
+  const sceneOf = (sid: string) => timeline.scenes.find((s) => s.id === sid)!;
   const f = useCurrentFrame();
   const s0 = Math.round(sceneOf(id).start * FPS);
   const Ls = (i: number) => Math.round(timeline.lines[i].t0 * FPS) - s0;
@@ -56,18 +58,19 @@ const Ghosts: React.FC<{ n?: number; render: (k: number, o: number) => React.Rea
 // ======================= 0. COLD OPEN =======================
 export const Cold: React.FC = () => {
   const { f, dur } = useS("cold");
-  const FZ = 96;
+  const FZ = dur - 30; // v2: 96, v3: 78
+  const k = FZ / 96;
   const ft = Math.min(f, FZ);
-  const s = -236 + 70 * (ft / FPS);
+  const s = -12 - 70 * ((FZ - ft) / FPS);
   const pos = appr(s);
   const gearPt = jetLocal([1.25, -1.2, -0.55 - 1.4], pos, AH, 4, JS);
   const A: Partial<Cam> = { tx: gearPt[0], ty: gearPt[1], tz: gearPt[2], yaw: -AH + 78, pitch: 78, zoom: 24, F: 260 };
   const Bk: Partial<Cam> = { tx: angPoint(-70)[0], ty: angPoint(-70)[1], tz: 2, yaw: -AH + 30, pitch: 62, zoom: 2.0, F: 900 };
   const Ck: Partial<Cam> = { tx: angPoint(-12)[0], ty: angPoint(-12)[1], tz: 3, yaw: -AH + 12, pitch: 70, zoom: 4.2, F: 620 };
-  let cam = camAt(f, A, [{ f: 0, ...A }, { f: 26, ...A }, { f: 58, ...Bk }, { f: 92, ...Ck }]);
-  if (f < 26) cam = { ...cam, tx: gearPt[0], ty: gearPt[1], tz: gearPt[2] };
-  else if (f < 92) {
-    const w = prog(f, 26, 92);
+  let cam = camAt(f, A, [{ f: 0, ...A }, { f: 26 * k, ...A }, { f: 58 * k, ...Bk }, { f: 92 * k, ...Ck }]);
+  if (f < 26 * k) cam = { ...cam, tx: gearPt[0], ty: gearPt[1], tz: gearPt[2] };
+  else if (f < 92 * k) {
+    const w = prog(f, 26 * k, 92 * k);
     const deckP = angPoint(-12, 0, 3);
     cam = { ...cam, tx: lerp(pos[0], deckP[0], w), ty: lerp(pos[1], deckP[1], w), tz: lerp(pos[2], deckP[2], w) };
   }
@@ -77,9 +80,10 @@ export const Cold: React.FC = () => {
   return (
     <Stage dur={dur} enter="cut" exit="cut" tint={frozen ? 1 : 0} flash={frozen ? 0.55 * kick : 0}>
       <SkyHorizon cam={cam} />
-      <Ocean cam={cam} t={ft} blur={f < 30 ? 2 : 0} />
+      <Ocean cam={cam} t={ft} blur={f < 30 * k ? 2 : 0} />
       <Carrier cam={cam} t={ft} v2 gid="c0" parkedType="mig" wireGlow={frozen ? 1 : 0} />
       <Jet cam={cam} pos={pos} heading={AH} pitch={4} scale={JS} gear={1} volume hook={1} exhaust={0.35} t={ft} />
+      <SpeedLines f={f} amt={frozen ? 0 : 1 - 0.6 * prog(f, 60 * k, 92 * k)} dir={112} seed={2} />
       {frozen && <Keyword text={"SECONDS\nTO LAND"} f={f} at={FZ + 2} until={dur + 20} y={500} size={100} />}
     </Stage>
   );
@@ -88,6 +92,7 @@ export const Cold: React.FC = () => {
 // ======================= 1. HOOK =======================
 export const Hook: React.FC = () => {
   const { f, Ls, W, dur } = useS("hook");
+  const th = useTheme();
   const push = Ls(3);
   const cam = camAt(f, { tx: -70, ty: 330, zoom: 0.92, yaw: 0, pitch: 4, F: 2400 }, [
     { f: 0 },
@@ -106,7 +111,7 @@ export const Hook: React.FC = () => {
   return (
     <Stage dur={dur}>
       <Ocean cam={cam} t={f} />
-      <polygon points={poly(cam, [[-420, -500, -0.2], [120, -500, -0.2], [120, 3200, -0.2], [-420, 3200, -0.2]] as V3[])} fill="#0c131c" opacity={1 - prog(f, push, push + 20)} />
+      <polygon points={poly(cam, [[-300, -500, -0.2], [-70, -500, -0.2], [-70, 3200, -0.2], [-300, 3200, -0.2]] as V3[])} fill={th.land} opacity={1 - prog(f, push, push + 20)} />
       <g opacity={1 - prog(f, push, push + 20)}>
         <RunwayV2 cam={cam} x={-150} y0={-300} y1={3200} t={f} highlight={{ y0: 0, y1: L, p: prog(f, W(2, 6) - 6, W(2, 6) + 10) }} />
       </g>
@@ -123,6 +128,7 @@ export const Hook: React.FC = () => {
 };
 
 const RunwayV2: React.FC<{ cam: Cam; x: number; y0: number; y1: number; t: number; w?: number; highlight?: { y0: number; y1: number; p: number } }> = ({ cam, x, y0, y1, w = 46, highlight }) => {
+  const th = useTheme();
   const zm = cam.zoom * (cam.boost ?? 1);
   const lw = Math.max(1, zm * 0.3);
   const lights: React.ReactNode[] = [];
@@ -135,7 +141,7 @@ const RunwayV2: React.FC<{ cam: Cam; x: number; y0: number; y1: number; t: numbe
   }
   return (
     <g>
-      <polygon points={poly(cam, [[x - w / 2, y0, 0], [x + w / 2, y0, 0], [x + w / 2, y1, 0], [x - w / 2, y1, 0]])} fill="#232c38" stroke="rgba(235,242,250,0.55)" strokeWidth={lw} />
+      <polygon points={poly(cam, [[x - w / 2, y0, 0], [x + w / 2, y0, 0], [x + w / 2, y1, 0], [x - w / 2, y1, 0]])} fill={th.asphalt} stroke="rgba(235,242,250,0.55)" strokeWidth={lw} />
       <path d={path(cam, [[x, y0 + 40, 0], [x, y1, 0]])} stroke="rgba(235,242,250,0.8)" strokeWidth={lw} strokeDasharray={`${zm * 24} ${zm * 20}`} />
       {Array.from({ length: 8 }, (_, i) => <path key={i} d={path(cam, [[x - w / 2 + 5 + i * 5.2, y0 + 6, 0], [x - w / 2 + 5 + i * 5.2, y0 + 30, 0]])} stroke="rgba(235,242,250,0.8)" strokeWidth={lw * 1.4} />)}
       {lights}
@@ -194,6 +200,7 @@ export const Imagine: React.FC = () => {
       {tt > 0 && <Trail cam={cam} pts={trail((t) => ski(t, T).pos, tt, 0.6)} width={9} />}
       {tt > 0 && tt < T + 0.6 && <Ghosts render={(k, o) => { const g = ski(tt - k / FPS, T); return <Jet key={k} cam={cam} pos={g.pos} pitch={g.pitch} scale={JS} gear={g.gear} volume opacity={o} shadow={0} />; }} />}
       <Jet cam={cam} pos={st.pos} pitch={st.pitch} scale={JS} gear={st.gear} volume exhaust={f > rel - 14 ? 1 : 0.2} t={f} />
+      <SpeedLines f={f} amt={tt > 0 && tt < T + 0.8 ? 0.8 : 0} dir={0} seed={3} />
     </Stage>
   );
 };
@@ -201,6 +208,7 @@ export const Imagine: React.FC = () => {
 // ======================= 3. RUNWAY (with the humour beat) =======================
 export const Runway: React.FC = () => {
   const { f, Ls, W, dur } = useS("runway");
+  const th = useTheme();
   const cutA = Ls(9) - 3, cutB = Ls(10) - 2;
   if (f < cutA) {
     const go = 4;
@@ -215,11 +223,12 @@ export const Runway: React.FC = () => {
       <Stage dur={dur} exit="cut">
         <SkyHorizon cam={cam} />
         <Ocean cam={cam} t={f} />
-        <polygon points={poly(cam, [[-260, -300, -0.1], [260, -300, -0.1], [260, 3000, -0.1], [-260, 3000, -0.1]] as V3[])} fill="#0e161f" />
+        <polygon points={poly(cam, [[-260, -300, -0.1], [260, -300, -0.1], [260, 3000, -0.1], [-260, 3000, -0.1]] as V3[])} fill={th.land} />
         <RunwayV2 cam={cam} x={0} y0={-80} y1={2400} t={f} />
         {crane > 0.2 && <Trail cam={cam} pts={Array.from({ length: 30 }, (_, i) => { const yy = y * (i / 29); return [0, yy, GH + (yy > 1150 ? (yy - 1150) * 0.1 : 0)] as V3; })} width={6} opacity={crane} />}
         <Ghosts render={(k, o) => { const tk = Math.max(0, t - k / FPS); const yk = 0.5 * acc * tk * tk; return <Jet key={k} cam={cam} pos={[0, yk, GH + (yk > 1150 ? (yk - 1150) * 0.1 : 0)]} scale={JS} gear={1} volume dim opacity={o * (1 - crane)} shadow={0} />; }} />
         <Jet cam={cam} pos={jp} pitch={lift > 0 ? 8 : 0} scale={JS} gear={1 - clamp01(lift / 30)} volume dim exhaust={0.7} t={f} />
+        <SpeedLines f={f} amt={t > 0 ? 0.9 * (1 - crane) : 0} dir={0} seed={4} />
         <Label cam={cam} anchor={[0, 1600, 0]} dx={60} dy={-90} text="AIRPORT RUNWAY" p={prog(f, cutA - 40, cutA - 26)} />
       </Stage>
     );
@@ -301,6 +310,7 @@ export const SkiJump: React.FC = () => {
         <Carrier cam={cam} t={f} v2 gid="s2" parkedType="mig" />
         {blocks.map((b, i) => <g key={i} filter={f > W(12, 4) - 2 && drop < 0.5 ? "url(#glow)" : undefined}><Box cam={cam} b={b} /></g>)}
         <Jet cam={cam} pos={[st.pos[0] + vib, st.pos[1], st.pos[2]]} pitch={st.pitch} scale={JS} gear={1} volume exhaust={1} t={f} />
+        <FocusBrackets at={project(cam, [-1.6, 149.0, 0.5])} f={f} from={Ls(12)} to={cut2 - 2} size={120} />
         <Label cam={cam} anchor={[-1.6, 149.3, 1.0]} dx={-60} dy={-260} text="RESTRAINING BLOCKS" color={C.orange} p={prog(f, W(12, 4) - 2, W(12, 4) + 12) * (1 - drop)} />
       </Stage>
     );
@@ -320,6 +330,7 @@ export const SkiJump: React.FC = () => {
       {tt > 0 && <Trail cam={cam} pts={trail((t) => ski(t, T).pos, tt, 0.6)} width={10} />}
       {tt > 0 && tt < T + 0.8 && <Ghosts render={(k, o) => { const g = ski(tt - k / FPS, T); return <Jet key={k} cam={cam} pos={g.pos} pitch={g.pitch} scale={JS} gear={g.gear} volume opacity={o} shadow={0} />; }} />}
       <Jet cam={cam} pos={st.pos} pitch={st.pitch} scale={JS} gear={st.gear} volume exhaust={1} t={f} />
+      <SpeedLines f={f} amt={tt > 0 && tt < T ? 1 : 0} dir={0} seed={5} />
       <Label cam={cam} anchor={[-4, 246, deckZ(246)]} dx={-120} dy={190} text="SKI-JUMP RAMP" color={C.cyan} p={prog(f, bowAt - 18, bowAt - 4) * (1 - crane)} />
     </Stage>
   );
@@ -328,6 +339,7 @@ export const SkiJump: React.FC = () => {
 // ======================= 5. CATAPULT (generic CATOBAR cutaway) vs VIKRANT =======================
 const CV_OUT: [number, number][] = [[-30, 0], [30, 0], [34, 40], [34, 230], [24, 290], [8, 315], [-8, 315], [-26, 280], [-38, 200], [-38, 40]];
 const GenericCarrier: React.FC<{ cam: Cam; open: number; steam: number; shuttleY: number; brake: number; t: number }> = ({ cam, open, steam, shuttleY, brake, t }) => {
+  const th = useTheme();
   const top = CV_OUT.map(([x, y]) => [x, y, 0] as V3);
   const bot = CV_OUT.map(([x, y]) => [x * 0.82, 10 + y * 0.93, SEA] as V3);
   const lw = Math.max(1, cam.zoom * 0.35);
@@ -339,15 +351,15 @@ const GenericCarrier: React.FC<{ cam: Cam; open: number; steam: number; shuttleY
   const steamCol = mixColor("#5b6878", C.cyan, steam);
   return (
     <g>
-      <polygon points={poly(cam, bot.map(([x, y]) => [x + 10, y - 7, SEA] as V3))} fill="rgba(0,0,0,0.45)" filter="url(#shadow)" />
-      <polygon points={poly(cam, bot)} fill={C.hullA} />
-      {sides.map((q, i) => <polygon key={i} points={poly(cam, q)} fill={i % 2 ? "#2b3543" : "#323d4c"} stroke="#2b3543" strokeWidth={0.6} />)}
-      <polygon points={poly(cam, top)} fill="#4a5566" />
+      <polygon points={poly(cam, bot.map(([x, y]) => [x + 10, y - 7, SEA] as V3))} fill={th.seaShadow} filter="url(#shadow)" />
+      <polygon points={poly(cam, bot)} fill={th.hullA} />
+      {sides.map((q, i) => <polygon key={i} points={poly(cam, q)} fill={th.genSides[i % 2]} stroke={th.genSides[0]} strokeWidth={0.6} />)}
+      <polygon points={poly(cam, top)} fill={th.genDeck} />
       <path d={path(cam, [[-10, 10, 0], [-30, 200, 0]])} stroke="rgba(235,242,250,0.5)" strokeWidth={lw} strokeDasharray="12 12" />
       <path d={path(cam, [[X, Y0, 0], [X, Y1, 0]])} stroke="rgba(235,242,250,0.75)" strokeWidth={lw} />
       {open > 0 && (
         <g>
-          <polygon points={poly(cam, hole)} fill="#0a1018" stroke={C.cyan} strokeOpacity={0.5} strokeWidth={lw} strokeDasharray="8 6" />
+          <polygon points={poly(cam, hole)} fill={th.cutHole} stroke={C.cyan} strokeOpacity={0.5} strokeWidth={lw} strokeDasharray="8 6" />
           <Box cam={cam} b={{ x0: X - 6, x1: X - 2, y0: Y0 - 24, y1: Y0 - 8, z0: -11, z1: -4, top: "#3c4656" }} />
           {[-1.2, 1.2].map((dx, i) => (
             <g key={i}>
@@ -388,6 +400,7 @@ export const Catapult: React.FC = () => {
         <GenericCarrier cam={cam} open={open} steam={steam} shuttleY={shuttleY} brake={brake} t={f} />
         {tt > 0 && <Trail cam={cam} pts={Array.from({ length: 14 }, (_, i) => { const q = Math.max(0, tt - 0.5 + i * 0.036); const kk = Math.min(1, q / Tl); return [6, q < Tl ? lerp(162, 296, kk * kk) + 4 : 300 + (q - Tl) * 150, q < Tl ? 0.4 : 0.4 + (q - Tl) * 22] as V3; })} width={8} />}
         <MigJet cam={cam} pos={[6, jy, jz]} heading={0} scale={1.6} />
+        <SpeedLines f={f} amt={tt > 0 && tt < Tl + 0.6 ? 0.9 : 0} dir={135} seed={6} />
         {lab("STEAM CYLINDERS", [7.2, 200, -3.2], 14, 110, 170, C.cyan)}
         {lab("SHUTTLE", [6, 163, 0.6], Ls(16), -100, -170, C.orange)}
         {lab("WATER BRAKE", [6, 297, -3], Ls(16) + 14, -60, -170)}
@@ -443,6 +456,7 @@ export const Landing: React.FC = () => {
         <SkyHorizon cam={cam} />
         <Ocean cam={cam} t={f} />
         <Carrier cam={cam} t={f} v2 gid="l1" parkedType="mig" wireGlow={0.4} />
+        <SpeedLines f={f} amt={0.55} dir={90} seed={7} n={18} />
         <CockpitOverlay f={f} />
         <Tag text="FINAL APPROACH" x={48} y={1180} p={prog(f, 6, 16)} />
       </Stage>
@@ -461,6 +475,7 @@ export const Landing: React.FC = () => {
         <Ocean cam={cam} t={f} blur={2} />
         <Jet cam={cam} pos={pos} heading={AH} pitch={4} scale={JS} gear={1} volume hook={prog(f, W(19, 4) - 6, W(19, 4) + 4)} exhaust={0.3} t={f} shadow={0} />
         {f > W(19, 4) - 2 && <circle cx={project(cam, hookPt(pos, 4, false))[0]} cy={project(cam, hookPt(pos, 4, false))[1]} r={22 + 8 * Math.sin(f * 0.4)} fill="none" stroke={C.orange} strokeWidth={3} opacity={0.7} />}
+        <FocusBrackets at={project(cam, hookPt(pos, 4, false))} f={f} from={W(19, 4) + 2} to={c2} size={70} />
         <Keyword text={"ARRESTING\nHOOK"} f={f} at={W(19, 4) - 2} until={c2 + 10} y={480} size={88} color={C.orange} />
       </Stage>
     );
@@ -498,6 +513,7 @@ export const Landing: React.FC = () => {
         <Carrier cam={cam} t={f} v2 gid="l4" parkedType="mig" wireGlow={0.5} catch={caught ? { wire: 1, hook: hd, amt: 1 } : null} />
         <Jet cam={cam} pos={pos} heading={AH} pitch={1} scale={JS} gear={1} volume hook={1} hookDown={s > -6 ? 1 : 0} exhaust={0.4} t={f} />
         {s > -6 && <Sparks at={hs} f={f} seed={3} size={1.2} />}
+        <FocusBrackets at={hs} f={f} from={catchF - 8} to={catchF + 24} size={80} />
         {caught && <Puffs at={project(cam, jetLocal([1.25, -1.2, -0.55 - 1.4], pos, AH, 1, JS))} age={f - catchF} scale={1.4} />}
       </Stage>
     );
@@ -579,6 +595,7 @@ export const Twist: React.FC = () => {
         <Carrier cam={cam} t={f} v2 gid="t3" parkedType="mig" wireRed={wireRed} />
         {jet(cam)}
         <Sparks at={hs} f={f} seed={7} n={22} size={1.3} />
+        <FocusBrackets at={hs} f={f} from={c3 + 2} to={c4} size={80} color={C.red} />
         <Label cam={cam} anchor={angPoint(WIRES[1], 12, 0.3)} dx={60} dy={220} text="MISSED!" color={C.red} p={prog(f, W(28, 6) - 4, W(28, 6) + 8)} />
       </Stage>
     );
@@ -593,6 +610,7 @@ export const Twist: React.FC = () => {
         <Trail cam={cam} pts={Array.from({ length: 16 }, (_, i) => sAt(s - 50 + (50 * i) / 15))} width={8} />
         <Ghosts render={(k, o) => <Jet key={k} cam={cam} pos={sAt(sFn(sf - k))} heading={AH} pitch={pitch} scale={JS} gear={1} volume opacity={o} shadow={0} />} />
         {jet(cam)}
+        <SpeedLines f={f} amt={0.9} dir={0} seed={8} />
       </Stage>
     );
   }
@@ -662,6 +680,7 @@ export const Finale: React.FC = () => {
         <Carrier cam={cam} t={f} v2 gid="f1" parkedType="mig" catch={caught ? { wire: 0, hook: hd, amt: 1 } : null} />
         <Jet cam={cam} pos={pos} heading={AH} pitch={1} scale={JS} gear={1} volume hook={1} hookDown={s > -4 ? 1 : 0} exhaust={caught ? 1 : 0.35} t={f} />
         {s > -4 && !caught && <Sparks at={project(cam, hd)} f={f} seed={11} />}
+        <FocusBrackets at={project(cam, hd)} f={f} from={catchF - 4} to={catchF + 22} size={80} />
       </Stage>
     );
   }

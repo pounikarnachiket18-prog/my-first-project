@@ -3,7 +3,7 @@ import { useCurrentFrame, useVideoConfig, interpolate } from "remotion";
 import { C } from "../world";
 import { clamp01, lerp } from "../engine";
 import { IndianFlag } from "../ui";
-import timeline from "./timeline.json";
+import { useTL, useMotion } from "./ctx";
 
 const SECTIONS = [
   { label: "TAKE-OFF", color: C.cyan, scenes: ["hook", "imagine", "runway", "skijump", "catapult"], dash: 0 },
@@ -29,6 +29,7 @@ const ShipIcon: React.FC<{ x: number; y: number; p: number }> = ({ x, y, p }) =>
 
 /** top bar; hidden during the cold open */
 export const HUD2: React.FC = () => {
+  const timeline = useTL();
   const f = useCurrentFrame();
   const { fps } = useVideoConfig();
   const t = f / fps;
@@ -59,18 +60,20 @@ const KEY = /^(vikrant|tejas|ski-jump|hook|catapult|runway|second|full|power|con
 
 /** Hinglish captions: chunk pops in, active word cyan + springs, key words keep an accent. Inside the Instagram safe area. */
 export const Captions2: React.FC = () => {
+  const timeline = useTL();
   const f = useCurrentFrame();
   const { fps } = useVideoConfig();
   const t = f / fps;
+  const { fast } = useMotion();
   const chunk = timeline.captions.find((c) => t >= c.t0 - 0.05 && t < c.t1);
   if (!chunk) return null;
   const chars = chunk.words.reduce((a, w) => a + w.text.length + 1, 0);
   const fs = Math.min(56, Math.floor(800 / (chars * 0.56)));
-  const k = clamp01((t - chunk.t0 + 0.05) / 0.16);
+  const k = clamp01((t - chunk.t0 + 0.05) / (fast ? 0.09 : 0.16));
   const pop = 1 - Math.pow(1 - k, 3);
   return (
     <div style={{ position: "absolute", left: 60, width: 920, top: 1300, display: "flex", justifyContent: "center", opacity: pop, transform: `translateY(${(1 - pop) * 14}px) scale(${lerp(0.9, 1, pop)})` }}>
-      <div style={{ display: "flex", gap: fs * 0.28, padding: `${fs * 0.26}px ${fs * 0.48}px ${fs * 0.34}px`, borderRadius: 14, background: "rgba(7,11,18,0.72)", border: "1px solid rgba(255,255,255,0.06)", boxShadow: "0 10px 30px rgba(0,0,0,0.35)", fontFamily: "Inter", fontWeight: 700, fontSize: fs, lineHeight: 1.15, whiteSpace: "nowrap" }}>
+      <div style={{ display: "flex", gap: fs * (fast ? 0.36 : 0.28), padding: `${fs * 0.26}px ${fs * 0.48}px ${fs * 0.34}px`, borderRadius: 14, background: "rgba(7,11,18,0.72)", border: "1px solid rgba(255,255,255,0.06)", boxShadow: "0 10px 30px rgba(0,0,0,0.35)", fontFamily: "Inter", fontWeight: 700, fontSize: fs, lineHeight: 1.15, whiteSpace: "nowrap" }}>
         {chunk.words.map((w, i) => {
           const active = t >= w.t0 && t < w.t1;
           const done = t >= w.t1;

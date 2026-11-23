@@ -138,3 +138,40 @@ The other scenes were improved in place (camera, compositing, timing); none were
 - `blackdetect` / `freezedetect`: no unintended black or frozen segments. The intentional freeze-frame is about 1 s and includes camera shake.
 - Audio: −14.0 LUFS integrated; peaks below −1.5 dBTP; a true-silence beat at 3.9–4.15 s; narration back-transcribed from the busiest sections.
 - Captions: word timings come from the same timeline that drives the animation. Captions stay inside y 1300–1390 and x 60–1020 on every frame.
+
+---
+
+# v3: daytime, faster motion graphics, 90 s
+
+**Output:** `out/indian_navy_cinematic_v3_day_90s.mp4`
+- 1080×1920, 30 fps, H.264 yuv420p, AAC 256 kb/s, about 90 s.
+- Composition `IndianNavyV3Day`; v2 (night) and v1 are unchanged.
+
+**Daylight.** A theme context (`src/navy/theme.ts`, `NIGHT` / `DAY`) recolours everything:
+- blue sky with a sun glow and a sun-glint column on the sea;
+- sunlit blue sea with white wave glints;
+- naval-grey hull and island, a dark non-skid deck and crisp sea shadows;
+- white wake and foam;
+- green airport ground and a lighter vignette.
+
+`NIGHT` reproduces the v1/v2 colours exactly.
+
+**90 seconds without cutting any line.** All 38 lines are kept. I re-voiced them faster (Piper length scale 0.665 instead of 0.76) with tighter pauses:
+
+| Pause | v2 | v3 |
+|---|---|---|
+| between clauses | 0.08 s | 0.05 s |
+| between lines | 0.18 s | 0.10 s |
+| between scenes | 0.34 s | 0.22 s |
+| catapult build-up | 1.1 s | 0.5 s |
+
+Final length is 90.15 s. Intelligibility was re-checked by back-transcription. All scene and camera timing is driven by the timeline, so the animation tightened automatically.
+
+**Faster motion graphics (v3 only):**
+- Keyword letters pop about 1.7× faster with an overshoot settle; labels and tags draw about 1.8× faster; captions pop in about 1.8× faster.
+- Scene zoom-through transitions are 6/5 frames instead of 9/7.
+- **New: speed streaks** on the cold-open approach, the launch, the runway roll, the ski-jump run, the catapult shot, the first-person approach and the bolter.
+- **New: viewfinder brackets** snap onto the restraining blocks, the dropping hook, the wire engagement, the hook skipping the wires, and the final catch.
+- The cold-open freeze-frame is placed relative to the shorter scene, at 2.6 s, so "sirf kuch second!" lands on the freeze.
+
+The factual notes from v2 still apply (Tejas prototype tag, generic catapult carrier, 3 wires).

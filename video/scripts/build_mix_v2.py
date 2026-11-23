@@ -7,8 +7,10 @@ from scipy.signal import butter, sosfilt
 
 HERE = os.path.dirname(__file__)
 PUB = os.path.join(HERE, "..", "public", "navy")
-tl = json.load(open(os.path.join(HERE, "..", "src", "navy", "v2", "timeline.json")))
-voice, SR = sf.read(os.path.join(PUB, "voice_v2.wav"), dtype="float64")
+import sys
+VER = sys.argv[1] if len(sys.argv) > 1 else "v2"  # "v2" (night, 105 s) or "v3" (day, 90 s)
+tl = json.load(open(os.path.join(HERE, "..", "src", "navy", VER, "timeline.json")))
+voice, SR = sf.read(os.path.join(PUB, f"voice_{VER}.wav"), dtype="float64")
 N = len(voice)
 rng = np.random.default_rng(11)
 FPS = 30
@@ -196,7 +198,7 @@ for ch in (0, 1):
 amb_gain = np.ones(N)
 
 t0 = 0.0
-FZ = 96 / FPS
+FZ = (round(SC["cold"]["end"] * FPS) - 30) / FPS  # freeze-frame (matches Cold in scenes2.tsx)
 # --- cold open
 sfx.add(rumble(FZ + 0.1, 0.9), 0.0)
 sfx.add(hp(whoosh(1.0, 600, 4000), 400), 0.0, 0.7, pan=-0.4)
@@ -373,5 +375,5 @@ R_ = vmono * 0.92 + (sfxR * duck_sfx + mR * duck_music * music_shape * dip + aR 
 st = np.stack([L_, R_], 1)
 st = np.tanh(st * 1.05) / np.tanh(1.05)
 st = st / np.abs(st).max() * 0.95
-sf.write(os.path.join(PUB, "mix_v2.wav"), st.astype(np.float32), SR)
-print("mix_v2 written", round(N / SR, 2), "s")
+sf.write(os.path.join(PUB, f"mix_{VER}.wav"), st.astype(np.float32), SR)
+print(f"mix_{VER} written", round(N / SR, 2), "s")

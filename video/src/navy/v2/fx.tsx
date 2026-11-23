@@ -4,6 +4,8 @@ import { useCurrentFrame } from "remotion";
 import { Cam, V3, project, depthOf, clamp01, lerp } from "../engine";
 import { Defs, SEA, C } from "../world";
 import { SkyDef } from "../ui";
+import { useTheme } from "../theme";
+import { useMotion } from "./ctx";
 
 const D = Math.PI / 180;
 const zmOf = (c: Cam) => c.zoom * (c.boost ?? 1);
@@ -37,7 +39,9 @@ const hash = (i: number, j: number) => {
 };
 
 /** world-anchored ocean surface: glinting wave strokes that stay put as the camera moves */
-export const Ocean: React.FC<{ cam: Cam; t: number; amt?: number; blur?: number }> = ({ cam, t, amt = 1, blur = 0 }) => {
+export const Ocean: React.FC<{ cam: Cam; t: number; amt?: number; blur?: number }> = ({ cam, t, amt: amt0 = 1, blur = 0 }) => {
+  const th = useTheme();
+  const amt = amt0 * th.oceanGain;
   const zm = zmOf(cam);
   const base = Math.min(80, Math.max(3, 42 / zm));
   // probe the screen to find which part of the sea plane is visible, by depth band
@@ -78,7 +82,7 @@ export const Ocean: React.FC<{ cam: Cam; t: number; amt?: number; blur?: number 
       if (a[1] < -60 || a[1] > 1980) continue;
       const s = cam.F / Math.max(80, cam.F + dd);
       budget--;
-      strokes.push(<line key={`${li}-${i}-${j}`} x1={a[0]} y1={a[1]} x2={b[0]} y2={b[1]} stroke="#9cc3e3" strokeOpacity={o} strokeWidth={Math.max(0.8, Math.min(4, 2.2 * s * Math.sqrt(zm / 3)))} strokeLinecap="round" />);
+      strokes.push(<line key={`${li}-${i}-${j}`} x1={a[0]} y1={a[1]} x2={b[0]} y2={b[1]} stroke={th.oceanStroke} strokeOpacity={Math.min(0.9, o)} strokeWidth={Math.max(0.8, Math.min(4, 2.2 * s * Math.sqrt(zm / 3)))} strokeLinecap="round" />);
     }
   });
   return <g filter={blur > 0 ? `url(#dof${Math.round(blur)})` : undefined}>{strokes}</g>;
@@ -86,41 +90,45 @@ export const Ocean: React.FC<{ cam: Cam; t: number; amt?: number; blur?: number 
 
 /** sky + horizon haze for low camera angles (draws nothing when the horizon is off-screen) */
 export const SkyHorizon: React.FC<{ cam: Cam; warm?: number }> = ({ cam, warm = 0 }) => {
+  const th = useTheme();
   const hy = horizonY(cam);
   if (!(hy > -40) || hy > 1960) return null;
   return (
     <g>
       <defs>
         <linearGradient id="skyv2" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#05080e" />
-          <stop offset="0.7" stopColor="#111c2c" />
-          <stop offset="1" stopColor={warm > 0 ? "#3a3a48" : "#22344c"} />
+          <stop offset="0" stopColor={th.sky[0]} />
+          <stop offset="0.7" stopColor={th.sky[1]} />
+          <stop offset="1" stopColor={warm > 0 ? th.skyWarm : th.sky[2]} />
         </linearGradient>
         <linearGradient id="seav2" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#1d2c42" />
-          <stop offset="0.35" stopColor="#0f1826" />
-          <stop offset="1" stopColor="#070b12" />
+          <stop offset="0" stopColor={th.seaGrad[0]} />
+          <stop offset="0.35" stopColor={th.seaGrad[1]} />
+          <stop offset="1" stopColor={th.seaGrad[2]} />
         </linearGradient>
         <radialGradient id="sunv2" cx="0.5" cy="0.5" r="0.5">
-          <stop offset="0" stopColor="#ffcf96" stopOpacity={0.55 * warm} />
-          <stop offset="1" stopColor="#ffcf96" stopOpacity={0} />
+          <stop offset="0" stopColor={th.sun} stopOpacity={(th.day ? 0.8 : 0.55) * Math.max(warm, th.day ? 0.6 : 0)} />
+          <stop offset="1" stopColor={th.sun} stopOpacity={0} />
         </radialGradient>
       </defs>
       <rect x={0} y={hy} width={1080} height={Math.max(0, 1920 - hy)} fill="url(#seav2)" />
       <rect x={0} y={0} width={1080} height={Math.max(0, hy)} fill="url(#skyv2)" />
-      {warm > 0 && <ellipse cx={760} cy={hy - 10} rx={520} ry={240} fill="url(#sunv2)" />}
-      <rect x={0} y={hy - 3} width={1080} height={6} fill="#5d7593" opacity={0.35} filter="url(#softglow)" />
+      {(warm > 0 || th.day) && <ellipse cx={760} cy={hy - 10} rx={520} ry={240} fill="url(#sunv2)" />}
+      {th.day && <ellipse cx={760} cy={hy + 260} rx={90} ry={300} fill="url(#sunv2)" opacity={0.7} />}
+      <rect x={0} y={hy - 3} width={1080} height={6} fill={th.haze} opacity={th.hazeOpacity} filter="url(#softglow)" />
     </g>
   );
 };
 
 /** soft volumetric light shafts (screen space, subtle) */
-export const LightRays: React.FC<{ t: number; amt?: number; from?: [number, number] }> = ({ t, amt = 1, from = [900, -200] }) => (
-  <g opacity={0.55 * amt} style={{ mixBlendMode: "screen" }}>
+export const LightRays: React.FC<{ t: number; amt?: number; from?: [number, number] }> = ({ t, amt = 1, from = [900, -200] }) => {
+  const th = useTheme();
+  return (
+  <g opacity={0.55 * amt * th.rayGain} style={{ mixBlendMode: "screen" }}>
     <defs>
       <linearGradient id="rayv2" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stopColor="#bfd9ff" stopOpacity={0.16} />
-        <stop offset="1" stopColor="#bfd9ff" stopOpacity={0} />
+        <stop offset="0" stopColor={th.ray} stopOpacity={0.16} />
+        <stop offset="1" stopColor={th.ray} stopOpacity={0} />
       </linearGradient>
     </defs>
     {[0, 1, 2, 3].map((k) => {
@@ -129,13 +137,16 @@ export const LightRays: React.FC<{ t: number; amt?: number; from?: [number, numb
       return <rect key={k} x={from[0] - w / 2} y={from[1]} width={w} height={2600} fill="url(#rayv2)" transform={`rotate(${ang} ${from[0]} ${from[1]})`} opacity={0.5 + 0.5 * Math.sin(t * 0.02 + k * 2)} />;
     })}
   </g>
-);
+  );
+};
 
 /** big editorial keyword, letters pop in; centred at (x, y) unless align=left */
 export const Keyword: React.FC<{ text: string; f: number; at: number; until: number; x?: number; y?: number; size?: number; color?: string; align?: "left" | "center"; wobble?: boolean }> =
   ({ text, f, at, until, x = 540, y = 520, size = 92, color = "#eef3f8", align = "center", wobble = false }) => {
+    const { fast } = useMotion();
+    const popF = fast ? 3.5 : 6, stag = fast ? 0.4 : 0.8;
     if (f < at - 1 || f > until + 10) return null;
-    const out = clamp01((f - until) / 8);
+    const out = clamp01((f - until) / (fast ? 5 : 8));
     const lines = text.split("\n");
     return (
       <g opacity={1 - out} transform={`translate(0,${-out * 14})`}>
@@ -150,8 +161,8 @@ export const Keyword: React.FC<{ text: string; f: number; at: number; until: num
           return (
             <g key={li}>
               {chars.map((ch, i) => {
-                const k = clamp01((f - at - (li * chars.length + i) * 0.8) / 6);
-                const sc = lerp(1.6, 1, 1 - Math.pow(1 - k, 3));
+                const k = clamp01((f - at - (li * chars.length + i) * stag) / popF);
+                const sc = fast ? (k < 1 ? lerp(1.8, 0.94, 1 - Math.pow(1 - k, 3)) : 1 + 0.06 * Math.exp(-(f - at - (li * chars.length + i) * stag - popF) / 3) * Math.cos((f - at) * 0.9) * -1) : lerp(1.6, 1, 1 - Math.pow(1 - k, 3));
                 const wob = wobble ? Math.sin((f - at) * 0.6 + i) * 4 * (1 - clamp01((f - at) / 30)) : 0;
                 const cx = sx + offs[i] + adv(ch) / 2, cy = y + li * size * 1.08;
                 return (
@@ -168,7 +179,9 @@ export const Keyword: React.FC<{ text: string; f: number; at: number; until: num
   };
 
 /** small mono fact tag (used for the Naval LCA prototype note etc.) */
-export const Tag: React.FC<{ text: string; x: number; y: number; p: number; color?: string }> = ({ text, x, y, p, color = C.cyan }) => {
+export const Tag: React.FC<{ text: string; x: number; y: number; p: number; color?: string }> = ({ text, x, y, p: p0, color = C.cyan }) => {
+  const { fast } = useMotion();
+  const p = fast ? Math.min(1, p0 * 1.8) : p0;
   if (p <= 0) return null;
   const w = text.length * 15.6 + 34;
   return (
@@ -212,8 +225,10 @@ export const Puffs: React.FC<{ at: [number, number]; age: number; scale?: number
 export const Stage: React.FC<{ children: React.ReactNode; dur: number; enter?: "zoom" | "cut" | "fade"; exit?: "zoom" | "cut"; tint?: number; flash?: number }> =
   ({ children, dur, enter = "zoom", exit = "zoom", tint = 0, flash = 0 }) => {
     const f = useCurrentFrame();
-    const ein = enter === "zoom" ? 1 - clamp01(f / 9) : 0;
-    const eout = exit === "zoom" ? clamp01((f - (dur - 7)) / 7) : 0;
+    const { fast } = useMotion();
+    const EI = fast ? 6 : 9, EO = fast ? 5 : 7;
+    const ein = enter === "zoom" ? 1 - clamp01(f / EI) : 0;
+    const eout = exit === "zoom" ? clamp01((f - (dur - EO)) / EO) : 0;
     const fade = enter === "fade" ? clamp01(f / 10) : enter === "zoom" ? clamp01(f / 4) : 1;
     const sc = 1 + 0.22 * Math.pow(ein, 2) + 0.28 * Math.pow(eout, 2);
     const bl = 9 * ein + 8 * eout;
@@ -236,3 +251,41 @@ export const shakeCam = (f: number, amt: number): Partial<Cam> => ({ cx: 540 + M
 
 /** slow-motion time remap: real frames -> story frames, slowed by `k` inside [a, b] */
 export const slowmo = (f: number, a: number, b: number, k: number) => (f < a ? f : f < b ? a + (f - a) * k : a + (b - a) * k + (f - b));
+
+/** v3 motion graphic: screen-space speed streaks (dir in degrees, 0 = streaks move right) */
+export const SpeedLines: React.FC<{ f: number; amt: number; dir?: number; seed?: number; n?: number }> = ({ f, amt, dir = 180, seed = 1, n = 26 }) => {
+  const { fast } = useMotion();
+  if (!fast || amt <= 0.01) return null;
+  const a = dir * D, ca = Math.cos(a), sa = Math.sin(a);
+  return (
+    <g opacity={amt} style={{ mixBlendMode: "screen" }}>
+      {Array.from({ length: n }, (_, i) => {
+        const h = hash(i, seed), h2 = hash(seed, i * 3 + 1);
+        const len = 90 + 260 * h;
+        const speed = 70 + 90 * h2;
+        const across = -300 + 1680 * h2;              // position perpendicular to motion
+        const along = ((f * speed + h * 4000) % 2600) - 700; // position along motion
+        const cx = 540 + ca * along - sa * across, cy = 960 + sa * along + ca * across;
+        return <line key={i} x1={cx} y1={cy} x2={cx - ca * len} y2={cy - sa * len} stroke="#ffffff" strokeOpacity={0.1 + 0.22 * h} strokeWidth={1.5 + 2.5 * h2} strokeLinecap="round" />;
+      })}
+    </g>
+  );
+};
+
+/** v3 motion graphic: viewfinder brackets that snap onto a screen point */
+export const FocusBrackets: React.FC<{ at: [number, number]; f: number; from: number; to?: number; size?: number; color?: string }> = ({ at, f, from, to = 1e9, size = 90, color = C.orange }) => {
+  const { fast } = useMotion();
+  if (!fast || f < from || f > to + 6) return null;
+  const k = clamp01((f - from) / 5);
+  const out = clamp01((f - to) / 6);
+  const s = size * lerp(2.2, 1, 1 - Math.pow(1 - k, 3)) * (1 + 0.04 * Math.sin((f - from) * 0.5));
+  const c = s * 0.32;
+  const [x, y] = at;
+  const corner = (sx: number, sy: number) => `M${x + sx * s} ${y + sy * (s - c)} L${x + sx * s} ${y + sy * s} L${x + sx * (s - c)} ${y + sy * s}`;
+  return (
+    <g opacity={k * (1 - out)} stroke={color} strokeWidth={4} fill="none" strokeLinecap="round">
+      {[[-1, -1], [1, -1], [1, 1], [-1, 1]].map(([sx, sy], i) => <path key={i} d={corner(sx, sy)} />)}
+      <circle cx={x} cy={y} r={5} fill={color} stroke="none" />
+    </g>
+  );
+};

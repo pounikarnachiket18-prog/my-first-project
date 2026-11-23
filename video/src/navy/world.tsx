@@ -1,5 +1,6 @@
 import React from "react";
 import { Cam, V3, project, poly, path, depthOf, rotZ, clamp01, mixColor, lerp } from "./engine";
+import { useTheme, Theme, NIGHT } from "./theme";
 
 export const C = {
   bg0: "#070b12",
@@ -90,27 +91,28 @@ export const Defs: React.FC = () => (
   </defs>
 );
 
-const sideShade = (a: V3, b: V3) => {
+const sideShade = (a: V3, b: V3, th: Theme = NIGHT) => {
   const dx = b[0] - a[0], dy = b[1] - a[1];
   const n = Math.hypot(dx, dy) || 1;
   const nx = dy / n, ny = -dx / n; // outward normal (outline is clockwise from stern-port)
   const lit = clamp01(0.5 + 0.5 * (nx * 0.55 + ny * -0.35) * -1);
-  return mixColor(C.hullA, C.hullB, lit);
+  return mixColor(th.hullA, th.hullB, lit);
 };
 
 type Prism = { x0: number; x1: number; y0: number; y1: number; z0: number; z1: number; top?: string };
 export const Box: React.FC<{ cam: Cam; b: Prism }> = ({ cam, b }) => {
+  const th = useTheme();
   const corners: [number, number][] = [[b.x0, b.y0], [b.x1, b.y0], [b.x1, b.y1], [b.x0, b.y1]];
   const sides = corners.map((p, i) => {
     const q = corners[(i + 1) % 4];
     const quad: V3[] = [[p[0], p[1], b.z0], [q[0], q[1], b.z0], [q[0], q[1], b.z1], [p[0], p[1], b.z1]];
     const mid: V3 = [(p[0] + q[0]) / 2, (p[1] + q[1]) / 2, (b.z0 + b.z1) / 2];
-    return { quad, d: depthOf(cam, mid), col: sideShade([p[0], p[1], 0], [q[0], q[1], 0]) };
+    return { quad, d: depthOf(cam, mid), col: sideShade([p[0], p[1], 0], [q[0], q[1], 0], th) };
   }).sort((u, v) => v.d - u.d);
   return (
     <g>
       {sides.map((s, i) => <polygon key={i} points={poly(cam, s.quad)} fill={s.col} />)}
-      <polygon points={poly(cam, corners.map(([x, y]) => [x, y, b.z1] as V3))} fill={b.top ?? "#5f6c7f"} />
+      <polygon points={poly(cam, corners.map(([x, y]) => [x, y, b.z1] as V3))} fill={b.top ?? th.boxTop} />
     </g>
   );
 };
@@ -165,10 +167,11 @@ export type CarrierProps = {
 };
 
 export const Carrier: React.FC<CarrierProps> = ({ cam, t, rampGlow = 0, wireGlow = 0, wireRed = [], catch: ct = null, parked = true, wake = 0, outlineGlow = 0, v2 = false, gid = "cv", parkedType = "tejas", cutaway = 0, wireEnergy = 0 }) => {
+  const th = useTheme();
   const sides0 = TOP.map((a, i) => {
     const j = (i + 1) % TOP.length;
     const mid: V3 = [(TOP[i][0] + TOP[j][0]) / 2, (TOP[i][1] + TOP[j][1]) / 2, -H / 2];
-    return { pts: poly(cam, [TOP[i], TOP[j], BOT[j], BOT[i]]), col: sideShade(TOP[i], TOP[j]), d: depthOf(cam, mid) };
+    return { pts: poly(cam, [TOP[i], TOP[j], BOT[j], BOT[i]]), col: sideShade(TOP[i], TOP[j], th), d: depthOf(cam, mid) };
   });
   const sides = v2 ? [...sides0].sort((u, v) => v.d - u.d) : sides0;
   const stern = project(cam, [0, 0, 0]), bow = project(cam, [0, L, 0]);
@@ -190,39 +193,39 @@ export const Carrier: React.FC<CarrierProps> = ({ cam, t, rampGlow = 0, wireGlow
       {v2 && (
         <defs>
           <linearGradient id={`${gid}-deck`} gradientUnits="userSpaceOnUse" x1={stern[0]} y1={stern[1]} x2={bow[0]} y2={bow[1]}>
-            <stop offset="0" stopColor="#3f4a5a" /><stop offset="0.55" stopColor="#4f5b6c" /><stop offset="1" stopColor="#5d6a7d" />
+            <stop offset="0" stopColor={th.deckGrad[0]} /><stop offset="0.55" stopColor={th.deckGrad[1]} /><stop offset="1" stopColor={th.deckGrad[2]} />
           </linearGradient>
           <linearGradient id={`${gid}-sheen`} gradientUnits="userSpaceOnUse" x1={port[0]} y1={port[1]} x2={stbd[0]} y2={stbd[1]}>
             <stop offset="0" stopColor="#ffffff" stopOpacity={0.07} /><stop offset="0.5" stopColor="#ffffff" stopOpacity={0} /><stop offset="1" stopColor="#000000" stopOpacity={0.12} />
           </linearGradient>
         </defs>
       )}
-      {v2 && <polygon points={poly(cam, BOT.map(([x, y]) => [x + 10, y - 7, SEA] as V3))} fill="rgba(0,0,0,0.45)" filter="url(#shadow)" />}
+      {v2 && <polygon points={poly(cam, BOT.map(([x, y]) => [x + 10, y - 7, SEA] as V3))} fill={th.seaShadow} filter="url(#shadow)" />}
       {wake > 0 && <Wake cam={cam} amt={wake} t={t} />}
       {/* hull */}
-      <polygon points={poly(cam, BOT)} fill={C.hullA} />
+      <polygon points={poly(cam, BOT)} fill={th.hullA} />
       {sides.map((s, i) => <polygon key={i} points={s.pts} fill={s.col} stroke={s.col} strokeWidth={0.6} />)}
-      {v2 && <path d={path(cam, BOT, true)} fill="none" stroke="rgba(200,225,245,0.28)" strokeWidth={Math.max(1, cam.zoom * 0.5)} filter="url(#shadow)" />}
+      {v2 && <path d={path(cam, BOT, true)} fill="none" stroke={th.foam} strokeWidth={Math.max(1, cam.zoom * 0.5)} filter="url(#shadow)" />}
       {/* gallery band */}
       <path d={path(cam, TOP.map(([x, y, z]) => [x * 0.99, y, z - 2.2] as V3), true)} fill="none" stroke="rgba(0,0,0,0.25)" strokeWidth={lw} />
       {/* deck */}
-      <polygon points={poly(cam, TOP)} fill={v2 ? `url(#${gid}-deck)` : C.deck} />
+      <polygon points={poly(cam, TOP)} fill={v2 ? `url(#${gid}-deck)` : th.deck} />
       {v2 && <polygon points={poly(cam, TOP)} fill={`url(#${gid}-sheen)`} />}
-      <polygon points={poly(cam, rampPoly)} fill={C.deckHi} opacity={0.55} />
+      <polygon points={poly(cam, rampPoly)} fill={th.deckHi} opacity={0.55} />
       {outlineGlow > 0 && <polygon points={poly(cam, TOP)} fill="none" stroke={C.cyan} strokeWidth={lw * 1.6} opacity={outlineGlow} filter="url(#glow)" />}
-      <polygon points={poly(cam, inner)} fill="none" stroke={C.lineDim} strokeWidth={lw * 0.8} strokeDasharray={`${cam.zoom * 3} ${cam.zoom * 3}`} />
+      <polygon points={poly(cam, inner)} fill="none" stroke={th.lineDim} strokeWidth={lw * 0.8} strokeDasharray={`${cam.zoom * 3} ${cam.zoom * 3}`} />
       {/* elevators */}
-      <polygon points={elev(18, 29, 92, 108)} fill="rgba(0,0,0,0.12)" stroke={C.lineDim} strokeWidth={lw * 0.7} />
-      <polygon points={elev(17, 28, 170, 184)} fill="rgba(0,0,0,0.12)" stroke={C.lineDim} strokeWidth={lw * 0.7} />
+      <polygon points={elev(18, 29, 92, 108)} fill="rgba(0,0,0,0.12)" stroke={th.lineDim} strokeWidth={lw * 0.7} />
+      <polygon points={elev(17, 28, 170, 184)} fill="rgba(0,0,0,0.12)" stroke={th.lineDim} strokeWidth={lw * 0.7} />
       {/* angled deck */}
-      <path d={path(cam, [angPoint(-2, -12), angPoint(AL + 6, -12)])} stroke={C.line} strokeWidth={lw} opacity={0.75} />
-      <path d={path(cam, [angPoint(-2, 12), angPoint(AL - 30, 12)])} stroke={C.line} strokeWidth={lw} opacity={0.75} />
-      <path d={path(cam, [angPoint(0, 0), angPoint(AL, 0)])} stroke={C.line} strokeWidth={lw} strokeDasharray={`${cam.zoom * 5} ${cam.zoom * 5}`} />
+      <path d={path(cam, [angPoint(-2, -12), angPoint(AL + 6, -12)])} stroke={th.line} strokeWidth={lw} opacity={0.75} />
+      <path d={path(cam, [angPoint(-2, 12), angPoint(AL - 30, 12)])} stroke={th.line} strokeWidth={lw} opacity={0.75} />
+      <path d={path(cam, [angPoint(0, 0), angPoint(AL, 0)])} stroke={th.line} strokeWidth={lw} strokeDasharray={`${cam.zoom * 5} ${cam.zoom * 5}`} />
       {/* take-off lines to the ski-jump */}
-      <path d={path(cam, [[-4, 112, 0], [-4, RAMP0, 0]])} stroke={C.line} strokeWidth={lw} strokeDasharray={`${cam.zoom * 4} ${cam.zoom * 4}`} />
-      <path d={path(cam, [[9, 150, 0], [1, RAMP0, 0]])} stroke={C.lineDim} strokeWidth={lw} strokeDasharray={`${cam.zoom * 4} ${cam.zoom * 4}`} />
+      <path d={path(cam, [[-4, 112, 0], [-4, RAMP0, 0]])} stroke={th.line} strokeWidth={lw} strokeDasharray={`${cam.zoom * 4} ${cam.zoom * 4}`} />
+      <path d={path(cam, [[9, 150, 0], [1, RAMP0, 0]])} stroke={th.lineDim} strokeWidth={lw} strokeDasharray={`${cam.zoom * 4} ${cam.zoom * 4}`} />
       {/* ski-jump ramp */}
-      {rampLines.map((l, i) => <path key={i} d={path(cam, l)} stroke={rampGlow > 0 ? mixColor("#c9d3df", C.cyan, rampGlow) : C.lineDim} strokeWidth={lw * (1 + rampGlow)} opacity={0.6 + rampGlow * 0.4} />)}
+      {rampLines.map((l, i) => <path key={i} d={path(cam, l)} stroke={rampGlow > 0 ? mixColor("#c9d3df", C.cyan, rampGlow) : th.lineDim} strokeWidth={lw * (1 + rampGlow)} opacity={0.6 + rampGlow * 0.4} />)}
       {rampGlow > 0 && <polygon points={poly(cam, rampPoly)} fill={C.cyan} opacity={0.18 * rampGlow} stroke={C.cyan} strokeWidth={lw * 1.5} filter="url(#glow)" />}
       {/* arresting wires */}
       {WIRES.map((s, i) => {
@@ -238,8 +241,8 @@ export const Carrier: React.FC<CarrierProps> = ({ cam, t, rampGlow = 0, wireGlow
       {cutaway > 0 && <ArrestingGear cam={cam} gid={gid} amt={cutaway} energy={wireEnergy} t={t} caughtWire={ct && ct.amt > 0 ? ct.wire : -1} />}
       {/* island */}
       <Box cam={cam} b={{ x0: 21, x1: 30, y0: 116, y1: 160, z0: 0, z1: 12 }} />
-      <Box cam={cam} b={{ x0: 22.5, x1: 29, y0: 124, y1: 152, z0: 12, z1: 21, top: "#6a778b" }} />
-      <Box cam={cam} b={{ x0: 23.5, x1: 28, y0: 134, y1: 146, z0: 21, z1: 27, top: "#72809a" }} />
+      <Box cam={cam} b={{ x0: 22.5, x1: 29, y0: 124, y1: 152, z0: 12, z1: 21, top: th.islandTop[0] }} />
+      <Box cam={cam} b={{ x0: 23.5, x1: 28, y0: 134, y1: 146, z0: 21, z1: 27, top: th.islandTop[1] }} />
       <MastFlag cam={cam} base={[25.8, 140, 38]} size={3.2} t={t} />
       {parked && (parkedType === "mig" ? <ParkedMig cam={cam} /> : <Parked cam={cam} />)}
     </g>
@@ -268,6 +271,7 @@ const MIG_HALF: [number, number][] = [
   [3.9, -6.3], [3.95, -7.2], [1.6, -6.7], [1.0, -8.5], [0, -8.3],
 ];
 export const MigJet: React.FC<{ cam: Cam; pos: V3; heading: number; scale?: number }> = ({ cam, pos, heading, scale = 1.15 }) => {
+  const th = useTheme();
   const W = (lp: V3) => jetLocal(lp, pos, heading, 0, scale);
   const body = [...MIG_HALF.map(([x, y]) => [x, y, 0] as V3), ...[...MIG_HALF].reverse().map(([x, y]) => [-x, y, 0] as V3)].map(W);
   const fins = [-1, 1].map((sx) => ([[sx * 1.5, -3.8, 0.3], [sx * 1.9, -6.6, 3.4], [sx * 1.9, -7.6, 3.4], [sx * 1.6, -8.0, 0.3]] as V3[]).map(W));
@@ -275,15 +279,16 @@ export const MigJet: React.FC<{ cam: Cam; pos: V3; heading: number; scale?: numb
   return (
     <g>
       <polygon points={poly(cam, sh)} fill="rgba(0,0,0,0.4)" filter="url(#shadow)" />
-      <polygon points={poly(cam, body)} fill="#8a96a6" stroke="rgba(20,28,40,0.35)" strokeWidth={0.7} />
+      <polygon points={poly(cam, body)} fill={th.migBody} stroke="rgba(20,28,40,0.35)" strokeWidth={0.7} />
       <polygon points={poly(cam, ([[0, 6.0, 0.4], [0.35, 4.9, 0.5], [0, 4.2, 0.45], [-0.35, 4.9, 0.5]] as V3[]).map(W))} fill="#3b4656" />
-      {fins.map((f, i) => <polygon key={i} points={poly(cam, f)} fill="#9fabbb" stroke="rgba(20,28,40,0.3)" strokeWidth={0.5} />)}
+      {fins.map((f, i) => <polygon key={i} points={poly(cam, f)} fill={th.migFin} stroke="rgba(20,28,40,0.3)" strokeWidth={0.5} />)}
     </g>
   );
 };
 
 /** cutaway of the arresting gear: cables run from the wire ends over sheaves, down into hydraulic engines below deck */
 const ArrestingGear: React.FC<{ cam: Cam; gid: string; amt: number; energy: number; t: number; caughtWire: number }> = ({ cam, gid, amt, energy, t, caughtWire }) => {
+  const th = useTheme();
   const hole: V3[] = [angPoint(28, -16, 0.05), angPoint(28, 16, 0.05), angPoint(74, 16, 0.05), angPoint(74, -16, 0.05)];
   const lw = Math.max(1, cam.zoom * 0.3);
   const engines = WIRES.map((s, i) => {
@@ -294,7 +299,7 @@ const ArrestingGear: React.FC<{ cam: Cam; gid: string; amt: number; energy: numb
   return (
     <g opacity={amt}>
       <clipPath id={`${gid}-hole`}><polygon points={poly(cam, hole)} /></clipPath>
-      <polygon points={poly(cam, hole)} fill="#0b111a" stroke={C.orange} strokeOpacity={0.5} strokeWidth={lw} strokeDasharray="8 6" />
+      <polygon points={poly(cam, hole)} fill={th.cutHole} stroke={C.orange} strokeOpacity={0.5} strokeWidth={lw} strokeDasharray="8 6" />
       <g clipPath={`url(#${gid}-hole)`}>
         {engines.map((e) => {
           const hot = e.i === caughtWire;
@@ -303,7 +308,7 @@ const ArrestingGear: React.FC<{ cam: Cam; gid: string; amt: number; energy: numb
             <g key={e.i}>
               {[e.ea, e.eb].map((p, k) => (
                 <g key={k}>
-                  <Box cam={cam} b={{ x0: p[0] - 2.2, x1: p[0] + 2.2, y0: p[1] - 5, y1: p[1] + 1, z0: -12, z1: -7, top: hot ? "#9a6a3c" : "#56637a" }} />
+                  <Box cam={cam} b={{ x0: p[0] - 2.2, x1: p[0] + 2.2, y0: p[1] - 5, y1: p[1] + 1, z0: -12, z1: -7, top: hot ? "#9a6a3c" : th.engine }} />
                   <path d={path(cam, [k ? e.b : e.a, [(k ? e.b : e.a)[0], (k ? e.b : e.a)[1], -6.5], p])} stroke={col} strokeWidth={lw * 1.3} fill="none"
                     strokeDasharray={hot && energy > 0 ? "10 8" : undefined} strokeDashoffset={-t * 6} filter={hot && energy > 0 ? "url(#glow)" : undefined} />
                 </g>
@@ -317,6 +322,7 @@ const ArrestingGear: React.FC<{ cam: Cam; gid: string; amt: number; energy: numb
 };
 
 const Wake: React.FC<{ cam: Cam; amt: number; t: number }> = ({ cam, amt, t }) => {
+  const th = useTheme();
   const lines = [-1, 1].map((s) => {
     const pts: V3[] = [];
     for (let k = 0; k <= 30; k++) { const y = 10 - k * 18; pts.push([s * (16 + k * 4.2) + Math.sin(k + t * 0.05) * 1.5, y, SEA]); }
@@ -325,8 +331,8 @@ const Wake: React.FC<{ cam: Cam; amt: number; t: number }> = ({ cam, amt, t }) =
   const center: V3[] = Array.from({ length: 31 }, (_, k) => [Math.sin(k * 0.7 + t * 0.06) * 2, 6 - k * 18, SEA] as V3);
   return (
     <g opacity={amt}>
-      <path d={path(cam, center)} stroke="rgba(190,215,235,0.16)" strokeWidth={cam.zoom * 14} fill="none" strokeLinecap="round" filter="url(#softglow)" />
-      {lines.map((l, i) => <path key={i} d={path(cam, l)} stroke="rgba(190,215,235,0.22)" strokeWidth={Math.max(1.2, cam.zoom * 1.2)} fill="none" filter="url(#shadow)" />)}
+      <path d={path(cam, center)} stroke={th.wakeCore} strokeWidth={cam.zoom * 14} fill="none" strokeLinecap="round" filter="url(#softglow)" />
+      {lines.map((l, i) => <path key={i} d={path(cam, l)} stroke={th.wakeLine} strokeWidth={Math.max(1.2, cam.zoom * 1.2)} fill="none" filter="url(#shadow)" />)}
     </g>
   );
 };
@@ -468,7 +474,11 @@ export const Trail: React.FC<{ cam: Cam; pts: V3[]; color?: string; width?: numb
 };
 
 // ---------------- Label ----------------
-export const Label: React.FC<{ cam?: Cam; anchor?: V3; at?: [number, number]; dx: number; dy: number; text: string; p: number; color?: string }> = ({ cam, anchor, at, dx, dy, text, p, color = "#fff" }) => {
+/** set true (v3) for snappier label animation */
+export const FastLabels = React.createContext(false);
+export const Label: React.FC<{ cam?: Cam; anchor?: V3; at?: [number, number]; dx: number; dy: number; text: string; p: number; color?: string }> = ({ cam, anchor, at, dx, dy, text, p: p0, color = "#fff" }) => {
+  const fast = React.useContext(FastLabels);
+  const p = fast ? Math.min(1, p0 * 1.8) : p0;
   if (p <= 0) return null;
   const [ax, ay] = at ?? project(cam!, anchor!);
   const fs = 27, ls = 3.2;
