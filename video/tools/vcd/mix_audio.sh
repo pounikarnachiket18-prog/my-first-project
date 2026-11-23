@@ -28,5 +28,5 @@ ffmpeg -v error -y -i "$SRC" -i "$S1" -i "$S2" -i "$S3" -i "$BRAKE" -i "$WHOOSH"
 [A][B][C][D][E][F][G][H][I][J][K][L][M0][M1][M2][M3][M4][M5][M6][M7]amix=inputs=20:normalize=0:duration=longest,atrim=0:44,aformat=sample_rates=48000:channel_layouts=stereo[sfx];
 [0:a]aformat=sample_rates=48000:channel_layouts=stereo,asplit=2[v1][v2];
 [sfx][v1]sidechaincompress=threshold=0.06:ratio=3:attack=20:release=300:makeup=1[duck];
-[v2][duck]amix=inputs=2:normalize=0:weights=1 1.7,alimiter=limit=0.89:level=disabled,loudnorm=I=-14:TP=-1.5:LRA=11[out]" \
+[v2][duck]amix=inputs=2:normalize=0:weights=1 1.2,alimiter=limit=0.89:level=disabled,loudnorm=I=-14:TP=-1.5:LRA=11[out]" \
   -map "[out]" -ar 48000 -c:a pcm_s16le "$OUT"
