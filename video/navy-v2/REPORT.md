@@ -175,3 +175,10 @@ Final length is 90.15 s. Intelligibility was re-checked by back-transcription. A
 - The cold-open freeze-frame is placed relative to the shorter scene, at 2.6 s, so "sirf kuch second!" lands on the freeze.
 
 The factual notes from v2 still apply (Tejas prototype tag, generic catapult carrier, 3 wires).
+
+## v3 branding
+`out/indian_navy_cinematic_v3_day_90s_branded.mp4` is the v3 (day, 90 s) render with **"Mindset mode | Explainers"** painted on INS Vikrant:
+- **Flight deck:** "MINDSET MODE" in large deck lettering forward of the island, with "EXPLAINERS" below it. It reads from the stern, like real deck markings.
+- **Port-side hull, midships:** "MINDSET MODE | EXPLAINERS". It is only drawn when that side faces the camera.
+
+Both are projected onto the ship's surfaces, so they follow every camera move. Set via `BrandCtx` in `NavyV2.tsx` (v3 only); v1 and v2 have no branding.

@@ -143,6 +143,35 @@ export const MastFlag: React.FC<{ cam: Cam; base: V3; size: number; t: number }>
   );
 };
 
+// ---------------- Branding painted on the ship (v3) ----------------
+export type Brand = { deck: [string, string]; hull: string } | null;
+export const BrandCtx = React.createContext<Brand>(null);
+
+/** text painted on a plane: p0 = baseline-left (world), ex = reading direction, ey = "down" on the text (unit vectors, metres) */
+const PlaneText: React.FC<{ cam: Cam; p0: V3; ex: V3; ey: V3; w: number; size: number; text: string; font: string; weight: number; fill: string; opacity: number }> =
+  ({ cam, p0, ex, ey, w, size, text, font, weight, fill, opacity }) => {
+    const add = (a: V3, b: V3, k: number): V3 => [a[0] + b[0] * k, a[1] + b[1] * k, a[2] + b[2] * k];
+    const O = project(cam, p0);
+    const Uw = project(cam, add(p0, ex, w)), Vh = project(cam, add(p0, ey, -size));
+    const U = [(Uw[0] - O[0]) / w, (Uw[1] - O[1]) / w];
+    const V = [(Vh[0] - O[0]) / -size, (Vh[1] - O[1]) / -size];
+    return (
+      <text transform={`matrix(${U[0]},${U[1]},${V[0]},${V[1]},${O[0]},${O[1]})`} x={0} y={0} fontFamily={font} fontWeight={weight} fontSize={size}
+        textLength={w} lengthAdjust="spacingAndGlyphs" fill={fill} opacity={opacity}>{text}</text>
+    );
+  };
+
+const ShipBrand: React.FC<{ cam: Cam; brand: NonNullable<Brand>; paint: string }> = ({ cam, brand, paint }) => {
+  // flight deck, forward of the island, read from the stern (letters point toward the bow)
+  const deck1 = <PlaneText cam={cam} p0={[-27, 186, 0.05]} ex={[1, 0, 0]} ey={[0, -1, 0]} w={41} size={8.2} text={brand.deck[0]} font="Unbounded" weight={800} fill={paint} opacity={0.82} />;
+  const deck2 = <PlaneText cam={cam} p0={[-17, 176.5, 0.05]} ex={[1, 0, 0]} ey={[0, -1, 0]} w={27} size={4.6} text={brand.deck[1]} font="Inter" weight={700} fill={paint} opacity={0.75} />;
+  // port hull side, midships (only when that side faces the camera)
+  const portVisible = depthOf(cam, [-45, 122, -6]) < depthOf(cam, [-25, 122, -6]);
+  const n = Math.hypot(0.46, 1);
+  const hull = portVisible ? <PlaneText cam={cam} p0={[-31.4, 151, -7.2]} ex={[0, -1, 0]} ey={[0.46 / n, 0, -1 / n]} w={58} size={4.0} text={brand.hull} font="Unbounded" weight={800} fill="#f4f7fa" opacity={0.9} /> : null;
+  return <g>{deck1}{deck2}{hull}</g>;
+};
+
 // ---------------- Carrier ----------------
 export type CarrierProps = {
   cam: Cam;
@@ -168,6 +197,7 @@ export type CarrierProps = {
 
 export const Carrier: React.FC<CarrierProps> = ({ cam, t, rampGlow = 0, wireGlow = 0, wireRed = [], catch: ct = null, parked = true, wake = 0, outlineGlow = 0, v2 = false, gid = "cv", parkedType = "tejas", cutaway = 0, wireEnergy = 0 }) => {
   const th = useTheme();
+  const brand = React.useContext(BrandCtx);
   const sides0 = TOP.map((a, i) => {
     const j = (i + 1) % TOP.length;
     const mid: V3 = [(TOP[i][0] + TOP[j][0]) / 2, (TOP[i][1] + TOP[j][1]) / 2, -H / 2];
@@ -211,6 +241,7 @@ export const Carrier: React.FC<CarrierProps> = ({ cam, t, rampGlow = 0, wireGlow
       {/* deck */}
       <polygon points={poly(cam, TOP)} fill={v2 ? `url(#${gid}-deck)` : th.deck} />
       {v2 && <polygon points={poly(cam, TOP)} fill={`url(#${gid}-sheen)`} />}
+      {brand && <ShipBrand cam={cam} brand={brand} paint={th.day ? "#ffffff" : "rgba(235,242,250,0.85)"} />}
       <polygon points={poly(cam, rampPoly)} fill={th.deckHi} opacity={0.55} />
       {outlineGlow > 0 && <polygon points={poly(cam, TOP)} fill="none" stroke={C.cyan} strokeWidth={lw * 1.6} opacity={outlineGlow} filter="url(#glow)" />}
       <polygon points={poly(cam, inner)} fill="none" stroke={th.lineDim} strokeWidth={lw * 0.8} strokeDasharray={`${cam.zoom * 3} ${cam.zoom * 3}`} />

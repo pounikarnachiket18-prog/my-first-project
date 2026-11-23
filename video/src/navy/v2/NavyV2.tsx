@@ -9,7 +9,7 @@ import tlNight from "./timeline.json";
 import tlDay from "../v3/timeline.json";
 import { TimelineCtx, MotionCtx, TL } from "./ctx";
 import { ThemeCtx, NIGHT, DAY } from "../theme";
-import { FastLabels } from "../world";
+import { FastLabels, BrandCtx } from "../world";
 import { HUD2, Captions2 } from "./ui2";
 import { SCENES_V2 } from "./scenes2";
 
@@ -38,6 +38,7 @@ export const NavyV2: React.FC<Props> = ({ audio = true, variant = "v2-night" }) 
     <TimelineCtx.Provider value={timeline}>
     <MotionCtx.Provider value={{ fast: v3 }}>
     <FastLabels.Provider value={v3}>
+    <BrandCtx.Provider value={v3 ? { deck: ["MINDSET MODE", "EXPLAINERS"], hull: "MINDSET MODE | EXPLAINERS" } : null}>
     <AbsoluteFill style={{ background: theme.bgCss, overflow: "hidden" }}>
       {timeline.scenes.map((s) => {
         const from = Math.round(s.start * timeline.fps);
@@ -62,6 +63,7 @@ export const NavyV2: React.FC<Props> = ({ audio = true, variant = "v2-night" }) 
       <Captions2 />
       {audio && <Audio src={staticFile(v3 ? "navy/mix_v3.wav" : "navy/mix_v2.wav")} />}
     </AbsoluteFill>
+    </BrandCtx.Provider>
     </FastLabels.Provider>
     </MotionCtx.Provider>
     </TimelineCtx.Provider>
