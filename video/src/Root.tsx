@@ -3,6 +3,7 @@ import { Composition, Still } from "remotion";
 import { Main } from "./Main";
 import { MainMobile } from "./MainMobile";
 import { ThumbnailCard } from "./primitives";
+import { IndiaReel, REEL_FRAMES } from "./india/IndiaReel";
 
 // Adjust durationInFrames to match the sum of all your scene Sequences
 const TOTAL_FRAMES = 351; // 59 intro + 127 hook + 75 statement + 90 outro (~11.7s @ 30fps)
@@ -24,6 +25,15 @@ export const Root: React.FC = () => (
       fps={30}
       width={1080}
       height={1920}
+    />
+    <Composition
+      id="IndiaRoadReel"
+      component={IndiaReel}
+      durationInFrames={REEL_FRAMES}
+      fps={30}
+      width={1080}
+      height={1920}
+      defaultProps={{ withAudio: true }}
     />
     <Still id="Thumb16x9" component={ThumbnailCard} width={1920} height={1080} />
     <Still id="Thumb9x16" component={ThumbnailCard} width={1080} height={1920} />
