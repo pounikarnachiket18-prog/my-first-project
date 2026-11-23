@@ -1,0 +1,6 @@
+scene.blend*
+assets/
+frames/
+out/
+*.mp4
+__pycache__/
