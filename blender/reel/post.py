@@ -268,6 +268,8 @@ def draw_hook(canvas, f):
 
 
 def draw_subs(canvas, f, phrases):
+    if not CAPTIONS:
+        return
     t = f / FPS
     for p in phrases:
         if p["start"] <= t < p["end"]:

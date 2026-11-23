@@ -75,5 +75,5 @@ METER = [(1287, 1300, "Coin", 3), (1300, 1312, "Belt", 5), (1312, 1352, "Bada me
 HOOK_TEXT = [(4, 57, ["Airport ki ek machine", "kapdon mein chhupa", "*metal* bhi", "pakad leti hai"]),
              (57, 90, ["Lekin aakhir", "*KAISE?*"])]
 END_CARD = 1388
-CAPTIONS = "hinglish"   # subtitle language: "hinglish" (Roman Hindi) or "english"
+CAPTIONS = None         # subtitles off; "hinglish" (Roman Hindi) or "english" turns them back on
 END_CTA = ("Aise aur explainers ke liye", "follow karo")   # English: ("Follow for more", "explainers like this")

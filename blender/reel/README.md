@@ -6,7 +6,7 @@ untouched. The source video and the earlier render are not modified.
 
 ## What it shows
 
-The voice is the original Hindi narration; captions are in Hinglish (Roman Hindi). An English caption set is kept in `prep_audio.py`; set `CAPTIONS = "english"` in `cuts.py` to use it. The film explains the science in five steps, and an on-screen tracker follows along:
+The voice is the original Hindi narration. The reel has no subtitles. Hinglish (Roman Hindi) and English caption sets are kept in `prep_audio.py`; set `CAPTIONS = "hinglish"` or `"english"` in `cuts.py` to burn them in. The film explains the science in five steps, and an on-screen tracker follows along:
 
 1. **Field.** The left panel holds a flat transmitter coil. Current pulses round it, slowed down so the eye can
    follow, and it sends a magnetic field (cyan) across the walkway. The right panel holds the receiver coil.
@@ -19,7 +19,7 @@ The voice is the original Hindi narration; captions are in Hinglish (Roman Hindi
    hip height, where the metal is. A meter then compares a coin, a belt and a bigger metal object.
 
 The colours carry meaning: cyan is the transmitter field, amber is induced current, rose is the metal's own field
-and red is the alarm. All on-screen text is in Latin script: Hinglish captions, hook and end card, with English technical names on the labels.
+and red is the alarm. All on-screen text is in Latin script: the Hinglish hook and end card, and English technical names on the labels.
 
 ## Pipeline
 
