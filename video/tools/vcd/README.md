@@ -26,3 +26,8 @@
    ```
 
 Source media (input video, graded video, SFX) are not committed.
+
+## New voiceover (ElevenLabs)
+`build_vo.py <vo.mp3> <vo_timed.wav>` speeds the read up 1.17× (pitch-preserving) and drops each
+script line onto its scene (anchors in the file). Then compress/normalise it, add the light "ding" +
+VCD buzzer, and pass the result to `mix_audio.sh` as the first (voice) input in place of the source video.
