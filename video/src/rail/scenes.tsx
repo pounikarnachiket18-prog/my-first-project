@@ -444,7 +444,12 @@ export const LaundryScene: React.FC = () => {
 /* ================================================================== */
 /* 5. "Toh kambal bhi?" — "Coach mein hi" (16 – 20s)                   */
 /* ================================================================== */
-export const KambalBhiScene: React.FC = () => {
+export const KambalBhiScene: React.FC<{ title?: string | null; pill?: string | null; pillAt?: number; titleOut?: number }> = ({
+  title = "Toh kambal\n*bhi?*",
+  pill = "Coach mein hi",
+  pillAt = 2.4,
+  titleOut = 4.0,
+}) => {
   const cam = useCam([
     { t: 0, rx: 8, rz: -6, s: 2.7, x: 0, y: 1050 },
     { t: 1.6, rx: 10, rz: -8, s: 2.5, x: 0, y: 990 },
@@ -462,8 +467,8 @@ export const KambalBhiScene: React.FC = () => {
           <PacketTop w={440} h={290} />
         </Slab>
       </World>
-      <Title text={"Toh kambal\n*bhi?*"} inAt={3} outAt={s(4.0)} />
-      <Pill text="Coach mein hi" x={540} y={1520} inAt={s(2.4)} outAt={s(4.0)} variant="key" />
+      {title && <Title text={title} inAt={3} outAt={s(titleOut)} />}
+      {pill && <Pill text={pill} x={540} y={1520} inAt={s(pillAt)} outAt={s(99)} variant="key" />}
     </AbsoluteFill>
   );
 };
