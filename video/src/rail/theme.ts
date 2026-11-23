@@ -31,8 +31,8 @@ export const DURATION = Math.round(DURATION_SEC * FPS);
 export const s = (sec: number) => Math.round(sec * FPS);
 
 // Palette modelled on the reference reel: bright white/grey coach,
-// royal-blue berth, charcoal blanket with peach stripes, kraft packet,
-// blue highlight words.
+// charcoal blanket with peach stripes, kraft packet; maroon berths,
+// pills and highlight words (the "red" version).
 export const C = {
   wall: "#EEF1F5",
   wallShade: "#D9DFE7",
@@ -40,9 +40,9 @@ export const C = {
   ink: "#15171C",
   inkSoft: "#5A6270",
 
-  berth: "#2B5BA8", // royal-blue cushion
-  berthSide: "#1B3F7A",
-  berthEdge: "#4C80D0",
+  berth: "#A3192E", // maroon cushion
+  berthSide: "#6E0F1F",
+  berthEdge: "#C8364B",
 
   blanket: "#3A3F47", // charcoal
   blanketSide: "#24282E",
@@ -51,30 +51,30 @@ export const C = {
 
   sheet: "#FFFFFF",
   sheetSide: "#DADFE6",
-  brandPrint: "#1F3F8A", // blue "भारतीय रेल" print on the chadar
+  brandPrint: "#8E1F2F", // maroon "भारतीय रेल" print on the chadar
 
   packet: "#D9A35E", // kraft bedroll packet
   packetSide: "#A9773A",
   packetPrint: "#5A3A16",
 
-  accent: "#2F44E0", // blue highlight words
-  pill: "#2F44E0",
+  accent: "#A3192E", // maroon highlight words
+  pill: "#A3192E",
   curtain: "#2F5446",
   glass: "#5E7A8C",
 
-  cover: "#24467E", // printed cover base (navy)
+  cover: "#7A1B2A", // printed cover base (maroon)
   coverPrint: "#F3F6FB",
 
   uniform: "#23272F", // attendant: dark vest
   uniformDark: "#121418",
-  dupatta: "#2F44E0",
+  dupatta: "#A3192E",
   skin: "#B9784E",
   skinShade: "#9C5F3B",
   hair: "#1E1410",
 
   laundryWall: "#E9ECF0",
   machine: "#F7F8FA",
-  machinePanel: "#2B5BA8",
+  machinePanel: "#A3192E",
 };
 
 // Branding printed on the textiles.

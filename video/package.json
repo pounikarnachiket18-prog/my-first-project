@@ -13,7 +13,9 @@
     "studio:rail": "remotion studio src/rail/index.ts",
     "render:rail": "remotion render src/rail/index.ts RailKambal out/bharatiya-rail-kambal.mp4",
     "studio:remix": "remotion studio src/remix/index.ts",
-    "render:remix": "remotion render src/remix/index.ts Remix out/mindset-mode-remix.mp4"
+    "render:remix": "remotion render src/remix/index.ts Remix out/mindset-mode-remix.mp4",
+    "studio:story": "remotion studio src/story/index.ts",
+    "render:story": "remotion render src/story/index.ts Story out/kambal-new-story.mp4"
   },
   "dependencies": {
     "@remotion/cli": "4.0.469",

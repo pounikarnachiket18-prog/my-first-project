@@ -465,7 +465,7 @@ export const Flash: React.FC = () => {
 /* ------------------------------------------------------------------ */
 /* Animated "Mindset Mode Explainers" badge with periodic shine        */
 /* ------------------------------------------------------------------ */
-export const BrandBadge: React.FC<{ big?: boolean }> = ({ big }) => {
+export const BrandBadge: React.FC<{ big?: boolean; color?: string }> = ({ big, color = K.brand }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const drop = spring({ frame: frame - 6, fps, config: { damping: 13, stiffness: 150 } });
@@ -498,7 +498,7 @@ export const BrandBadge: React.FC<{ big?: boolean }> = ({ big }) => {
           width: 56 * k,
           height: 56 * k,
           borderRadius: "50%",
-          background: K.brand,
+          background: color,
           color: "#FFFFFF",
           display: "flex",
           alignItems: "center",
@@ -518,11 +518,11 @@ export const BrandBadge: React.FC<{ big?: boolean }> = ({ big }) => {
           left: shineX,
           width: 70,
           transform: "skewX(-20deg)",
-          background: "linear-gradient(90deg, rgba(163,25,46,0), rgba(163,25,46,0.14), rgba(163,25,46,0))",
+          background: `linear-gradient(90deg, transparent, ${color}24, transparent)`,
         }}
       />
       <span style={{ position: "relative" }}>
-        Mindset <span style={{ color: K.brand }}>Mode</span> Explainers
+        Mindset <span style={{ color: color }}>Mode</span> Explainers
       </span>
     </div>
   );
