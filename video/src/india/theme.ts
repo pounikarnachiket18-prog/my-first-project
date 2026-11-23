@@ -13,7 +13,7 @@ if (typeof document !== "undefined" && typeof FontFace !== "undefined") {
         display: "block",
       });
       document.fonts.add(face);
-      return face.load();
+      return Promise.race([face.load(), new Promise((r) => setTimeout(r, 20000))]);
     }),
   )
     .catch((e) => console.error("Font load failed", e))
