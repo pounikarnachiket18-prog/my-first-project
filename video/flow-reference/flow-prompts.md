@@ -36,3 +36,12 @@ Epic wide aerial shot: INS Vikrant sails toward the camera across a golden ocean
 - a flat deck with no ski-jump (Vikrant has a ski-jump bow)
 - gibberish text on screen
 Name the files 1.mp4 … 7.mp4 so I know where each one goes.
+
+## 8. How a catapult works — "duniya ke kai carrier, jet ko catapult se phenkte hain" (≈47.6–51 s)
+Note: INS Vikrant has no catapult (it uses the ski-jump), so this clip shows a generic, unmarked carrier.
+
+### 8A. Cutaway explainer animation
+Cinematic 3D technical animation, cutaway view of an aircraft carrier flight deck at golden-hour sunset, sliced open to show what is underneath. A long narrow slot runs along the deck; below it, two long steel cylinders with pistons run the length of the catapult. A small steel shuttle sticks up through the slot and is hooked to the nose landing gear of a grey fighter jet; a holdback bar behind the nose wheel keeps the jet in place while its engine roars at full power. Glowing cyan highlights trace high-pressure steam filling the cylinders. The holdback releases, the pistons shoot forward, and the shuttle drags the jet down the deck from standing still to flying speed in about two seconds, flinging it off the bow into the sky; at the end of the track the pistons slam into a water brake and white steam bursts out of the slot. Slow-motion at the release moment, camera tracking alongside. Dark navy background tones, clean engineering-diagram look with photoreal metal. Audio: engine roar, hiss of steam, a heavy mechanical thump, jet whoosh; no music, no dialogue. No text, no labels, no subtitles, no logos, no national markings. Vertical 9:16.
+
+### 8B. Real-looking catapult launch
+Photorealistic cinematic shot on the flight deck of a large flat-deck aircraft carrier at golden-hour sunset (no ski-jump). A grey fighter jet sits at full afterburner on the catapult track, its nose wheel hooked to the shuttle; white steam drifts up from the slot in the deck. The launch officer kneels and points forward, then the jet is flung down the deck and off the bow in about two seconds, leaving a cloud of steam rolling over the track. Low camera at deck level beside the track, slow motion at the moment of launch. Audio: afterburner roar, steam hiss, a violent whoosh; no music, no dialogue. No text, no subtitles, no logos, no national markings. Vertical 9:16, 24fps film look.
