@@ -2,7 +2,7 @@
 Graphics pass + final encode for the reel.
 
 Takes the Cycles frames (720x1280), upscales them to 1080x1920 and draws:
-  * the cold-open typography (hook), English subtitles with highlighted key words,
+  * the cold-open typography (hook), Hinglish (or English, see cuts.CAPTIONS) subtitles with highlighted key words,
   * science labels that track their 3D anchors (anchors.json), a five-step explanation tracker,
   * the "signal strength" meter for coin / belt / bigger object, the alarm edge pulse,
   * the Mindset Mode | Explainers brand bug and end card.
@@ -19,11 +19,11 @@ from multiprocessing import Pool
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from cuts import FPS, END, CUT, ALARM, BLINK, LABELS, STEPS, METER, HOOK_TEXT, END_CARD
+from cuts import FPS, END, CUT, ALARM, BLINK, LABELS, STEPS, METER, HOOK_TEXT, END_CARD, CAPTIONS, END_CTA
 
 W, H = 1080, 1920
 INTER = "/usr/share/fonts/opentype/inter/Inter-{}.otf"
-CAP = INTER.format("ExtraBold")      # caption face (English only)
+CAP = INTER.format("ExtraBold")      # caption face (Latin script)
 WHITE = (255, 255, 255)
 HIL = (255, 210, 64)                # highlighted words
 VIOLET = (124, 92, 255)
@@ -251,7 +251,7 @@ def draw_hook(canvas, f):
         if not (a <= f < b):
             continue
         out = min(1.0, (b - f) / 4) if b < 90 or f > 85 else 1.0
-        if lines[-1] == "*HOW?*":
+        if len(lines) == 2:
             k = ease_out((f - a) / 5)
             img1 = text_block(lines[0], 100, 900, stroke=8)
             img2 = text_block(lines[1], 230, 960, stroke=12)
@@ -259,19 +259,19 @@ def draw_hook(canvas, f):
             paste_center(canvas, img2, W / 2, 880, k * out, 1.0 + 0.35 * (1 - ease_back((f - a) / 7)))
         else:
             for i, ln in enumerate(lines):
-                t = (f - a - i * 9) / 7
+                t = (f - a - i * 8) / 7
                 if t <= 0:
                     continue
                 k = ease_out(t)
-                img = text_block(ln, 82, 960, stroke=8)
-                paste_center(canvas, img, W / 2, 470 + i * 118 + (1 - k) * 30, k * out)
+                img = text_block(ln, 82, 1000, stroke=8)
+                paste_center(canvas, img, W / 2, 440 + i * 108 + (1 - k) * 30, k * out)
 
 
 def draw_subs(canvas, f, phrases):
     t = f / FPS
     for p in phrases:
         if p["start"] <= t < p["end"]:
-            img = text_block(p["text"], 64, 860)
+            img = text_block(p[CAPTIONS], 64, 860)
             age = (t - p["start"]) * FPS
             s = 0.9 + 0.1 * ease_back(age / 5)
             paste_center(canvas, img, W / 2, SUB_Y, min(1.0, age / 3 + 0.25), s)
@@ -288,8 +288,8 @@ def end_card():
     sub = "E X P L A I N E R S"
     d.text((cx, 360), sub, font=inter("SemiBold", 40), fill=VIOLET_L, anchor="mm")
     d.line([(cx - 260, 420), (cx + 260, 420)], fill=(255, 255, 255, 80), width=2)
-    d.text((cx, 490), "Follow for more", font=inter("Bold", 46), fill=WHITE, anchor="mm")
-    d.text((cx, 556), "explainers like this", font=inter("ExtraBold", 50), fill=HIL, anchor="mm")
+    d.text((cx, 490), END_CTA[0], font=inter("Bold", 46), fill=WHITE, anchor="mm")
+    d.text((cx, 556), END_CTA[1], font=inter("ExtraBold", 50), fill=HIL, anchor="mm")
     return img
 
 

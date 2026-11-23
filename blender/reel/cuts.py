@@ -50,18 +50,18 @@ WALKS = [(0, 56, 2.05), (90, 146, 1.9), (701, 754, 1.9)]
 LABELS = [
     (408, 466, "METAL", "Metal", "", "white", (170, -300)),
     (474, 506, "SCREEN", "Response signal", "", "white", (0, -430)),
-    (566, 596, "TX", "Transmitter coil", "sends the field", "cyan", (230, -330)),
-    (594, 610, "RX", "Receiver coil", "listens", "white", (-230, -330)),
-    (614, 652, "TX", "Transmitter coil", "sends the field", "cyan", (250, 330)),
-    (622, 652, "RX", "Receiver coil", "listens", "white", (-200, -250)),
+    (566, 596, "TX", "Transmitter coil", "field bhejti hai", "cyan", (230, -330)),
+    (594, 610, "RX", "Receiver coil", "signal sunti hai", "white", (-230, -330)),
+    (614, 652, "TX", "Transmitter coil", "field bhejti hai", "cyan", (250, 330)),
+    (622, 652, "RX", "Receiver coil", "signal sunti hai", "white", (-200, -250)),
     (656, 700, "FIELD", "Magnetic field", "", "cyan", (0, -330)),
     (796, 834, "POCKET", "Metal", "", "amber", (240, -240)),
-    (836, 872, "POCKET", "Field changes", "", "amber", (240, -240)),
-    (938, 994, "EDDY", "Eddy currents", "induced in the coin", "amber", (110, -330)),
-    (1000, 1024, "SEC", "The metal's own field", "opposes the original", "rose", (40, -300)),
-    (1027, 1042, "RX", "Receiver coil", "picks it up", "amber", (-160, -300)),
+    (836, 872, "POCKET", "Field mein badlaav", "", "amber", (240, -240)),
+    (938, 994, "EDDY", "Eddy currents", "coin ke andar", "amber", (110, -330)),
+    (1000, 1024, "SEC", "Metal ka apna field", "ulta asar", "rose", (40, -300)),
+    (1027, 1042, "RX", "Receiver coil", "badlaav pakad leti hai", "amber", (-160, -300)),
     (1082, 1128, "BAR", "Signal strength", "", "white", (0, -420)),
-    (1134, 1174, "ZONE", "Zone lights", "show where the metal is", "white", (-150, -330)),
+    (1134, 1174, "ZONE", "Zone lights", "metal kahan hai", "white", (-150, -330)),
     (1192, 1259, "GAUGE", "Size: 27 mm", "", "white", (0, -320)),
 ]
 
@@ -69,9 +69,11 @@ LABELS = [
 STEPS = [(611, 701, "Field"), (701, 873, "Metal"), (873, 995, "Current"), (995, 1043, "Sensor"), (1043, 1129, "Alarm")]
 
 # Signal meter HUD for "coin, belt, or a bigger metal object": (start, end, item, level 0-10)
-METER = [(1287, 1300, "Coin", 3), (1300, 1312, "Belt", 5), (1312, 1352, "Bigger metal object", 9)]
+METER = [(1287, 1300, "Coin", 3), (1300, 1312, "Belt", 5), (1312, 1352, "Bada metal object", 9)]
 
 # Cold-open typography (frames)
-HOOK_TEXT = [(4, 57, ["This airport machine", "catches *metal* hidden", "inside your clothes."]),
-             (57, 90, ["But", "*HOW?*"])]
+HOOK_TEXT = [(4, 57, ["Airport ki ek machine", "kapdon mein chhupa", "*metal* bhi", "pakad leti hai"]),
+             (57, 90, ["Lekin aakhir", "*KAISE?*"])]
 END_CARD = 1388
+CAPTIONS = "hinglish"   # subtitle language: "hinglish" (Roman Hindi) or "english"
+END_CTA = ("Aise aur explainers ke liye", "follow karo")   # English: ("Follow for more", "explainers like this")
