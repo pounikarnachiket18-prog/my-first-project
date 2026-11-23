@@ -60,7 +60,7 @@ const crowd = (seed: string, n: number, sMin: number, sMax: number, vMin: number
     };
   });
 
-const oncoming = (seed: string, n: number, spread: number): Oncoming[] =>
+export const oncoming = (seed: string, n: number, spread: number): Oncoming[] =>
   Array.from({ length: n }, (_, i) => ({
     x: ONC_LANES[i % 3],
     s0: 30 + (spread * i) / n + random(`${seed}${i}`) * 10,
@@ -99,8 +99,8 @@ const HookScene: React.FC = () => {
 };
 
 // ---------------------------------------------------------------- scene 2: close traffic + plates + honks
-const TR_CAM: Camera = { start: 0, speed: 6, x: 0, h: 1.15, f: 1350, horizon: 860, bob: 2 };
-const TR_VEH: Vehicle[] = [
+export const TR_CAM: Camera = { start: 0, speed: 6, x: 0, h: 1.15, f: 1350, horizon: 860, bob: 2 };
+export const TR_VEH: Vehicle[] = [
   { id: "hero", kind: "car", x: 0, s0: 6.2, v: 6, color: "#D7263D", plate: "MH 12 KT 4581", brakeAt: [[20, 60], [130, 170]] },
   { id: "auto", kind: "auto", x: -3.4, s0: 3, v: 6.6, plate: "MH 12 R 7781" },
   { id: "suv", kind: "suv", x: 3.5, s0: 9, v: 5.6, color: "#1B1B1B", plate: "MH 01 AB 2207", brakeAt: [[90, 140]] },
@@ -109,14 +109,14 @@ const TR_VEH: Vehicle[] = [
   { id: "gj", kind: "car", x: 3.5, s0: 22, v: 6.1, color: "#2E86AB", plate: "GJ 05 RT 7781" },
   ...crowd("tr", 24, 30, 160, 5, 6.5, 3),
 ];
-const TR_HONKS: Honk[] = [
+export const TR_HONKS: Honk[] = [
   { vehicleId: "hero", from: 22, text: "POM POM!" },
   { vehicleId: "auto", from: 70, text: "PEEP PEEP!", color: "#3DDC97", dx: 80 },
   { vehicleId: "truck", from: 112, text: "PAAAAAN!", color: "#FF9933", dur: 30 },
   { vehicleId: "suv", from: 160, text: "POM!", dx: -60 },
   { vehicleId: "hero", from: 196, text: "PEEEEP!", color: "#4CC9F0" },
 ];
-const TR_SIDE: Roadside[] = [
+export const TR_SIDE: Roadside[] = [
   { kind: "dhaba", s: 58, x: -17, name: "HOTEL HIGHWAY KING", deva: "हाईवे किंग ढाबा" },
   { kind: "stone", s: 20, x: -6.5, place: "LONAVALA", km: 18 },
   ...trees("trt", 2, 120, 8),
@@ -132,7 +132,7 @@ const TrafficScene: React.FC = () => (
 );
 
 // ---------------------------------------------------------------- scene 3: dhaba stop
-const DhabaWrap: React.FC = () => (
+export const DhabaWrap: React.FC = () => (
   <AbsoluteFill>
     <DhabaScene />
     <Chip text="KHANDALA GHAT · MAHARASHTRA" from={2} />
@@ -141,7 +141,7 @@ const DhabaWrap: React.FC = () => (
 );
 
 // ---------------------------------------------------------------- scene 4: roadside fight
-const FightWrap: React.FC = () => (
+export const FightWrap: React.FC = () => (
   <AbsoluteFill>
     <FightScene />
     <Chip text="ROADSIDE DRAMA · KATRAJ, PUNE" from={2} y={130} />
