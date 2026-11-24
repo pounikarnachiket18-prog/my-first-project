@@ -29,13 +29,14 @@ const Rich: React.FC<{ text: string; hi: string }> = ({ text, hi }) => (
   </>
 );
 
-export const Title: React.FC<{ text: string; from?: number; to?: number; dark?: boolean; hi?: string; top?: number }> = ({
+export const Title: React.FC<{ text: string; from?: number; to?: number; dark?: boolean; hi?: string; top?: number; plate?: boolean }> = ({
   text,
   from = 0,
   to = 99999,
   dark,
   hi = L.maroon,
   top = 220,
+  plate,
 }) => {
   const f = useCurrentFrame();
   const { fps } = useVideoConfig();
@@ -59,7 +60,10 @@ export const Title: React.FC<{ text: string; from?: number; to?: number; dark?: 
           color: dark ? "#fff" : UI.ink,
           opacity: sIn * out,
           transform: `translateY(${(1 - sIn) * 40}px) scale(${0.94 + sIn * 0.06})`,
-          textShadow: dark ? "0 4px 24px rgba(0,0,0,0.6)" : "0 2px 18px rgba(255,255,255,0.8)",
+          textShadow: plate ? "none" : dark ? "0 4px 24px rgba(0,0,0,0.6)" : "0 2px 18px rgba(255,255,255,0.8)",
+          ...(plate
+            ? { width: "max-content", maxWidth: 940, left: "50%", translate: "-50% 0", background: "rgba(255,255,255,0.94)", padding: "18px 40px", borderRadius: 28, boxShadow: "0 12px 34px rgba(0,0,0,0.2)" }
+            : {}),
         }}
       >
         <Rich text={text} hi={hi} />
@@ -198,6 +202,110 @@ export const EndCard: React.FC<{ from: number }> = ({ from }) => {
         }}
       >
         EXPLAINERS
+      </div>
+    </AbsoluteFill>
+  );
+};
+
+/* ---------------- motion-graphic callouts ---------------- */
+
+type P3 = [number, number, number];
+export type Cam = { pos: P3; look: P3; fov?: number; zoom?: number };
+
+/** Project a world point to screen pixels for a camera set up like <CameraRig/> */
+export const project = (p: P3, cam: Cam, W = 1080, H = 1920) => {
+  const sub = (a: P3, b: P3): P3 => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
+  const dot = (a: P3, b: P3) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+  const cross = (a: P3, b: P3): P3 => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+  const norm = (a: P3): P3 => {
+    const l = Math.hypot(...a);
+    return [a[0] / l, a[1] / l, a[2] / l];
+  };
+  const f = norm(sub(cam.look, cam.pos));
+  const r = norm(cross(f, [0, 1, 0]));
+  const u = cross(r, f);
+  const v = sub(p, cam.pos);
+  const xc = dot(v, r);
+  const yc = dot(v, u);
+  const zc = dot(v, f);
+  if (cam.zoom !== undefined) return { x: W / 2 + xc * cam.zoom, y: H / 2 - yc * cam.zoom };
+  const t = Math.tan(((cam.fov ?? 40) * Math.PI) / 360);
+  return { x: ((xc / (zc * t * (W / H)) + 1) / 2) * W, y: ((1 - yc / (zc * t)) / 2) * H };
+};
+
+/**
+ * Callout: pulsing dot on the object, a leader line that draws itself,
+ * then a label card that wipes in. `side` = which way the card extends from (lx, ly).
+ */
+export const Callout: React.FC<{
+  a: { x: number; y: number };
+  lx: number;
+  ly: number;
+  text: string;
+  sub?: string;
+  from: number;
+  to?: number;
+  side?: "left" | "right";
+  color?: string;
+  dark?: boolean;
+}> = ({ a, lx, ly, text, sub, from, to = 99999, side = "right", color = UI.blue, dark }) => {
+  const f = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  if (f < from || f > to) return null;
+  const t = f - from;
+  const out = ip(f, [to - 8, to], [1, 0]);
+  const dotS = spring({ frame: t, fps, config: { damping: 11, stiffness: 220 } });
+  const ex = lx + (side === "right" ? -46 : 46);
+  const seg1 = Math.hypot(ex - a.x, ly - a.y);
+  const seg2 = 46;
+  const len = seg1 + seg2;
+  const draw = ip(t, [4, 18], [0, 1], Easing.out(Easing.cubic));
+  const card = spring({ frame: t - 14, fps, config: { damping: 16, stiffness: 160 } });
+  const pulse = (t % 40) / 40;
+  const fg = dark ? "#fff" : UI.ink;
+  return (
+    <AbsoluteFill style={{ pointerEvents: "none", opacity: out }}>
+      <svg width={1080} height={1920} style={{ position: "absolute", inset: 0 }}>
+        <circle cx={a.x} cy={a.y} r={14 + pulse * 30} fill="none" stroke={color} strokeWidth={4} opacity={(1 - pulse) * 0.7 * dotS} />
+        <polyline
+          points={`${a.x},${a.y} ${ex},${ly} ${lx},${ly}`}
+          fill="none"
+          stroke={dark ? "#fff" : color}
+          strokeWidth={5}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeDasharray={len}
+          strokeDashoffset={len * (1 - draw)}
+        />
+        <circle cx={a.x} cy={a.y} r={12 * dotS} fill="#fff" stroke={color} strokeWidth={6} />
+      </svg>
+      <div
+        style={{
+          position: "absolute",
+          left: lx,
+          top: ly,
+          transform: `translate(${side === "right" ? 0 : -100}%, -50%)`,
+          clipPath: side === "right" ? `inset(0 ${(1 - Math.min(1, card)) * 100}% 0 0)` : `inset(0 0 0 ${(1 - Math.min(1, card)) * 100}%)`,
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "stretch",
+            background: dark ? "rgba(20,21,26,0.88)" : "#fff",
+            borderRadius: 18,
+            overflow: "hidden",
+            boxShadow: "0 12px 34px rgba(0,0,0,0.25)",
+            fontFamily: F.ui,
+            whiteSpace: "nowrap",
+          }}
+        >
+          <div style={{ width: 12, background: color }} />
+          <div style={{ padding: "14px 26px 14px 20px" }}>
+            <div style={{ fontWeight: 800, fontSize: 42, color: fg, lineHeight: 1.1 }}>{text}</div>
+            {sub && <div style={{ fontWeight: 600, fontSize: 30, color, marginTop: 4, filter: dark ? "brightness(1.6)" : undefined }}>{sub}</div>}
+          </div>
+        </div>
       </div>
     </AbsoluteFill>
   );

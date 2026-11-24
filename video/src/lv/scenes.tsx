@@ -1,7 +1,7 @@
 import React from "react";
 import { AbsoluteFill, Easing, interpolate, useCurrentFrame, useVideoConfig } from "remotion";
 import { ThreeCanvas } from "@remotion/three";
-import { Captions, Chip, EndCard, Title, blink, ip } from "./overlay";
+import { Callout, Chip, EndCard, Title, blink, ip, project } from "./overlay";
 import { Tex, useFontsReady, useTextures } from "./textures";
 import { UI } from "./theme";
 import {
@@ -75,20 +75,26 @@ export const NightHook: React.FC = () => {
         )}
       />
       <Title text="Ye **laal batti** kyun?" dark hi="#FF4B5C" from={8} />
-      <Captions
-        lines={[
-          { from: 0, to: 96, text: "Raat ko har train ke peeche ek **laal batti** blink karti hai." },
-          { from: 96, to: 190, text: "Aur din mein dikhta hai ek bada **X**." },
-        ]}
+      <Callout
+        a={project([0, LAMP_Y, rearZ + 0.1], { pos: cam, look: [0, 2.6, -40], fov: 42 })}
+        lx={640}
+        ly={1330}
+        text="Tail lamp"
+        sub="raat mein blink"
+        color="#FF4B5C"
+        dark
+        from={40}
+        to={182}
       />
     </AbsoluteFill>
   );
 };
 
 /* 2. Day reveal — X, LV board, lamp */
+const DR_CAM = { pos: [0.15, 2.75, 11.5] as V3, look: [0, 2.7, 0] as V3, fov: 40 };
 export const DayReveal: React.FC = () => {
   const f = useCurrentFrame();
-  const cam = lerp3([1.2, 2.5, 30], [0.15, 2.75, 11.5], ip(f, [0, 120], [0, 1]));
+  const cam = lerp3([1.2, 2.5, 30], [0.15, 2.75, 11.5], ip(f, [0, 42], [0, 1]));
   return (
     <AbsoluteFill>
       <Stage
@@ -109,17 +115,9 @@ export const DayReveal: React.FC = () => {
         )}
       />
       <Title text="Ye **X** kyun?" from={6} />
-      <Chip text="Bada X" x={540} y={1330} from={44} to={124} />
-      <Chip text="Laal LV board" x={540} y={1330} from={128} to={192} />
-      <Chip text="Blink karti batti" x={540} y={1330} from={196} to={246} />
-      <Chip text="LV = Last Vehicle" x={540} y={1330} from={250} to={310} kind="white" />
-      <Captions
-        lines={[
-          { from: 0, to: 196, text: "Ye **X**, ye laal **LV board** aur ye **batti** — teeno railway staff ke liye hain." },
-          { from: 196, to: 310, text: "**LV** matlab **Last Vehicle** — yaani train ka aakhri dabba." },
-        ]}
-        y={1460}
-      />
+      <Callout a={project([0.36, 3.45, 0.1], DR_CAM)} lx={620} ly={480} text="Bada X" sub="peela, door se dikhe" color="#C99A00" from={48} to={310} />
+      <Callout a={project([LV_POS.x, LV_POS.y, 0.1], DR_CAM)} lx={700} ly={1520} text="LV board" sub="Last Vehicle" color={UI.red} from={126} to={310} />
+      <Callout a={project([0, LAMP_Y, 0.2], DR_CAM)} lx={430} ly={1700} side="left" text="Tail lamp" sub="blink karti batti" color={UI.blue} from={196} to={310} />
     </AbsoluteFill>
   );
 };
@@ -174,19 +172,24 @@ export const WhyLast: React.FC = () => {
       />
       <Title text="Sirf aakhri dabba **kyun?**" from={6} top={200} hi={UI.blue} />
       <Chip text="coupling khula" x={540} y={760} from={120} to={220} />
-      <Chip text="peeche ke dabbe ruk gaye" x={540} y={1280} from={226} to={370} kind="white" />
-      <Captions
-        lines={[
-          { from: 0, to: 150, text: "Kabhi-kabhi do dabbon ke beech ka **coupling** khul jaata hai." },
-          { from: 150, to: 370, text: "Engine aage nikal jaata hai, aur **peeche ke dabbe** raste mein hi ruk jaate hain." },
-        ]}
+      <Callout
+        a={project([0, 2.6, rearZ - 0.5], { pos, look, zoom })}
+        lx={560}
+        ly={1330}
+        text="Aakhri dabba"
+        sub="X ke saath — ruk gaya"
+        color={UI.red}
+        from={240}
+        to={370}
       />
+      <Chip text="peeche ke dabbe ruk gaye" x={540} y={1530} from={226} to={370} kind="white" />
     </AbsoluteFill>
   );
 };
 
 /* 4a. Station master watches the last coach (day) */
 const SM_POS: V3 = [3.9, 1.05, -4];
+const SC_CAM = { pos: [6.8, 2.7, 6] as V3, look: [0.5, 2.0, -40] as V3, fov: 44 };
 export const StationCheckDay: React.FC = () => {
   const f = useCurrentFrame();
   const rearZ = 55 - 0.62 * f;
@@ -203,12 +206,11 @@ export const StationCheckDay: React.FC = () => {
           </>
         )}
       />
-      <Chip text="Mindset Mode | Explainers" x={540} y={330} from={4} to={60} kind="white" />
-      <Chip text="station master" x={760} y={1180} from={62} to={100} kind="white" />
-      <Chip text="aakhri dabba dekha ✓" x={700} y={1180} from={102} to={190} kind="green" />
-      <Captions
-        lines={[{ from: 0, to: 190, text: "Isliye har station par **station master** har guzarti train ka **aakhri dabba** dekhta hai." }]}
-      />
+      <Title text="Station master ki **nazar**" from={6} plate />
+      <Chip text="Mindset Mode | Explainers" x={540} y={1500} from={4} to={60} kind="white" />
+      <Callout a={project([SM_POS[0], 2.95, SM_POS[2]], SC_CAM)} lx={400} ly={640} text="Station master" sub="har train dekhta hai" color={UI.blue} from={88} to={190} />
+      <Callout a={project([6.2, 5.0, -30], SC_CAM)} lx={1000} ly={1000} side="left" text="Dhonipur" sub="station" color="#C99A00" from={100} to={190} />
+      <Chip text="aakhri dabba dekha ✓" x={540} y={1500} from={110} to={190} kind="green" />
     </AbsoluteFill>
   );
 };
@@ -229,9 +231,8 @@ export const StationCheckNight: React.FC = () => {
           </>
         )}
       />
-      <Chip text="Din mein: X + LV board" x={540} y={330} from={4} to={66} kind="white" />
-      <Chip text="Raat mein: blink karti batti" x={540} y={330} from={70} to={140} kind="white" />
-      <Captions lines={[{ from: 0, to: 140, text: "Din mein **X + LV board**, raat mein **blink karti laal batti**." }]} />
+      <Title text={"Din mein **X**,\nraat mein **batti**"} dark hi="#FF4B5C" from={4} />
+      <Callout a={project([0, LAMP_Y, rearZ + 0.1], SC_CAM)} lx={660} ly={1260} text="Laal batti" sub="blink = aakhri dabba" color="#FF4B5C" dark from={30} to={140} />
     </AbsoluteFill>
   );
 };
@@ -242,6 +243,7 @@ const Verdict: React.FC<{ ok: boolean }> = ({ ok }) => {
   const rearZ = 50 - 0.5 * f;
   const smZ = 0;
   const { pos, look } = isoCam([-2, 2, 6]);
+  const VCAM = { pos, look, zoom: 30 };
   const zoneP = ip(f, [118, 140], [0, 1]);
   return (
     <AbsoluteFill>
@@ -267,12 +269,13 @@ const Verdict: React.FC<{ ok: boolean }> = ({ ok }) => {
               lowDetail
             />
             <Zone z1={7} z2={52} color={ok ? "#1E8A4C" : "#C8283B"} opacity={zoneP} width={4.6} />
-            <Signal position={[2.8, 0, 32]} state={ok && f > 128 ? "green" : "red"} tex={tex} scale={1.3} />
+            <Signal position={[2.8, 0, 22]} state={ok && f > 128 ? "green" : "red"} tex={tex} scale={1.3} />
             <Badge tex={ok ? tex.ok : tex.no} position={[-4.2, 9.5, smZ]} size={4.2} p={ip(f, [104, 116], [0, 1], Easing.out(Easing.back(2)))} />
             {ok && <Ring position={[0, 2.7, rearZ]} r={3.2} width={0.32} billboard progress={ip(f, [84, 96], [0, 1]) * ip(f, [124, 132], [1, 0])} />}
           </>
         )}
       />
+      <Title text="Station master ka **faisla**" from={4} to={116} top={180} hi={UI.blue} />
       <Title
         text={ok ? "Nishaan dikha =\nline **khaali**" : "Nishaan nahi =\nline **band**"}
         hi={ok ? UI.green : UI.red}
@@ -287,13 +290,28 @@ const Verdict: React.FC<{ ok: boolean }> = ({ ok }) => {
         to={190}
         kind={ok ? "green" : "red"}
       />
-      <Chip text={ok ? "line khaali hai" : "peeche ki line band"} x={540} y={1240} from={134} to={190} kind={ok ? "blue" : "red"} />
-      <Captions
-        lines={[
-          ok
-            ? { from: 0, to: 190, text: "Nishaan dikha, matlab **poori train** aa gayi — peeche ki line **khaali** hai." }
-            : { from: 0, to: 190, text: "Nishaan nahi dikha, toh peeche ki line **band** — agli train roki jaati hai." },
-        ]}
+      <Callout a={project([-4.2, 5.2, 0], VCAM)} lx={620} ly={620} text="Station master" sub="aakhri dabba check" color={UI.blue} from={14} to={100} />
+      <Callout
+        a={project([0, 0.6, 26], VCAM)}
+        lx={560}
+        ly={1420}
+        side="left"
+        text={ok ? "Peeche ki line" : "Peeche ki line"}
+        sub={ok ? "khaali ✓ agli train bhejo" : "band ✕ agli train roko"}
+        color={ok ? UI.green : UI.red}
+        from={138}
+        to={190}
+      />
+      <Callout
+        a={project([2.8, 6.2, 22], VCAM)}
+        lx={1000}
+        ly={1650}
+        side="left"
+        text="Signal"
+        sub={ok ? "green" : "red"}
+        color={ok ? UI.green : UI.red}
+        from={146}
+        to={190}
       />
     </AbsoluteFill>
   );
@@ -318,7 +336,6 @@ export const Outro: React.FC = () => {
         )}
       />
       <Title text={"Ek chhota **X**,\npoori line ki safety."} dark hi={UI.yellow} from={6} to={112} />
-      <Captions lines={[{ from: 0, to: 112, text: "Agli baar ye **X** dikhe, toh yaad rakhna — ye **safety ka signal** hai." }]} />
       <EndCard from={112} />
     </AbsoluteFill>
   );
