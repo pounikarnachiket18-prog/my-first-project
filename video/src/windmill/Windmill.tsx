@@ -26,8 +26,17 @@ import { Title, TitleStyle } from "../rail/parts";
 import { BrandBadge } from "../remix/fx";
 
 export const FPS = 30;
-export const WINDMILL_FRAMES = 300;
 const f = (s: number) => Math.round(s * FPS);
+
+// Meme ending (user's sounds in public/audio, gitignored):
+// 10 s → meme-1 plays + caption pops in; when it ends → meme-2 with a punch zoom.
+const MAIN_END = 10;
+const MEME1_LEN = 7.95;
+const MEME2_AT = MAIN_END + MEME1_LEN;
+const MEME2_LEN = 4.82;
+export const END_AT = MEME2_AT + MEME2_LEN;
+export const WINDMILL_FRAMES = f(END_AT);
+const MEME_TEXT = "Zyada backchodi karne ki humein aadat nahi hai 😎";
 
 /** [start, end, text] for the step label (one at a time). */
 export const CUES: [number, number, string][] = [
@@ -135,11 +144,69 @@ const Follow: React.FC = () => {
   );
 };
 
+/** Slow push-in during meme 1, punch + shake when meme 2 hits. */
+const OutroCamera: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const frame = useCurrentFrame();
+  const t = frame / FPS;
+  let z = 1;
+  let sx = 0;
+  let sy = 0;
+  if (t >= MAIN_END) z = interpolate(t, [MAIN_END, MEME2_AT], [1, 1.12], { extrapolateRight: "clamp" });
+  if (t >= MEME2_AT) {
+    const d = frame - f(MEME2_AT);
+    z = 1.12 + 0.18 * Math.exp(-d / 6) + 0.03;
+    const amp = 14 * Math.exp(-d / 8);
+    sx = Math.sin(d * 2.1) * amp;
+    sy = Math.cos(d * 2.7) * amp;
+  }
+  return (
+    <AbsoluteFill style={{ transform: `translate(${sx}px, ${sy}px) scale(${z})`, transformOrigin: "50% 60%" }}>{children}</AbsoluteFill>
+  );
+};
+
+/** Meme caption over the held frame; bounces when the second sound hits. */
+const MemeOutro: React.FC = () => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  const dim = interpolate(frame, [0, 8], [0, 0.45], { extrapolateRight: "clamp" });
+  const p = spring({ frame: frame - 9, fps, config: { damping: 9, stiffness: 220 } });
+  const hit = frame - f(MEME1_LEN);
+  const bounce = hit >= 0 ? 1 + 0.22 * Math.exp(-hit / 5) * Math.abs(Math.cos(hit / 2)) : 1;
+  const emoji = hit >= 0 ? spring({ frame: hit, fps, config: { damping: 8, stiffness: 240 } }) : 0;
+  return (
+    <AbsoluteFill>
+      <AbsoluteFill style={{ background: `rgba(0,0,0,${dim})` }} />
+      <div style={{ position: "absolute", left: 60, right: 60, top: 760, display: "flex", justifyContent: "center" }}>
+        <div
+          style={{
+            transform: `scale(${p * bounce}) rotate(${(1 - p) * -8}deg)`,
+            fontFamily: FONT.title,
+            fontWeight: 800,
+            fontSize: 92,
+            lineHeight: 1.12,
+            textAlign: "center",
+            color: "#FFFFFF",
+            WebkitTextStroke: "12px #000000",
+            paintOrder: "stroke fill",
+            textShadow: "0 10px 30px rgba(0,0,0,0.6)",
+          }}
+        >
+          {MEME_TEXT}
+        </div>
+      </div>
+      <div style={{ position: "absolute", left: 540, top: 1260, fontSize: 200, transform: `translate(-50%,-50%) scale(${emoji}) rotate(${Math.sin(hit / 3) * 10}deg)` }}>
+        😂
+      </div>
+    </AbsoluteFill>
+  );
+};
+
 export const Windmill: React.FC = () => {
   useFonts();
   return (
     <TitleStyle.Provider value="spot">
       <AbsoluteFill style={{ background: "#000" }}>
+        <OutroCamera>
         <Sequence durationInFrames={f(CLIP_END)}>
           <OffthreadVideo src={staticFile("video/windmill-ai.mp4")} volume={0.6} style={{ width: 1080, height: 1920, objectFit: "cover" }} />
         </Sequence>
@@ -147,6 +214,7 @@ export const Windmill: React.FC = () => {
           {/* hold on the lit-house frame (exported from the clip at 9.2 s) */}
           <Img src={staticFile("video/windmill-end.png")} style={{ width: 1080, height: 1920, objectFit: "cover" }} />
         </Sequence>
+        </OutroCamera>
         <Sequence durationInFrames={f(TITLE_OUT)}>
           <Title text={"Hawa se\nbijli kaise?"} inAt={3} outAt={f(TITLE_OUT)} y={230} />
         </Sequence>
@@ -157,9 +225,16 @@ export const Windmill: React.FC = () => {
           </Sequence>
         ))}
         <Dots />
-        <Sequence from={f(FOLLOW_AT)} layout="none">
+        <Sequence from={f(FOLLOW_AT)} durationInFrames={f(MAIN_END - FOLLOW_AT)} layout="none">
           <Follow />
           <Audio src={staticFile("sfx/ding.wav")} volume={0.5} />
+        </Sequence>
+        <Sequence from={f(MAIN_END)} layout="none">
+          <MemeOutro />
+          <Audio src={staticFile("audio/meme-1.mp3")} volume={1} />
+        </Sequence>
+        <Sequence from={f(MEME2_AT)} layout="none">
+          <Audio src={staticFile("audio/meme-2.mp3")} volume={1} />
         </Sequence>
         <BrandBadge color={C.accent} />
         <Audio src={staticFile("sfx/wind.wav")} volume={0.25} />
