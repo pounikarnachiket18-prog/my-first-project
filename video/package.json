@@ -17,7 +17,9 @@
     "studio:story": "remotion studio src/story/index.ts",
     "render:story": "remotion render src/story/index.ts Story out/kambal-recut.mp4",
     "studio:explainer": "remotion studio src/explainer/index.ts",
-    "render:explainer": "remotion render src/explainer/index.ts Explainer out/kambal-explainer.mp4"
+    "render:explainer": "remotion render src/explainer/index.ts Explainer out/kambal-explainer.mp4",
+    "studio:windmill": "remotion studio src/windmill/index.ts",
+    "render:windmill": "remotion render src/windmill/index.ts Windmill out/windmill-sample.mp4"
   },
   "dependencies": {
     "@remotion/cli": "4.0.469",
