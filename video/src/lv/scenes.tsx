@@ -37,7 +37,7 @@ const Stage: React.FC<{ ortho?: boolean; render: (tex: Tex) => React.ReactNode }
       height={height}
       orthographic={ortho}
       camera={ortho ? { near: 0.1, far: 3000, zoom: 12, position: [-100, 115, 100] } : { fov: 40, near: 0.1, far: 900, position: [0, 3, 20] }}
-      gl={{ antialias: true }}
+      gl={{ antialias: true, preserveDrawingBuffer: true }}
     >
       {tex ? render(tex) : null}
     </ThreeCanvas>

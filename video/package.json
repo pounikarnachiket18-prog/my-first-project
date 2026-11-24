@@ -6,7 +6,7 @@
     "start": "remotion studio",
     "build": "remotion bundle",
     "render": "remotion render Main out/video-16x9.mp4",
-    "render:dhonipur": "remotion render DhonipurLV out/dhonipur-lv-9x16.mp4 --gl=angle",
+    "render:dhonipur": "remotion render DhonipurLV out/dhonipur-lv-9x16.mp4 --gl=angle --concurrency=1",
     "render:mobile": "remotion render MainMobile out/video-9x16.mp4",
     "thumbs": "remotion still Thumb16x9 out/thumb-16x9.png && remotion still Thumb9x16 out/thumb-9x16.png",
     "all": "npm run render && npm run render:mobile && npm run thumbs",
