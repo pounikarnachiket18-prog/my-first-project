@@ -182,7 +182,7 @@ export const S4Dhaba: React.FC<{ dur: number }> = ({ dur }) => {
       </Stage>
       <Header />
       <Chip text="KHANDALA GHAT · NH 48" from={0} to={dur} />
-      <DataCard x={70} y={640} big="8" unit="km/h" sub="ONE PHONE" plate="MH 12 KT 4581" from={12} to={110} scale={0.85} />
+      <DataCard x={70} y={640} big="8" unit="km/h" sub="ONE PHONE" plate="MH 12 XXXX" from={12} to={110} scale={0.85} />
     </AbsoluteFill>
   );
 };
@@ -304,9 +304,9 @@ const PlatesVs: React.FC<{ from: number; to: number }> = ({ from, to }) => {
   );
   return (
     <div style={{ position: "absolute", top: 160, width: "100%", display: "flex", justifyContent: "center", gap: 16, alignItems: "center", opacity: o }}>
-      {plate("MH 12 PQ 0420", false)}
+      {plate("MH 12 XXXX", false)}
       <span style={{ fontFamily: "Montserrat", fontWeight: 900, fontSize: 44, color: "#FFB347", textShadow: "0 3px 0 #000" }}>VS</span>
-      {plate("MH 12 R 7781", true)}
+      {plate("MH 12 XXXX", true)}
     </div>
   );
 };

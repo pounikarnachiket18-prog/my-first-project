@@ -34,6 +34,9 @@ const fit = (c: CanvasRenderingContext2D, text: string, font: (px: number) => st
 
 export type PlateKind = "private" | "commercial" | "ev" | "eu";
 
+// Indian plates are masked: only "MH 12" is shown, the rest is XXXX.
+export const MASKED_PLATE = "MH 12 XXXX";
+
 export const plateTex = (text: string, kind: PlateKind = "private") =>
   canvasTex(`plate:${text}:${kind}`, 520, 124, (c) => {
     if (kind === "eu") {
@@ -79,9 +82,9 @@ export const plateTex = (text: string, kind: PlateKind = "private") =>
     c.textAlign = "center";
     c.fillText("IND", 37, 102);
     c.fillStyle = fg;
-    fit(c, text, (p) => `900 ${p}px ${UI}`, 430, 78);
+    fit(c, MASKED_PLATE, (p) => `900 ${p}px ${UI}`, 430, 78);
     c.textBaseline = "middle";
-    c.fillText(text, 290, 66);
+    c.fillText(MASKED_PLATE, 290, 66);
   });
 
 export const signTex = (lines: [string, string][], title?: string) =>
