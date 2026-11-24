@@ -10,6 +10,7 @@ import React from "react";
 import {
   AbsoluteFill,
   Audio,
+  Img,
   OffthreadVideo,
   Sequence,
   continueRender,
@@ -30,13 +31,14 @@ const f = (s: number) => Math.round(s * FPS);
 
 /** [start, end, text] for the step label (one at a time). */
 export const CUES: [number, number, string][] = [
-  [2.4, 3.6, "1 · Hawa blades ghumati hai 🌬️"],
-  [3.6, 5.0, "2 · Gearbox speed badhata hai ⚙️"],
-  [5.0, 6.6, "3 · Generator bijli banata hai ⚡"],
-  [6.6, 8.6, "4 · Cable se bijli ghar tak 🏠"],
+  [1.9, 3.0, "1 · Hawa blades ghumati hai 🌬️"],
+  [3.0, 4.2, "2 · Gearbox speed badhata hai ⚙️"],
+  [4.2, 5.6, "3 · Generator bijli banata hai ⚡"],
+  [5.6, 8.5, "4 · Cable se bijli ghar tak 🏠"],
 ];
-export const TITLE_OUT = 2.4;
-export const FOLLOW_AT = 8.6;
+export const TITLE_OUT = 1.9;
+export const FOLLOW_AT = 8.5;
+const CLIP_END = 9.2; // AI clip is 9.4 s; hold its last frame to 10 s
 
 const useFonts = () => {
   const [handle] = React.useState(() => delayRender("fonts"));
@@ -112,7 +114,7 @@ const Follow: React.FC = () => {
   const p = spring({ frame, fps, config: { damping: 10, stiffness: 190 } });
   const tap = 1 + Math.max(0, Math.sin((frame - 10) / 4)) * 0.05;
   return (
-    <div style={{ position: "absolute", left: 0, right: 0, top: 1340, display: "flex", justifyContent: "center" }}>
+    <div style={{ position: "absolute", left: 0, right: 0, top: 1000, display: "flex", justifyContent: "center" }}>
       <div
         style={{
           transform: `scale(${p * tap})`,
@@ -138,7 +140,13 @@ export const Windmill: React.FC = () => {
   return (
     <TitleStyle.Provider value="spot">
       <AbsoluteFill style={{ background: "#000" }}>
-        <OffthreadVideo src={staticFile("video/windmill-ai.mp4")} volume={0.7} style={{ width: 1080, height: 1920, objectFit: "cover" }} />
+        <Sequence durationInFrames={f(CLIP_END)}>
+          <OffthreadVideo src={staticFile("video/windmill-ai.mp4")} volume={0.6} style={{ width: 1080, height: 1920, objectFit: "cover" }} />
+        </Sequence>
+        <Sequence from={f(CLIP_END)}>
+          {/* hold on the lit-house frame (exported from the clip at 9.2 s) */}
+          <Img src={staticFile("video/windmill-end.png")} style={{ width: 1080, height: 1920, objectFit: "cover" }} />
+        </Sequence>
         <Sequence durationInFrames={f(TITLE_OUT)}>
           <Title text={"Hawa se\nbijli kaise?"} inAt={3} outAt={f(TITLE_OUT)} y={230} />
         </Sequence>
