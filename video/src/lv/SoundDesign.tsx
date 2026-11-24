@@ -17,32 +17,33 @@ const AMB = "sfx/express-ambience.mp3"; // continuous rumble + wheel rhythm
 const HORN = "sfx/horn-passby.mp3"; // horn 0.4-2.2s, doppler horn 2-5s, pass-by rush 5.5-14s
 const CLACK = "sfx/wheel-clacks.mp3"; // clickety-clack over rail joints 1-10s
 
-const VO = "vo/voiceover-1.22x.mp3"; // ElevenLabs VO, sped up 1.22x (pitch kept), 48.3s
+const VO = "vo/voiceover-40s.mp3"; // ElevenLabs VO, pauses tightened + 1.37x (pitch kept), 38.5s
 
 /*
- * Timeline (seconds), 50s total — scenes are cut to the VO lines:
- *  0.0  night hook       horn, VO starts at 1.0
- *  7.4  day reveal       bed ducked (train standing)
- * 16.4  coupling breaks  wheel clacks, die out as the rear coaches stop (~24.6s)
- * 25.6  station master   pass-by rush as the train goes past
- * 31.1  night check      bed
- * 35.2  line clear/band  light clacks
- * 44.6  outro + end card everything fades out by 50s
+ * Timeline (seconds), 40s total — scenes are cut to the VO lines:
+ *  0.0  night hook       short horn, VO starts at 0.6
+ *  5.6  day reveal       bed ducked (train standing)
+ * 12.6  coupling breaks  wheel clacks, die out as the rear coaches stop (~19s)
+ * 20.0  station master   pass-by rush as the train goes past
+ * 24.6  night check      bed
+ * 27.9  line clear/band  light clacks
+ * 35.4  outro + end card everything fades out by 40s
+ * Train SFX kept low (about -6 dB vs the earlier mix) so the voice leads.
  */
 export const SoundDesign: React.FC = () => (
   <>
-    <Clip src={VO} at={1.0} from={0} to={48.3} vol={() => 1} />
+    <Clip src={VO} at={0.6} from={0} to={38.5} vol={() => 1} />
     <Clip
       src={AMB}
       at={0}
       from={5}
-      to={55}
-      vol={curve([0, 0.6, 6.8, 8.2, 15.8, 17.2, 25.6, 31, 35.2, 44.6, 47.5, 50], [0, 0.28, 0.22, 0.07, 0.07, 0.2, 0.16, 0.2, 0.13, 0.2, 0.15, 0])}
+      to={45}
+      vol={curve([0, 0.5, 5.0, 6.2, 12.3, 13.3, 20, 24.6, 27.9, 35.4, 38, 40], [0, 0.14, 0.11, 0.035, 0.035, 0.1, 0.08, 0.1, 0.065, 0.1, 0.075, 0])}
     />
-    <Clip src={HORN} at={0} from={0.3} to={2.0} vol={curve([0, 0.06, 1.0, 1.6], [0, 0.7, 0.45, 0])} />
-    <Clip src={CLACK} at={16.6} from={0.8} to={9} vol={curve([0, 0.4, 6.6, 8.0], [0, 0.32, 0.32, 0])} />
-    <Clip src={HORN} at={27.2} from={4.8} to={11} vol={curve([0, 0.4, 4.0, 5.6], [0, 0.42, 0.42, 0])} />
-    <Clip src={CLACK} at={35.3} from={1} to={6} vol={curve([0, 0.4, 4.4, 5], [0, 0.2, 0.2, 0])} />
-    <Clip src={CLACK} at={40.5} from={1} to={5} vol={curve([0, 0.4, 3.4, 4], [0, 0.2, 0.2, 0])} />
+    <Clip src={HORN} at={0} from={0.3} to={1.6} vol={curve([0, 0.05, 0.6, 1.1], [0, 0.4, 0.25, 0])} />
+    <Clip src={CLACK} at={12.75} from={0.8} to={8} vol={curve([0, 0.3, 5.2, 6.5], [0, 0.16, 0.16, 0])} />
+    <Clip src={HORN} at={21.3} from={4.8} to={10} vol={curve([0, 0.4, 3.2, 4.5], [0, 0.22, 0.22, 0])} />
+    <Clip src={CLACK} at={28.0} from={1} to={5} vol={curve([0, 0.3, 3.4, 4], [0, 0.1, 0.1, 0])} />
+    <Clip src={CLACK} at={32.0} from={1} to={4} vol={curve([0, 0.3, 2.5, 3], [0, 0.1, 0.1, 0])} />
   </>
 );

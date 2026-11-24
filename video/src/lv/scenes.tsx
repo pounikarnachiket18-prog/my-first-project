@@ -1,7 +1,7 @@
 import React from "react";
 import { AbsoluteFill, Easing, interpolate, useCurrentFrame, useVideoConfig } from "remotion";
 import { ThreeCanvas } from "@remotion/three";
-import { Callout, Chip, EndCard, Title, blink, ip, project } from "./overlay";
+import { Callout, Chip, EndCard, Title, blink, ip, project, useF } from "./overlay";
 import { Tex, useFontsReady, useTextures } from "./textures";
 import { UI } from "./theme";
 import {
@@ -60,7 +60,7 @@ const StationSet: React.FC<{ tex: Tex; night?: boolean; boards?: number[] }> = (
 
 /* 1. Night hook — the blinking red lamp */
 export const NightHook: React.FC = () => {
-  const f = useCurrentFrame();
+  const f = useF();
   const rearZ = 6 - 50 * ip(f, [20, 236], [0, 1], Easing.in(Easing.quad));
   const cam = lerp3([0.5, 2.3, 24], [0.3, 2.5, 18], ip(f, [0, 236], [0, 1]));
   return (
@@ -93,7 +93,7 @@ export const NightHook: React.FC = () => {
 /* 2. Day reveal — X, LV board, lamp */
 const DR_CAM = { pos: [0.15, 2.75, 11.5] as V3, look: [0, 2.7, 0] as V3, fov: 40 };
 export const DayReveal: React.FC = () => {
-  const f = useCurrentFrame();
+  const f = useF();
   const cam = lerp3([1.2, 2.5, 30], [0.15, 2.75, 11.5], ip(f, [0, 26], [0, 1]));
   return (
     <AbsoluteFill>
@@ -139,7 +139,7 @@ const IsoSet: React.FC<{ tex: Tex }> = ({ tex }) => (
 
 /* 3. Why only the last coach — the coupling story */
 export const WhyLast: React.FC = () => {
-  const f = useCurrentFrame();
+  const f = useF();
   const v = 0.32;
   const SPLIT = 135;
   // rear part: constant speed, then brakes to a stop after the split
@@ -191,7 +191,7 @@ export const WhyLast: React.FC = () => {
 const SM_POS: V3 = [3.9, 1.05, -4];
 const SC_CAM = { pos: [6.8, 2.7, 6] as V3, look: [0.5, 2.0, -40] as V3, fov: 44 };
 export const StationCheckDay: React.FC = () => {
-  const f = useCurrentFrame();
+  const f = useF();
   const rearZ = 55 - 0.62 * f;
   const p = ip(f, [10, 60], [0, 1]);
   return (
@@ -217,7 +217,7 @@ export const StationCheckDay: React.FC = () => {
 
 /* 4b. Same check at night */
 export const StationCheckNight: React.FC = () => {
-  const f = useCurrentFrame();
+  const f = useF();
   const rearZ = -8 - 0.5 * f;
   return (
     <AbsoluteFill>
@@ -239,7 +239,7 @@ export const StationCheckNight: React.FC = () => {
 
 /* 5. The verdict — mark seen / not seen */
 const Verdict: React.FC<{ ok: boolean; dur: number }> = ({ ok, dur }) => {
-  const f = useCurrentFrame();
+  const f = useF();
   const rearZ = 25 - 0.55 * f;
   const smZ = 0;
   const { pos, look } = isoCam([-2, 2, 6]);
@@ -321,7 +321,7 @@ export const VerdictNo: React.FC = () => <Verdict ok={false} dur={142} />;
 
 /* 6. Outro */
 export const Outro: React.FC = () => {
-  const f = useCurrentFrame();
+  const f = useF();
   const rearZ = -6 - 70 * ip(f, [0, 162], [0, 1], Easing.in(Easing.quad));
   return (
     <AbsoluteFill>
@@ -335,8 +335,8 @@ export const Outro: React.FC = () => {
           </>
         )}
       />
-      <Title text={"Ek chhota **X**,\npoori line ki safety."} dark hi={UI.yellow} from={6} to={106} />
-      <EndCard from={106} />
+      <Title text={"Ek chhota **X**,\npoori line ki safety."} dark hi={UI.yellow} from={6} to={100} />
+      <EndCard from={100} />
     </AbsoluteFill>
   );
 };

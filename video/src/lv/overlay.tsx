@@ -1,6 +1,10 @@
-import React from "react";
+import React, { createContext, useContext } from "react";
 import { AbsoluteFill, Easing, interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
 import { F, L, UI } from "./theme";
+
+/** Per-scene time scale: scenes were authored on a longer timeline and are played faster to fit the VO */
+export const ScaleCtx = createContext(1);
+export const useF = () => useCurrentFrame() * useContext(ScaleCtx);
 
 export const ip = (f: number, i: [number, number], o: [number, number], ease = Easing.inOut(Easing.cubic)) =>
   interpolate(f, i, o, { extrapolateLeft: "clamp", extrapolateRight: "clamp", easing: ease });
@@ -38,7 +42,7 @@ export const Title: React.FC<{ text: string; from?: number; to?: number; dark?: 
   top = 220,
   plate,
 }) => {
-  const f = useCurrentFrame();
+  const f = useF();
   const { fps } = useVideoConfig();
   const sIn = spring({ frame: f - from, fps, config: { damping: 16, stiffness: 140 } });
   const out = ip(f, [to - 10, to], [1, 0]);
@@ -88,7 +92,7 @@ export const Chip: React.FC<{ text: string; x: number; y: number; from: number; 
   to,
   kind = "blue",
 }) => {
-  const f = useCurrentFrame();
+  const f = useF();
   const { fps } = useVideoConfig();
   if (f < from || f > to) return null;
   const s = spring({ frame: f - from, fps, config: { damping: 12, stiffness: 180 } });
@@ -120,7 +124,7 @@ export const Chip: React.FC<{ text: string; x: number; y: number; from: number; 
 
 /** Hinglish caption strip (the narration, since the video has no voiceover) */
 export const Captions: React.FC<{ lines: { from: number; to: number; text: string }[]; y?: number }> = ({ lines, y = 1440 }) => {
-  const f = useCurrentFrame();
+  const f = useF();
   const line = lines.find((l) => f >= l.from && f < l.to);
   if (!line) return null;
   const a = ip(f, [line.from, line.from + 8], [0, 1]) * ip(f, [line.to - 6, line.to], [1, 0]);
@@ -151,7 +155,7 @@ export const Captions: React.FC<{ lines: { from: number; to: number; text: strin
 };
 
 export const EndCard: React.FC<{ from: number }> = ({ from }) => {
-  const f = useCurrentFrame();
+  const f = useF();
   const { fps } = useVideoConfig();
   if (f < from) return null;
   const bg = ip(f, [from, from + 14], [0, 1]);
@@ -249,7 +253,7 @@ export const Callout: React.FC<{
   color?: string;
   dark?: boolean;
 }> = ({ a, lx, ly, text, sub, from, to = 99999, side = "right", color = UI.blue, dark }) => {
-  const f = useCurrentFrame();
+  const f = useF();
   const { fps } = useVideoConfig();
   if (f < from || f > to) return null;
   const t = f - from;
