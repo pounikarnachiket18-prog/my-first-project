@@ -206,3 +206,24 @@ Both are projected onto the ship's surfaces, so they follow every camera move. S
 - Scenes with no spoken line are removed from the timeline. Shots tied to cut lines are skipped rather than flashed for a few frames.
 - Sound effects tied to cut lines are not placed. The orchestral rise still gets at least 4 s before the closing hit.
 - The ship lettering fades out in extreme close-ups (for example the wheel-and-blocks shot).
+
+---
+
+# v5: 60 s with the ElevenLabs voiceover
+
+**Output:** `out/indian_navy_60s_elevenlabs_branded.mp4`, made with composition `IndianNavyV5Day60EL`. It is v4 (day, branded, 60 s) narrated by your recording `voiceover/elevenlabs_adam_v5.mp3` (ElevenLabs "Adam").
+
+**Script changes:**
+- New opener: "kya aapko pata hai, Tejas hamare aircraft carrier INS Vikrant pe kaise utarta hai? chaliye jaante hain!"
+- "iska runway, …" replaces "INS Vikrant ka runway".
+- The runway question is now "…is par udaan kaise bharte hain?".
+- The cold-open keyword is now "HOW DOES IT LAND?".
+
+**How the recording was fitted (`scripts/align_voice.py` + `scripts/navy_script_v5.py`):**
+1. The recording (77.0 s) is split into 44 speech chunks by silence detection. Each chunk was transcribed with Whisper to confirm it matches the script (`voiceover/elevenlabs_adam_v5_segments.json`).
+2. Each chunk is mapped to its script line (`SEG_MAP`).
+3. Pauses are tightened to 0.10 s inside a line and 0.16 s between lines. Two beats are kept: 0.55 s after "chaliye jaante hain" (the freeze-frame) and 0.24 s after "itni" (the humour beat).
+4. The result is time-stretched ×1.278 with ffmpeg `atempo` (pitch preserved) to end at 60.0 s. Back-transcription of the sped-up voice is near word-perfect.
+5. Word and caption timings come from the line's chunks, so the scenes, captions and SFX follow your voice.
+
+For a natural-speed version, set `TARGET` in `navy_script_v5.py` to about 76 and rebuild; it would be about 74–76 s with the same tightened pauses.

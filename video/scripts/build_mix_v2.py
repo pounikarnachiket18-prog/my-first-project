@@ -217,7 +217,8 @@ sfx.add(thump(0.8), W(2, 6) - 2 / FPS)
 sfx.add(spool(1.0, 0.4), W(3, 7) - 0.9)
 sfx.add(rumble(2.2, 0.55), W(3, 7) - 0.2)
 sfx.add(flyby(2.2, 0.6), W(3, 7) + 0.1, pan=0.4)
-sfx.add(rumble(2.0, 0.35), W(3, 12) - 1.0)
+# second jet landing (v5's line 3 has no "utarte": it comes in near the end of the line, as in scenes2.tsx)
+sfx.add(rumble(2.0, 0.35), (W(3, 12) if len(tl["lines"][3]["words"]) > 12 else Le(3) - 34 / FPS + 1.0) - 1.0)
 
 # --- imagine
 if HAS("imagine"):

@@ -58,6 +58,7 @@ const Ghosts: React.FC<{ n?: number; render: (k: number, o: number) => React.Rea
 // ======================= 0. COLD OPEN =======================
 export const Cold: React.FC = () => {
   const { f, dur } = useS("cold");
+  const coldWord: string = (useTL() as unknown as { coldKeyword?: string }).coldKeyword ?? "SECONDS\nTO LAND";
   const FZ = dur - 30; // v2: 96, v3: 78
   const k = FZ / 96;
   const ft = Math.min(f, FZ);
@@ -84,14 +85,14 @@ export const Cold: React.FC = () => {
       <Carrier cam={cam} t={ft} v2 gid="c0" parkedType="mig" wireGlow={frozen ? 1 : 0} />
       <Jet cam={cam} pos={pos} heading={AH} pitch={4} scale={JS} gear={1} volume hook={1} exhaust={0.35} t={ft} />
       <SpeedLines f={f} amt={frozen ? 0 : 1 - 0.6 * prog(f, 60 * k, 92 * k)} dir={112} seed={2} />
-      {frozen && <Keyword text={"SECONDS\nTO LAND"} f={f} at={FZ + 2} until={dur + 20} y={500} size={100} />}
+      {frozen && <Keyword text={coldWord} f={f} at={FZ + 2} until={dur + 20} y={500} size={100} />}
     </Stage>
   );
 };
 
 // ======================= 1. HOOK =======================
 export const Hook: React.FC = () => {
-  const { f, Ls, W, dur } = useS("hook");
+  const { f, Ls, Le, W, dur } = useS("hook");
   const th = useTheme();
   const push = Ls(3);
   const cam = camAt(f, { tx: -70, ty: 330, zoom: 0.92, yaw: 0, pitch: 4, F: 2400 }, [
@@ -105,7 +106,9 @@ export const Hook: React.FC = () => {
   const st = ski((f - rel) / FPS, T);
   const tr = trail((t) => ski(t, T).pos, (f - rel) / FPS, 0.9);
   // a second jet coming in to land on "utarte"
-  const la = W(3, 12) - 30;
+  const tl = useTL();
+  // second jet comes in to land on "utarte" (v5's line 3 no longer has it: bring it in near the end of the line)
+  const la = tl.lines[3].words.length > 12 ? W(3, 12) - 30 : Le(3) - 34;
   const s2 = -220 + 75 * Math.max(0, (f - la) / FPS);
   const p2 = appr(Math.min(s2, 20));
   return (
