@@ -210,7 +210,8 @@ export const Runway: React.FC = () => {
   const { f, Ls, W, dur } = useS("runway");
   const th = useTheme();
   const cutA = Ls(9) - 3, cutB = Ls(10) - 2;
-  if (f < cutA) {
+  // (v4 cuts line 8, which leaves no room for the runway roll: skip that shot instead of flashing it)
+  if (f < cutA && cutA > 15) {
     const go = 4;
     const t = Math.max(0, (f - go) / FPS);
     const acc = 2 * 1500 / Math.pow((cutA - go) / FPS, 2);
@@ -663,7 +664,8 @@ export const Backup: React.FC = () => {
 export const Finale: React.FC = () => {
   const { f, Ls, W, dur } = useS("finale");
   const c1 = Ls(35) - 3, c2 = Ls(36) - 3;
-  if (f < c1) {
+  // (v4 cuts lines 34-36: these two shots then have no time and are skipped)
+  if (f < c1 && c1 > 12) {
     // a clean, successful trap + mechanism close-up
     const catchF = W(34, 4);
     const sf = slowmo(f, catchF - 6, catchF + 14, 0.4);
@@ -684,7 +686,7 @@ export const Finale: React.FC = () => {
       </Stage>
     );
   }
-  if (f < c2) {
+  if (f < c2 && c2 - Math.max(0, c1) > 12) {
     const g = f - c1;
     const cam = camAt(g, { tx: angPoint(110)[0], ty: angPoint(110)[1], tz: 2, zoom: 7, yaw: -AH + 40, pitch: 66, F: 900 }, [{ f: 0 }, { f: c2 - c1, tx: 0, ty: 130, tz: 0, zoom: 1.5, yaw: -50, pitch: 58, F: 1600 }]);
     return (

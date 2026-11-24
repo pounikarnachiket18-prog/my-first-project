@@ -162,6 +162,9 @@ const PlaneText: React.FC<{ cam: Cam; p0: V3; ex: V3; ey: V3; w: number; size: n
   };
 
 const ShipBrand: React.FC<{ cam: Cam; brand: NonNullable<Brand>; paint: string }> = ({ cam, brand, paint }) => {
+  // hide the deck lettering in extreme close-ups, where it would fill the foreground
+  const zm = cam.zoom * (cam.boost ?? 1);
+  const deckFade = clamp01((32 - zm) / 10);
   // flight deck, forward of the island, read from the stern (letters point toward the bow)
   const deck1 = <PlaneText cam={cam} p0={[-27, 186, 0.05]} ex={[1, 0, 0]} ey={[0, -1, 0]} w={41} size={8.2} text={brand.deck[0]} font="Unbounded" weight={800} fill={paint} opacity={0.82} />;
   const deck2 = <PlaneText cam={cam} p0={[-17, 176.5, 0.05]} ex={[1, 0, 0]} ey={[0, -1, 0]} w={27} size={4.6} text={brand.deck[1]} font="Inter" weight={700} fill={paint} opacity={0.75} />;
@@ -169,7 +172,7 @@ const ShipBrand: React.FC<{ cam: Cam; brand: NonNullable<Brand>; paint: string }
   const portVisible = depthOf(cam, [-45, 122, -6]) < depthOf(cam, [-25, 122, -6]);
   const n = Math.hypot(0.46, 1);
   const hull = portVisible ? <PlaneText cam={cam} p0={[-31.4, 151, -7.2]} ex={[0, -1, 0]} ey={[0.46 / n, 0, -1 / n]} w={58} size={4.0} text={brand.hull} font="Unbounded" weight={800} fill="#f4f7fa" opacity={0.9} /> : null;
-  return <g>{deck1}{deck2}{hull}</g>;
+  return deckFade > 0 ? <g opacity={deckFade}>{deck1}{deck2}{hull}</g> : null;
 };
 
 // ---------------- Carrier ----------------

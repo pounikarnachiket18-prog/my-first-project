@@ -7,6 +7,7 @@ import "@fontsource/jetbrains-mono/600.css";
 import "@fontsource/unbounded/800.css";
 import tlNight from "./timeline.json";
 import tlDay from "../v3/timeline.json";
+import tl60 from "../v4/timeline.json";
 import { TimelineCtx, MotionCtx, TL } from "./ctx";
 import { ThemeCtx, NIGHT, DAY } from "../theme";
 import { FastLabels, BrandCtx } from "../world";
@@ -15,6 +16,7 @@ import { SCENES_V2 } from "./scenes2";
 
 export const NAVY_V2_FRAMES = tlNight.frames;
 export const NAVY_V3_FRAMES = tlDay.frames;
+export const NAVY_V4_FRAMES = tl60.frames;
 
 const useFonts = () => {
   const [handle] = useState(() => delayRender("fonts"));
@@ -27,11 +29,12 @@ const useFonts = () => {
   }, [handle]);
 };
 
-type Props = { audio?: boolean; variant?: "v2-night" | "v3-day" };
+type Props = { audio?: boolean; variant?: "v2-night" | "v3-day" | "v4-day60" };
 export const NavyV2: React.FC<Props> = ({ audio = true, variant = "v2-night" }) => {
   useFonts();
-  const v3 = variant === "v3-day";
-  const timeline: TL = (v3 ? tlDay : tlNight) as TL;
+  const v4 = variant === "v4-day60";
+  const v3 = variant === "v3-day" || v4; // v4 = v3 look + 60 s cut
+  const timeline: TL = (v4 ? tl60 : v3 ? tlDay : tlNight) as TL;
   const theme = v3 ? DAY : NIGHT;
   return (
     <ThemeCtx.Provider value={theme}>
@@ -61,7 +64,7 @@ export const NavyV2: React.FC<Props> = ({ audio = true, variant = "v2-night" }) 
         <HUD2 />
       </svg>
       <Captions2 />
-      {audio && <Audio src={staticFile(v3 ? "navy/mix_v3.wav" : "navy/mix_v2.wav")} />}
+      {audio && <Audio src={staticFile(v4 ? "navy/mix_v4.wav" : v3 ? "navy/mix_v3.wav" : "navy/mix_v2.wav")} />}
     </AbsoluteFill>
     </BrandCtx.Provider>
     </FastLabels.Provider>

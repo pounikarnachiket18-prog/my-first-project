@@ -21,6 +21,8 @@ Ls = lambda i: fr(tl["lines"][i]["t0"])
 Le = lambda i: fr(tl["lines"][i]["t1"])
 W = lambda i, j: fr(tl["lines"][i]["words"][j]["t0"])
 T_END = tl["duration"]
+HAS = lambda sid: sid in SC                       # v4 drops scenes whose lines were all cut
+SPOKEN = lambda i: not tl["lines"][i].get("skip")  # v4 keeps cut lines as zero-length placeholders
 
 
 def lp(x, hz, o=2): return sosfilt(butter(o, hz, "low", fs=SR, output="sos"), x)
@@ -218,18 +220,22 @@ sfx.add(flyby(2.2, 0.6), W(3, 7) + 0.1, pan=0.4)
 sfx.add(rumble(2.0, 0.35), W(3, 12) - 1.0)
 
 # --- imagine
-im = S0("imagine")
-sfx.add(whoosh(0.7, 400, 2600, 0.6), im - 0.4)
-sfx.add(spool(Le(5) - Ls(5) + 0.4, 0.18), Ls(5) - 0.1)
-sfx.add(spool(1.2, 0.5), W(6, 3) - 1.1)
-sfx.add(rumble(2.6, 0.8), W(6, 3) - 0.15)
-sfx.add(flyby(2.6, 0.9), W(6, 3) + 0.2, pan=-0.5)
-sfx.add(whoosh(0.8, 300, 3000, 0.6), S0("runway") - 0.5)
+if HAS("imagine"):
+    im = S0("imagine")
+    sfx.add(whoosh(0.7, 400, 2600, 0.6), im - 0.4)
+    sfx.add(spool(Le(5) - Ls(5) + 0.4, 0.18), Ls(5) - 0.1)
+    sfx.add(spool(1.2, 0.5), W(6, 3) - 1.1)
+    sfx.add(rumble(2.6, 0.8), W(6, 3) - 0.15)
+    sfx.add(flyby(2.6, 0.9), W(6, 3) + 0.2, pan=-0.5)
+    sfx.add(whoosh(0.8, 300, 3000, 0.6), S0("runway") - 0.5)
+else:
+    sfx.add(whoosh(0.8, 300, 3000, 0.6), S0("runway") - 0.5)
 
 # --- runway + humour
 r = S0("runway")
-sfx.add(rumble(Ls(9) - r, 0.55), r + 4 / FPS)
-sfx.add(whoosh(1.4, 500, 2200, 0.35), Ls(9) - 1.6)
+if SPOKEN(8):
+    sfx.add(rumble(Ls(9) - r, 0.55), r + 4 / FPS)
+    sfx.add(whoosh(1.4, 500, 2200, 0.35), Ls(9) - 1.6)
 sfx.add(whoosh(0.35, 2500, 600, 0.9), W(9, 3) - 0.05)
 sfx.add(ratchet(0.6, 3), W(9, 5) - 0.02)
 sfx.add(thump(0.5), W(9, 5))
@@ -250,19 +256,20 @@ sfx.add(flyby(2.6, 0.9), rel + 0.4, pan=-0.6)
 sfx.add(whoosh(1.4, 300, 3800, 0.6), W(14, 3) - 0.5)
 
 # --- catapult cutaway (generic carrier) + match cut
-c = S0("catapult")
-sfx.add(servo(0.6, 0.6), c + 2 / FPS)
-sfx.add(hiss(W(16, 6) - Ls(16) + 0.3, 0.55), Ls(16) - 0.1)
-crel = W(16, 7)
-sfx.add(clunk(1.0, 0.7), crel)
-sfx.add(whoosh(1.0, 300, 4000, 0.9), crel)
-sfx.add(rumble(2.0, 0.7), crel)
-sfx.add(steam_burst(0.9), crel + 0.9)
-sfx.add(thump(0.9), crel + 0.9)
-cut = Ls(17) - 3 / FPS
-sfx.add(whoosh(0.4, 3000, 500, 0.5), cut - 0.15)
-sfx.add(rumble(2.0, 0.6), cut + 16 / FPS)
-sfx.add(flyby(2.0, 0.6), cut + 0.9, pan=0.4)
+if HAS("catapult"):
+    c = S0("catapult")
+    sfx.add(servo(0.6, 0.6), c + 2 / FPS)
+    sfx.add(hiss(W(16, 6) - Ls(16) + 0.3, 0.55), Ls(16) - 0.1)
+    crel = W(16, 7)
+    sfx.add(clunk(1.0, 0.7), crel)
+    sfx.add(whoosh(1.0, 300, 4000, 0.9), crel)
+    sfx.add(rumble(2.0, 0.7), crel)
+    sfx.add(steam_burst(0.9), crel + 0.9)
+    sfx.add(thump(0.9), crel + 0.9)
+    cut = Ls(17) - 3 / FPS
+    sfx.add(whoosh(0.4, 3000, 500, 0.5), cut - 0.15)
+    sfx.add(rumble(2.0, 0.6), cut + 16 / FPS)
+    sfx.add(flyby(2.0, 0.6), cut + 0.9, pan=0.4)
 
 # --- landing
 la = S0("landing")
@@ -307,17 +314,20 @@ sfx.add(impact(0.9), W(32, 2) - 2 / FPS)
 
 # --- finale
 fi = S0("finale")
-fcatch = W(34, 4)
-sfx.add(rumble(fcatch - fi + 0.6, 0.5), fi)
-sfx.add(clunk(1.0, 0.9), fcatch)
-sfx.add(creak(1.4, 0.4), fcatch + 0.05)
-sfx.add(whoosh(2.2, 300, 1800, 0.5), Ls(35) - 0.2)
-sfx.add(thump(0.6), Ls(36) - 3 / FPS)
+if SPOKEN(34):
+    fcatch = W(34, 4)
+    sfx.add(rumble(fcatch - fi + 0.6, 0.5), fi)
+    sfx.add(clunk(1.0, 0.9), fcatch)
+    sfx.add(creak(1.4, 0.4), fcatch + 0.05)
+if SPOKEN(35):
+    sfx.add(whoosh(2.2, 300, 1800, 0.5), Ls(35) - 0.2)
+sfx.add(thump(0.6), (Ls(36) if SPOKEN(36) else fi) - 3 / FPS)
 
 # ---------------- music ----------------
 bpm = 92; beat = 60 / bpm; bar = beat * 4
 chords = [[50, 57, 62, 65], [46, 53, 58, 62], [48, 55, 60, 64], [45, 52, 57, 61]]  # Dm Bb C A
-mstart, mend = S0("hook"), Ls(35)
+RISE = min(Ls(35), W(37, 0) - 4.0)  # orchestral rise gets at least 4 s even when lines 34-36 are cut
+mstart, mend = S0("hook"), RISE
 k = 0
 while mstart + k * bar < mend + bar:
     tt = mstart + k * bar
@@ -332,7 +342,7 @@ while mstart + k * bar < mend + bar:
             mus.add(np.sin(2 * np.pi * m2f(m) * at) * np.exp(-at * 20) * 0.10, tt + bb * beat + s16 * beat / 4, pan=0.3 if s16 % 2 else -0.3)
     k += 1
 # final orchestral rise: Ls(35) -> hit on the closing line
-rise0, hit = Ls(35) - 0.3, W(37, 0) - 0.05
+rise0, hit = RISE - 0.3, W(37, 0) - 0.05
 mus.add(strings([50, 57, 62, 66, 69], hit - rise0 + 0.2, 1.0, (300, 3500)), rise0)
 mus.add(strings([38, 45, 50], hit - rise0 + 0.2, 0.8, (200, 1200)), rise0)
 for i, tt in enumerate(np.linspace(rise0 + 1.0, hit - 0.25, 6)):
@@ -358,7 +368,7 @@ gate[a:bnd] = 0.0
 gate = lp(gate, 30)
 dip = 1 - 0.85 * np.exp(-((t - (W(9, 3) + 0.35)) / 0.25) ** 2)
 
-music_shape = np.interp(t, [0, mstart - 0.1, mstart + 0.8, Ls(35) - 0.5, Ls(35) + 1.5, T_END], [0, 0, 1, 1, 0.9, 0.9])
+music_shape = np.interp(t, [0, mstart - 0.1, mstart + 0.8, RISE - 0.5, RISE + 1.5, T_END], [0, 0, 1, 1, 0.9, 0.9])
 
 
 def norm(x, peak):
@@ -368,7 +378,8 @@ def norm(x, peak):
 sfxL, sfxR = norm(lp(sfx.L, 10000), 0.42), norm(lp(sfx.R, 10000), 0.42)
 mL, mR = norm(mus.L, 0.2), norm(mus.R, 0.2)
 aL, aR = norm(amb.L, 0.05), norm(amb.R, 0.05)
-amb_shape = np.interp(t, [0, 3, S0("imagine"), S0("imagine") + 1, S0("runway"), T_END], [0.8, 0.8, 0.8, 1.6, 1.0, 1.0])
+_im = S0("imagine") if HAS("imagine") else S0("runway") - 1.01
+amb_shape = np.interp(t, [0, 3, _im, _im + 1, S0("runway"), T_END], [0.8, 0.8, 0.8, 1.6, 1.0, 1.0])
 
 L_ = vmono * 0.92 + (sfxL * duck_sfx + mL * duck_music * music_shape * dip + aL * duck_amb * amb_shape) * gate
 R_ = vmono * 0.92 + (sfxR * duck_sfx + mR * duck_music * music_shape * dip + aR * duck_amb * amb_shape) * gate

@@ -18,6 +18,7 @@ SR_OUT = 44100
 FPS = 30
 LEAD, CLAUSE_GAP, LINE_GAP, SCENE_GAP, TAIL = (P.get(k, d) for k, d in (("lead", 0.4), ("clause", 0.11), ("line", 0.24), ("scene", 0.45), ("tail", 1.8)))
 GAP_AFTER = getattr(mod, "SCENE_GAP_AFTER", {})
+SKIP = getattr(mod, "SKIP", set())
 
 voice = PiperVoice.load(MODEL)
 cfg = SynthesisConfig(length_scale=P.get("length_scale", 0.8), noise_scale=0.6, noise_w_scale=0.75)
@@ -39,6 +40,11 @@ audio = [np.zeros(int(LEAD * SR_OUT), np.float32)]
 t = LEAD
 lines_out, prev_scene = [], None
 for i, (scene, hi, rom) in enumerate(LINES):
+    if i in SKIP:
+        # kept for index stability: zero length, not voiced, not captioned
+        rw = [w for c in rom.split(",") for w in c.split()]
+        lines_out.append({"id": i, "scene": scene, "skip": True, "t0": round(t, 3), "t1": round(t, 3), "words": [{"text": w, "t0": round(t, 3), "t1": round(t, 3)} for w in rw]})
+        continue
     if prev_scene is not None:
         g = (SCENE_GAP + GAP_AFTER.get(prev_scene, 0)) if scene != prev_scene else LINE_GAP
         audio.append(np.zeros(int(g * SR_OUT), np.float32)); t += g
@@ -73,6 +79,8 @@ sf.write(os.path.join(OUT, getattr(mod, "VOICE_FILE", "voice.wav")), v, SR_OUT)
 # caption chunks: <=4 words, never crossing a clause comma when avoidable
 chunks = []
 for ln in lines_out:
+    if ln.get("skip"):
+        continue
     cur = []
     for w in ln["words"]:
         cur.append(w)
@@ -91,7 +99,9 @@ for k, c in enumerate(chunks):
 
 scenes = []
 for s in SCENES:
-    ls = [l for l in lines_out if l["scene"] == s]
+    ls = [l for l in lines_out if l["scene"] == s and not l.get("skip")]
+    if not ls:
+        continue  # every line of this scene was cut
     scenes.append({"id": s, "t0": ls[0]["t0"], "t1": ls[-1]["t1"]})
 # scene boundaries: cut halfway into the gap before the scene's first line
 for k in range(len(scenes)):

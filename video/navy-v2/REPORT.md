@@ -182,3 +182,27 @@ The factual notes from v2 still apply (Tejas prototype tag, generic catapult car
 - **Port-side hull, midships:** "MINDSET MODE | EXPLAINERS". It is only drawn when that side faces the camera.
 
 Both are projected onto the ship's surfaces, so they follow every camera move. Set via `BrandCtx` in `NavyV2.tsx` (v3 only); v1 and v2 have no branding.
+
+---
+
+# v4: 60-second cut (day, branded)
+
+**Output:** `out/indian_navy_cinematic_v4_day_60s_branded.mp4`, made with composition `IndianNavyV4Day60`. It has the same look, faster motion graphics and "Mindset mode | Explainers" branding as v3, at 60.0 s.
+
+**Narration cut.** 12 of the 38 lines are cut (`SKIP` in `scripts/navy_script_v4.py`). They stay in the timeline as zero-length placeholders so every scene keeps its line numbering. The rest are re-voiced at length scale 0.65, with tight pauses and an extra second of hold on the flag finale.
+
+| # | Cut line | Why |
+|---|---|---|
+| 4–7 | sochiye… deck par khade hain / ek Tejas… taiyaar hota hai / kuch hi second baad… / dekhiye kaise | the whole "imagine" scene is dropped; the hook scene already shows the launch |
+| 8 | ek aam jet ko… lamba runway chahiye | repeats the runway point from line 2 |
+| 15 | khade-khade se seedha udaan tak… | the climb-out is already shown |
+| 16–17 | catapult comparison | the whole catapult scene is dropped (side topic) |
+| 27 | sunne mein ulta lagta hai | aside |
+| 34–36 | kya aap chalte jahaaz par… / yeh video us dost ko bhejiye / jise Bhartiya Nausena se pyaar hai | question + call to action; the closing line remains the final beat |
+
+**What stays:** cold open → runway-vs-deck gag → ski-jump take-off (full power, restraining blocks, ramp) → arresting hook and wires (2 s stop) → the full-power twist and the "not enough speed" alternative → "Controlled crash." → tricolour + "samandar ke beech bhi, Bharat ki taaqat nahi rukti!".
+
+**Engineering notes:**
+- Scenes with no spoken line are removed from the timeline. Shots tied to cut lines are skipped rather than flashed for a few frames.
+- Sound effects tied to cut lines are not placed. The orchestral rise still gets at least 4 s before the closing hit.
+- The ship lettering fades out in extreme close-ups (for example the wheel-and-blocks shot).
