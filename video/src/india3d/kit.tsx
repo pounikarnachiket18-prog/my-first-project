@@ -7,6 +7,7 @@ import {
   PlateKind,
   plateTex,
   shopTex,
+  stickerTex,
   signTex,
   truckRearTex,
   windowsTex,
@@ -98,7 +99,8 @@ export const Car: React.FC<{
   head?: boolean;
   glow?: boolean;
   dent?: boolean;
-}> = ({ position, rotY = 0, color, plate, plateKind, suv, brake, head, glow = true, dent }) => {
+  sticker?: string;
+}> = ({ position, rotY = 0, color, plate, plateKind, suv, brake, head, glow = true, dent, sticker }) => {
   const L = suv ? 4.5 : 4.1;
   const Wd = suv ? 1.9 : 1.78;
   const bodyH = suv ? 0.85 : 0.68;
@@ -110,6 +112,12 @@ export const Car: React.FC<{
       <Box size={[Wd, bodyH, L]} position={[0, y0 + bodyH / 2, 0]} color={color} rough={0.45} metal={0.15} />
       <Box size={[Wd * 0.88, cabH, L * 0.5]} position={[0, y0 + bodyH + cabH / 2, 0.15]} color="#2E3B4A" rough={0.2} metal={0.3} />
       <Box size={[Wd * 0.9, 0.07, L * 0.5]} position={[0, y0 + bodyH + cabH + 0.035, 0.15]} color={shade(color, 1.1)} />
+      {sticker && (
+        <mesh position={[0, y0 + bodyH + cabH * 0.5, 0.15 + L * 0.25 + 0.012]}>
+          <planeGeometry args={[Wd * 0.8, Wd * 0.25]} />
+          <meshBasicMaterial map={stickerTex(sticker)} transparent toneMapped={false} depthWrite={false} />
+        </mesh>
+      )}
       {dent && <Box size={[0.7, 0.3, 0.12]} position={[0.45, y0 + 0.4, L / 2 + 0.02]} rotation={[0.25, 0.3, 0.2]} color={shade(color, 0.6)} />}
       {[
         [-Wd / 2 + 0.05, 0.34, L * 0.32],
@@ -147,12 +155,18 @@ export const Car: React.FC<{
 };
 
 // ------------------------------------------------------------ Auto-rickshaw
-export const Auto: React.FC<{ position: V3; rotY?: number; plate: string; brake?: boolean }> = ({ position, rotY = 0, plate, brake }) => (
+export const Auto: React.FC<{ position: V3; rotY?: number; plate: string; brake?: boolean; sticker?: string }> = ({ position, rotY = 0, plate, brake, sticker = "Mom's Gift" }) => (
   <group position={position} rotation={[0, rotY, 0]}>
     <Box size={[1.3, 0.55, 2.5]} position={[0, 0.55, 0]} color="#1C1C1C" />
     <Box size={[1.36, 0.85, 1.9]} position={[0, 1.25, 0.2]} color="#F2C400" rough={0.5} />
     <Box size={[1.38, 0.12, 1.92]} position={[0, 0.88, 0.2]} color="#1E7F3A" />
     <Box size={[1.1, 0.5, 0.05]} position={[0, 1.25, 1.16]} color="#2A2A2A" />
+    {sticker && (
+      <mesh position={[0, 1.27, 1.19]}>
+        <planeGeometry args={[1.05, 0.33]} />
+        <meshBasicMaterial map={stickerTex(sticker)} transparent toneMapped={false} depthWrite={false} />
+      </mesh>
+    )}
     <Box size={[0.9, 0.5, 0.05]} position={[0, 1.2, -1.1]} color="#2E3B4A" rough={0.2} />
     <Wheel position={[-0.55, 0.28, 0.75]} r={0.28} />
     <Wheel position={[0.55, 0.28, 0.75]} r={0.28} />

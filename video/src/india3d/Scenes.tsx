@@ -41,7 +41,7 @@ const Stage: React.FC<{ cam: V3; target: V3; fov?: number; focus: V3; fog?: [num
 const PLATES = ["MH 12 KT 4581", "MH 01 AB 2207", "MH 14 BX 9034", "MH 43 CD 1188", "MH 04 GR 6612", "GJ 05 RT 7781", "KA 01 MJ 3345", "MH 12 NE 5050", "MH 02 DN 8899", "MH 15 FG 2468"];
 const COLS = ["#F4F4F4", "#D7263D", "#2E86AB", "#1B1B1B", "#9AA0A6", "#3D5A80", "#C2A878", "#6A994E"];
 
-type NearV = { kind: "car" | "suv" | "auto" | "truck" | "bus"; x: number; z: number; color?: string; plate: string; ev?: boolean };
+type NearV = { kind: "car" | "suv" | "auto" | "truck" | "bus"; x: number; z: number; color?: string; plate: string; ev?: boolean; sticker?: string };
 
 const NearTraffic: React.FC<{ list: NearV[]; dz: number; brake?: (i: number) => boolean; onc?: boolean }> = ({ list, dz, brake = () => false, onc }) => (
   <>
@@ -51,7 +51,7 @@ const NearTraffic: React.FC<{ list: NearV[]; dz: number; brake?: (i: number) => 
       if (v.kind === "auto") return <Auto key={i} position={p} rotY={rot} plate={v.plate} brake={brake(i)} />;
       if (v.kind === "truck") return <Truck key={i} position={p} rotY={rot} plate={v.plate} brake={brake(i)} />;
       if (v.kind === "bus") return <Bus key={i} position={p} rotY={rot} plate={v.plate} />;
-      return <Car key={i} position={p} rotY={rot} color={v.color ?? "#ccc"} plate={v.plate} plateKind={v.ev ? "ev" : "private"} suv={v.kind === "suv"} brake={brake(i)} head={onc} />;
+      return <Car key={i} position={p} rotY={rot} color={v.color ?? "#ccc"} plate={v.plate} plateKind={v.ev ? "ev" : "private"} suv={v.kind === "suv"} brake={brake(i)} head={onc} sticker={onc ? undefined : v.sticker} />;
     })}
   </>
 );
@@ -65,7 +65,7 @@ const genNear = (seed: number, z0: number, z1: number, lanes: number[]): NearV[]
     while (z > z1) {
       const q = r();
       const kind: NearV["kind"] = q < 0.1 ? "truck" : q < 0.22 ? "auto" : q < 0.27 ? "bus" : q < 0.5 ? "suv" : "car";
-      out.push({ kind, x: x + (r() - 0.5) * 0.3, z, color: COLS[Math.floor(r() * COLS.length)], plate: kind === "auto" ? `MH 12 R ${7700 + k}` : kind === "truck" || kind === "bus" ? `MH 46 AF ${3300 + k}` : PLATES[k % PLATES.length], ev: k % 9 === 4 });
+      out.push({ kind, x: x + (r() - 0.5) * 0.3, z, color: COLS[Math.floor(r() * COLS.length)], plate: kind === "auto" ? `MH 12 R ${7700 + k}` : kind === "truck" || kind === "bus" ? `MH 46 AF ${3300 + k}` : PLATES[k % PLATES.length], ev: k % 9 === 4, sticker: k % 4 === 1 && (kind === "car" || kind === "suv") ? "Dad's Gift" : undefined });
       z -= (kind === "truck" ? 9 : kind === "bus" ? 12 : kind === "auto" ? 3 : 4.4) + 2.4 + r() * 2.5;
       k++;
     }
@@ -100,7 +100,7 @@ export const S1Aerial: React.FC<{ dur: number; titleOnly?: boolean }> = ({ dur, 
 
 // ================================================================== S2 behind cars, plates + honks (120f)
 const S2_NEAR: NearV[] = [
-  { kind: "car", x: -5.7, z: 0, color: "#D7263D", plate: "MH 12 KT 4581" },
+  { kind: "car", x: -5.7, z: 0, color: "#D7263D", plate: "MH 12 KT 4581", sticker: "Dad's Gift" },
   { kind: "auto", x: -8.9, z: 4, plate: "MH 12 R 7781" },
   { kind: "suv", x: -2.5, z: -2, color: "#1B1B1B", plate: "MH 01 AB 2207" },
   { kind: "truck", x: -5.7, z: -26, plate: "MH 46 AF 3312" },
@@ -174,7 +174,7 @@ export const S4Dhaba: React.FC<{ dur: number }> = ({ dur }) => {
     <AbsoluteFill>
       <Stage cam={camP} target={target} fov={42} focus={[pos[0], 0, pos[2] - 10]} shadow={50}>
         <Highway z0={80} z1={-500} seed={13} />
-        <Car position={pos} rotY={rot} color="#F2B705" plate="MH 12 KT 4581" brake={f > 140} />
+        <Car position={pos} rotY={rot} color="#F2B705" plate="MH 12 KT 4581" brake={f > 140} sticker="Dad's Gift" />
         <NearTraffic list={S4_NEAR} dz={-t * 1.6} />
         <Dhaba position={[-27, 0, -48]} rotY={Math.PI / 2} name="SHER-E-PUNJAB DHABA" deva="शेर-ए-पंजाब ढाबा" t={t} />
         <Truck position={[-19, 0, -60]} rotY={0.2} plate="PB 10 GX 4455" cab="#1F4E9A" />
@@ -233,7 +233,7 @@ export const S6Fight: React.FC<{ dur: number }> = ({ dur }) => {
       <Stage cam={cam} target={[-13.8, 1.2, -16.4]} fov={38} focus={[-14, 0, -16]} shadow={35}>
         <Highway z0={80} z1={-400} seed={21} blocks={false} clear={[[-11, -60, 40, -70]]} />
         {/* the accident */}
-        <Car position={[-13.4, 0, -21]} color="#F4F4F4" plate="MH 12 PQ 0420" dent brake={Math.floor(f / 8) % 2 === 0} />
+        <Car position={[-13.4, 0, -21]} color="#F4F4F4" plate="MH 12 PQ 0420" sticker="Dad's Gift" dent brake={Math.floor(f / 8) % 2 === 0} />
         <Auto position={[-13.3, 0, -16.9 + 0.0]} plate="MH 12 R 7781" />
         {/* fighters: owner (faces +z), auto driver (faces -z) */}
         <Person

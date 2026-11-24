@@ -239,6 +239,29 @@ export const windowsTex = (seed: number) =>
     }
   });
 
+// Classic Indian rear-glass sticker ("Dad's Gift" / "Mom's Gift"): shiny gold text, red outline, transparent bg.
+export const stickerTex = (text: string) =>
+  canvasTex(`sticker:${text}`, 512, 160, (c) => {
+    c.clearRect(0, 0, 512, 160);
+    c.textAlign = "center";
+    c.textBaseline = "middle";
+    fit(c, text, (p) => `italic 800 ${p}px ${FUN}`, 470, 104);
+    c.lineJoin = "round";
+    c.lineWidth = 18;
+    c.strokeStyle = "#FFFFFF";
+    c.strokeText(text, 256, 84);
+    c.lineWidth = 9;
+    c.strokeStyle = "#C8102E";
+    c.strokeText(text, 256, 84);
+    const g = c.createLinearGradient(0, 30, 0, 130);
+    g.addColorStop(0, "#FFF6B0");
+    g.addColorStop(0.45, "#FFD21F");
+    g.addColorStop(0.55, "#E89B00");
+    g.addColorStop(1, "#FFE36B");
+    c.fillStyle = g;
+    c.fillText(text, 256, 84);
+  });
+
 export const glowTex = () =>
   canvasTex("glow", 128, 128, (c) => {
     const g = c.createRadialGradient(64, 64, 0, 64, 64, 64);
