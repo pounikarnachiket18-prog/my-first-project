@@ -77,7 +77,7 @@ const genNear = (seed: number, z0: number, z1: number, lanes: number[]): NearV[]
 const JAM_A = makeJam(11, 30, -1100, LANE_A);
 const JAM_B = makeJam(12, 30, -1100, LANE_B, [14, 30]);
 
-export const S1Aerial: React.FC<{ dur: number; titleOnly?: boolean }> = ({ dur, titleOnly }) => {
+export const S1Aerial: React.FC<{ dur: number; titleOnly?: boolean; titleTo?: number; noTitle?: boolean }> = ({ dur, titleOnly, titleTo = 112, noTitle }) => {
   const f = useCurrentFrame();
   const t = f / 30;
   const p = prog(f, 0, dur);
@@ -93,7 +93,7 @@ export const S1Aerial: React.FC<{ dur: number; titleOnly?: boolean }> = ({ dur, 
       </Stage>
       <Header />
       <Chip text="HEAVY TRAFFIC AHEAD" from={2} to={dur} />
-      <Title from={0} to={titleOnly ? dur + 10 : 112} />
+      {!noTitle && <Title from={0} to={titleOnly ? dur + 10 : titleTo} />}
     </AbsoluteFill>
   );
 };
@@ -190,25 +190,25 @@ export const S4Dhaba: React.FC<{ dur: number }> = ({ dur }) => {
 // ================================================================== S5 aerial jam with phones + speed (240f)
 const JAM5 = makeJam(51, 0, -1200, LANE_A, [3.5, 5]);
 const JAM5B = makeJam(52, 0, -1200, LANE_B, [16, 34]);
-export const S5Phones: React.FC<{ dur: number }> = ({ dur }) => {
+export const S5Phones: React.FC<{ dur: number; drop?: number; jamAt?: number }> = ({ dur, drop = 150, jamAt = 150 }) => {
   const f = useCurrentFrame();
   const t = f / 30;
   const p = prog(f, 0, dur);
   const cam = lerp3([46, 48, -60], [40, 40, -110], p);
-  const kmh = Math.round(interpolate(f, [150, 185], [105, 24], { extrapolateLeft: "clamp", extrapolateRight: "clamp" }));
+  const kmh = Math.round(interpolate(f, [drop, drop + 35], [105, 24], { extrapolateLeft: "clamp", extrapolateRight: "clamp" }));
   const bar = kmh > 60 ? "#3DDC97" : kmh > 35 ? "#FF9933" : "#FF3B30";
-  const slow = interpolate(f, [150, 185], [8, 0.6], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
-  const dz = -(f < 150 ? t * 8 : (150 / 30) * 8 + (t - 150 / 30) * slow);
+  const slow = interpolate(f, [drop, drop + 35], [8, 0.6], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+  const dz = -(f < drop ? t * 8 : (drop / 30) * 8 + (t - drop / 30) * slow);
   return (
     <AbsoluteFill>
       <Stage cam={cam} target={[-8, 0, cam[2] - 110]} fov={40} focus={[-6, 0, cam[2] - 90]} fog={[90, 700]} shadow={120}>
         <Highway z0={60} z1={-1200} seed={17} />
-        <InstancedJam cars={JAM5} dz={dz} phones={interpolate(f, [10, 40], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" })} t={t} tail={f > 170 ? 3 : 1.4} />
+        <InstancedJam cars={JAM5} dz={dz} phones={interpolate(f, [10, 40], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" })} t={t} tail={f > drop + 20 ? 3 : 1.4} />
         <InstancedJam cars={JAM5B} dz={t * 11} tail={0} />
       </Stage>
       <Header />
-      <Chip text="HUNDREDS OF PHONES" from={0} to={150} dot="#5AB8FF" />
-      <Chip text="JAM DETECTED" from={150} to={dur} />
+      <Chip text="HUNDREDS OF PHONES" from={0} to={jamAt} dot="#5AB8FF" />
+      <Chip text="JAM DETECTED" from={jamAt} to={dur} />
       <DataCard x={60} y={1160} big={`${kmh}`} unit="km/h" sub="AVG SPEED · THIS STRETCH" bar={bar} from={80} to={dur} />
     </AbsoluteFill>
   );
@@ -500,7 +500,7 @@ const MapLabel: React.FC<{ x: number; y: number; text: string; sub?: string; fro
 // ================================================================== S8 look around — dhaba at dusk (180f)
 const S8_JAM = makeJam(81, 40, -700, LANE_A);
 const S8_ONC = makeJam(82, 40, -700, LANE_B, [18, 40]);
-export const S8LookAround: React.FC<{ dur: number }> = ({ dur }) => {
+export const S8LookAround: React.FC<{ dur: number; switchAt?: number }> = ({ dur, switchAt = 95 }) => {
   const f = useCurrentFrame();
   const t = f / 30;
   const p = prog(f, 0, dur);
@@ -515,8 +515,8 @@ export const S8LookAround: React.FC<{ dur: number }> = ({ dur }) => {
         <Truck position={[-18, 0, -12]} rotY={0.1} plate="RJ 14 GB 2121" cab="#2E7D32" />
       </Stage>
       <Header />
-      <Chip text="STUCK IN TRAFFIC? · NO" from={0} to={95} />
-      <Chip text="ONE OF THE SENSORS · YES" from={95} to={dur} dot="#3DDC97" />
+      <Chip text="STUCK IN TRAFFIC? · NO" from={0} to={switchAt} />
+      <Chip text="ONE OF THE SENSORS · YES" from={switchAt} to={dur} dot="#3DDC97" />
     </AbsoluteFill>
   );
 };
