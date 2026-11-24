@@ -8,14 +8,15 @@ import { DayReveal, NightHook, Outro, StationCheckDay, StationCheckNight, Verdic
 // New scene order: mystery (night lamp) -> reveal (X / LV) -> why last coach -> station master check
 // -> verdict (line clear / blocked) -> outro + Mindset Mode end card.
 export const SCENES: [React.FC, number][] = [
-  [NightHook, 190],
-  [DayReveal, 310],
-  [WhyLast, 370],
-  [StationCheckDay, 190],
-  [StationCheckNight, 140],
-  [VerdictOk, 190],
-  [VerdictNo, 190],
-  [Outro, 210],
+  // durations fitted to the voiceover lines (VO sped up 1.22x, starts at 1.0s) -> 50s total
+  [NightHook, 236],
+  [DayReveal, 287],
+  [WhyLast, 290],
+  [StationCheckDay, 179],
+  [StationCheckNight, 138],
+  [VerdictOk, 171],
+  [VerdictNo, 142],
+  [Outro, 162],
 ];
 export const XFADE = 15;
 export const LV_TOTAL = SCENES.reduce((a, [, d]) => a + d, 0) - XFADE * (SCENES.length - 1);
