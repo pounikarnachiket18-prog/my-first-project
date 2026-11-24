@@ -10,6 +10,7 @@ import React from "react";
 import {
   AbsoluteFill,
   Audio,
+  getStaticFiles,
   Img,
   OffthreadVideo,
   Sequence,
@@ -34,8 +35,12 @@ const MAIN_END = 10;
 const MEME1_LEN = 7.95;
 const MEME2_AT = MAIN_END + MEME1_LEN;
 const MEME2_LEN = 4.82;
-export const END_AT = MEME2_AT + MEME2_LEN;
+/** Meme ending off: the user adds their own meme after the 10 s reel. */
+const MEME_ENDING = false;
+export const END_AT = MEME_ENDING ? MEME2_AT + MEME2_LEN : MAIN_END;
 export const WINDMILL_FRAMES = f(END_AT);
+/** Drop the recorded funny voiceover here; it is used automatically. */
+const VOICEOVER = "audio/windmill-voiceover.mp3";
 const MEME_TEXT = "Zyada backchodi karne ki humein aadat nahi hai 😎";
 
 /** [start, end, text] for the step label (one at a time). */
@@ -229,6 +234,8 @@ export const Windmill: React.FC = () => {
           <Follow />
           <Audio src={staticFile("sfx/ding.wav")} volume={0.5} />
         </Sequence>
+        {MEME_ENDING && (
+        <>
         <Sequence from={f(MAIN_END)} layout="none">
           <MemeOutro />
           <Audio src={staticFile("audio/meme-1.mp3")} volume={1} />
@@ -236,6 +243,9 @@ export const Windmill: React.FC = () => {
         <Sequence from={f(MEME2_AT)} layout="none">
           <Audio src={staticFile("audio/meme-2.mp3")} volume={1} />
         </Sequence>
+        </>
+        )}
+        {getStaticFiles().some((x) => x.name === VOICEOVER) && <Audio src={staticFile(VOICEOVER)} volume={1} />}
         <BrandBadge color={C.accent} />
         <Audio src={staticFile("sfx/wind.wav")} volume={0.25} />
       </AbsoluteFill>
