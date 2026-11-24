@@ -29,12 +29,12 @@ import { Flashback, Sleeper } from "./sleeper";
 const FPS = 30;
 const f = (sec: number) => Math.round(sec * FPS);
 const X = 8; // cross-fade frames
-const SW = 16; // swoosh length (frames); cut happens at its midpoint
+export const SW = 16; // swoosh length (frames); cut happens at its midpoint
 
 type Seg = { el: React.ReactNode; dur: number; from?: number; cut?: "fade" | "swoosh"; label: string };
 
 /** Mindset Mode train clips, slowed down and graded. */
-const Clip: React.FC<{ src: string; rate: number; night?: boolean; freezeAfter: number }> = ({ src, rate, night, freezeAfter }) => {
+export const Clip: React.FC<{ src: string; rate: number; night?: boolean; freezeAfter: number }> = ({ src, rate, night, freezeAfter }) => {
   const frame = useCurrentFrame();
   const v = (
     <OffthreadVideo
@@ -54,7 +54,7 @@ const Clip: React.FC<{ src: string; rate: number; night?: boolean; freezeAfter: 
 };
 
 /** Red ring + numbered blue badge callout (announcement-reel style). */
-const Ring: React.FC<{ x: number; y: number; r: number; n: number; inAt: number }> = ({ x, y, r, n, inAt }) => {
+export const Ring: React.FC<{ x: number; y: number; r: number; n: number; inAt: number }> = ({ x, y, r, n, inAt }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   if (frame < inAt) return null;
@@ -102,7 +102,7 @@ const Ring: React.FC<{ x: number; y: number; r: number; n: number; inAt: number 
 };
 
 /** White panel with blue + red diagonal stripes sweeping left → right. */
-const Swoosh: React.FC = () => {
+export const Swoosh: React.FC = () => {
   const frame = useCurrentFrame();
   const x = interpolate(frame, [0, SW], [-2600, 1500], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
   return (
@@ -119,7 +119,7 @@ const Swoosh: React.FC = () => {
 };
 
 /** Thin red progress line along the top with a small train riding it. */
-const TrainProgress: React.FC<{ total: number }> = ({ total }) => {
+export const TrainProgress: React.FC<{ total: number }> = ({ total }) => {
   const frame = useCurrentFrame();
   const p = interpolate(frame, [0, total], [0, 1], { extrapolateRight: "clamp" });
   const x = 40 + p * 960;
@@ -140,7 +140,7 @@ const TrainProgress: React.FC<{ total: number }> = ({ total }) => {
   );
 };
 
-const FollowSlate: React.FC = () => {
+export const FollowSlate: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const inP = interpolate(frame, [0, 10], [0, 1], { extrapolateRight: "clamp" });

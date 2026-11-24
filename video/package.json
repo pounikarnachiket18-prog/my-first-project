@@ -15,7 +15,9 @@
     "studio:remix": "remotion studio src/remix/index.ts",
     "render:remix": "remotion render src/remix/index.ts Remix out/mindset-mode-remix.mp4",
     "studio:story": "remotion studio src/story/index.ts",
-    "render:story": "remotion render src/story/index.ts Story out/kambal-new-story.mp4"
+    "render:story": "remotion render src/story/index.ts Story out/kambal-recut.mp4",
+    "studio:explainer": "remotion studio src/explainer/index.ts",
+    "render:explainer": "remotion render src/explainer/index.ts Explainer out/kambal-explainer.mp4"
   },
   "dependencies": {
     "@remotion/cli": "4.0.469",
