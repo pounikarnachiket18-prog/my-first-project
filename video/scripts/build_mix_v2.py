@@ -385,6 +385,12 @@ L_ = vmono * 0.92 + (sfxL * duck_sfx + mL * duck_music * music_shape * dip + aL 
 R_ = vmono * 0.92 + (sfxR * duck_sfx + mR * duck_music * music_shape * dip + aR * duck_amb * amb_shape) * gate
 st = np.stack([L_, R_], 1)
 st = np.tanh(st * 1.05) / np.tanh(1.05)
-st = st / np.abs(st).max() * 0.95
+scale = 0.95 / np.abs(st).max()
+st = st * scale
 sf.write(os.path.join(PUB, f"mix_{VER}.wav"), st.astype(np.float32), SR)
+if os.environ.get("STEMS"):
+    # music + SFX + ambience only (same balance/ducking as the full mix), for laying a recorded voiceover on top
+    bed = np.stack([L_ - vmono * 0.92, R_ - vmono * 0.92], 1)
+    bed = np.tanh(bed * 1.05) / np.tanh(1.05) * scale
+    sf.write(os.path.join(PUB, f"bed_{VER}.wav"), bed.astype(np.float32), SR)
 print(f"mix_{VER} written", round(N / SR, 2), "s")
