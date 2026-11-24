@@ -247,8 +247,8 @@ M["rubber"] = mat("Rubber", (0.02, 0.02, 0.022), 0.7)
 M["curtain"] = mat("LeadCurtain", (0.05, 0.05, 0.06), 0.5)
 
 # Character
-def shirt_mat():
-    m = mat("Shirt", (0.03, 0.05, 0.12), 0.7)
+def shirt_mat(name="Shirt", print_png=None):
+    m = mat(name, (0.03, 0.05, 0.12), 0.7)
     nt = m.node_tree; b = nt.nodes["Principled BSDF"]
     geo = nt.nodes.new("ShaderNodeNewGeometry"); sep = nt.nodes.new("ShaderNodeSeparateXYZ")
     mr = nt.nodes.new("ShaderNodeMapRange")
@@ -257,7 +257,33 @@ def shirt_mat():
     e[0].position = 0.2; e[0].color = (0.05, 0.09, 0.2, 1)
     e[1].position = 0.8; e[1].color = (0.018, 0.03, 0.07, 1)
     nt.links.new(geo.outputs["Position"], sep.inputs[0]); nt.links.new(sep.outputs["Z"], mr.inputs["Value"])
-    nt.links.new(mr.outputs[0], ramp.inputs[0]); nt.links.new(ramp.outputs[0], b.inputs["Base Color"])
+    nt.links.new(mr.outputs[0], ramp.inputs[0])
+    colour = ramp.outputs[0]
+    if print_png:
+        # chest print, projected front-on in the torso's own space so it moves with the body
+        tc = nt.nodes.new("ShaderNodeTexCoord"); so = nt.nodes.new("ShaderNodeSeparateXYZ")
+        nt.links.new(tc.outputs["Object"], so.inputs[0])
+        def remap(sock, lo, hi):
+            r = nt.nodes.new("ShaderNodeMapRange"); r.clamp = False
+            r.inputs["From Min"].default_value = lo; r.inputs["From Max"].default_value = hi
+            nt.links.new(sock, r.inputs["Value"]); return r.outputs[0]
+        u = remap(so.outputs["X"], -PRINT_W / 2, PRINT_W / 2)
+        v = remap(so.outputs["Z"], PRINT_Z - PRINT_H / 2, PRINT_Z + PRINT_H / 2)
+        uv = nt.nodes.new("ShaderNodeCombineXYZ")
+        nt.links.new(u, uv.inputs[0]); nt.links.new(v, uv.inputs[1])
+        tex = nt.nodes.new("ShaderNodeTexImage"); tex.image = bpy.data.images.load(print_png)
+        tex.extension = "CLIP"; tex.interpolation = "Cubic"
+        nt.links.new(uv.outputs[0], tex.inputs["Vector"])
+        front = nt.nodes.new("ShaderNodeMath"); front.operation = "LESS_THAN"
+        front.inputs[1].default_value = -0.03
+        nt.links.new(so.outputs["Y"], front.inputs[0])
+        fac = nt.nodes.new("ShaderNodeMath"); fac.operation = "MULTIPLY"
+        nt.links.new(tex.outputs["Alpha"], fac.inputs[0]); nt.links.new(front.outputs[0], fac.inputs[1])
+        mix = nt.nodes.new("ShaderNodeMix"); mix.data_type = "RGBA"
+        nt.links.new(fac.outputs[0], mix.inputs[0])
+        nt.links.new(colour, mix.inputs[6]); nt.links.new(tex.outputs["Color"], mix.inputs[7])
+        colour = mix.outputs[2]
+    nt.links.new(colour, b.inputs["Base Color"])
     noise_bump(m, 160, 0.05)
     return m
 M["shirt"] = shirt_mat()
@@ -369,6 +395,29 @@ def pil_font(path, s):
         return ImageFont.load_default()
 
 
+# Chest print: size and centre height in the torso mesh (its vertices keep standing height, z 1.02-1.48)
+PRINT_W, PRINT_H, PRINT_Z = 0.25, 0.25 * 760 / 1200, 1.285
+
+
+def make_shirt_print(path):
+    from PIL import Image, ImageDraw
+    W, H = 1200, 760
+    im = Image.new("RGBA", (W, H), (0, 0, 0, 0)); d = ImageDraw.Draw(im)
+    f = lambda n, s: pil_font(os.path.join(FONT_DIR, n), s)
+    cx = W // 2
+    d.rounded_rectangle([cx - 105, 20, cx + 105, 230], 48, fill=(92, 52, 255, 255))
+    d.text((cx, 128), "M", font=f("Inter-ExtraBold.otf", 150), fill=(255, 255, 255, 255), anchor="mm")
+    d.text((cx, 380), BRAND.upper(), font=f("Inter-ExtraBold.otf", 152), fill=(246, 246, 250, 255), anchor="mm")
+    sub = " ".join(BRAND_SUB.upper())
+    fs = f("Inter-SemiBold.otf", 74)
+    tw = d.textlength(sub, font=fs)
+    d.text((cx, 560), sub, font=fs, fill=(176, 160, 255, 255), anchor="mm")
+    for sgn in (-1, 1):   # the "|" divider becomes rules either side of EXPLAINERS
+        x0 = cx + sgn * (tw / 2 + 40); x1 = cx + sgn * (tw / 2 + 150)
+        d.line([(min(x0, x1), 560), (max(x0, x1), 560)], fill=(176, 160, 255, 255), width=8)
+    im.save(path)
+
+
 def make_id_card(path):
     from PIL import Image, ImageDraw
     W, H = 1080, 1720
@@ -412,6 +461,8 @@ def make_sign(path):
 
 CARD_PNG = os.path.join(args.assets, "id_card.png"); make_id_card(CARD_PNG)
 SIGN_PNG = os.path.join(args.assets, "sign.png"); make_sign(SIGN_PNG)
+PRINT_PNG = os.path.join(args.assets, "shirt_print.png"); make_shirt_print(PRINT_PNG)
+M["shirtprint"] = shirt_mat("ShirtPrint", PRINT_PNG)
 
 
 def image_mat(name, png, emit=0.0, rough=0.35, coat=0.0):
@@ -599,10 +650,8 @@ for v in torso.data.vertices:
     t = (v.co.z - 1.02) / 0.46
     f = 0.9 + 0.18 * math.sin(min(max(t, 0), 1) * math.pi * 0.8)
     v.co.x *= f; v.co.y *= 0.95 + 0.1 * t
-smooth(torso, 0.04, 4, 1); torso.data.materials.append(M["shirt"]); setp(torso, hips)
+smooth(torso, 0.04, 4, 1); torso.data.materials.append(M["shirtprint"]); setp(torso, hips)
 cyl("Collar", 0.075, 0.05, (0, -0.005, 1.5), M["shirtdark"], parent=hips)
-box("Placket", (0.04, 0.01, 0.12), (0, -0.128, 1.42), M["shirtdark"], 0.004, hips)
-box("ChestLogo", (0.035, 0.006, 0.035), (-0.1, -0.13, 1.37), M["brand"], 0.004, hips)
 cyl("Neck", 0.055, 0.12, (0, 0, 1.55), M["skin"], parent=hips)
 head = empty("Head", (0, 0, 1.6), hips)
 sphere("Skull", 0.105, (0, 0, 1.69), M["skin"], (0.95, 1.05, 1.22), head)

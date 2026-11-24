@@ -10,7 +10,7 @@ The voice is the original Hindi narration. The reel has no subtitles. Hinglish (
 
 1. **Field.** The left panel holds a flat transmitter coil. Current pulses round it, slowed down so the eye can
    follow, and it sends a magnetic field (cyan) across the walkway. The right panel holds the receiver coil.
-2. **Metal.** A person walks in. The field lines bend around the coins in his pocket and turn amber there.
+2. **Metal.** A person in a navy Mindset Mode | Explainers T-shirt walks in. The field lines bend around the coins in his pocket and turn amber there.
 3. **Current.** A match cut moves into the coin. Eddy currents (amber) circulate in its face and surge with every
    pulse. The incoming field bulges around the coin.
 4. **Sensor.** The coin's own opposing field (rose) arches out of it. The receiver coil lights up, and a signal
@@ -28,6 +28,7 @@ and red is the alarm. All on-screen text is in Latin script: the Hinglish hook a
 | Narration: shorter pauses, 1.2× speed with pitch preserved, 3 s cold open, Hinglish caption timing | `prep_audio.py` | `build/narration.wav`, `build/timeline.json` |
 | 3D scene: set, character, gate, physics visuals, 29 cameras on timeline markers | `build_reel.py` | `build/reel.blend` |
 | Screen positions of the label anchors | `anchors.py` | `build/anchors.json` |
+| Frames that show the T-shirt print (to re-render only those after a shirt change) | `shirt_frames.py` | `build/shirt_frames.txt` |
 | Cycles frames, 720×1280 (resumable) | `../render.py` | `build/frames/` |
 | Sound design synthesised in numpy, ducked under the voice, about −14 LUFS | `sound.py` | `build/mix.wav` |
 | Upscale to 1080×1920, typography and graphics, final encode | `post.py` | `../out/metal-detector-reel-mindsetmode.mp4` |
