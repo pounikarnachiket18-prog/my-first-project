@@ -11,6 +11,12 @@ const SECTIONS = [
   { label: "TWIST", color: C.cyan, scenes: ["twist"], dash: 2 },
   { label: "BACKUP", color: "#e9eef5", scenes: ["backup"], dash: 3 },
   { label: "INS VIKRANT", color: "#e9eef5", scenes: ["finale"], dash: 4 },
+  // supersonic vs hypersonic reel
+  { label: "MACH", color: C.cyan, scenes: ["mach"], dash: 0 },
+  { label: "SUPERSONIC", color: "#ffd166", scenes: ["supersonic"], dash: 1 },
+  { label: "HYPERSONIC", color: "#ff8a4c", scenes: ["hypersonic"], dash: 2 },
+  { label: "TARGET", color: "#ff6b5e", scenes: ["attack"], dash: 3 },
+  { label: "MINDSET MODE", color: "#e9eef5", scenes: ["outro"], dash: 4 },
 ];
 
 const ShipIcon: React.FC<{ x: number; y: number; p: number }> = ({ x, y, p }) => (
