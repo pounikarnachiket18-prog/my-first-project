@@ -382,13 +382,15 @@ aL, aR = norm(amb.L, 0.05), norm(amb.R, 0.05)
 _im = S0("imagine") if HAS("imagine") else S0("runway") - 1.01
 amb_shape = np.interp(t, [0, 3, _im, _im + 1, S0("runway"), T_END], [0.8, 0.8, 0.8, 1.6, 1.0, 1.0])
 
+if os.environ.get("NOMUSIC"):  # leave room for a song added in the Instagram app
+    mL = mL * 0.0; mR = mR * 0.0
 L_ = vmono * 0.92 + (sfxL * duck_sfx + mL * duck_music * music_shape * dip + aL * duck_amb * amb_shape) * gate
 R_ = vmono * 0.92 + (sfxR * duck_sfx + mR * duck_music * music_shape * dip + aR * duck_amb * amb_shape) * gate
 st = np.stack([L_, R_], 1)
 st = np.tanh(st * 1.05) / np.tanh(1.05)
 scale = 0.95 / np.abs(st).max()
 st = st * scale
-sf.write(os.path.join(PUB, f"mix_{VER}.wav"), st.astype(np.float32), SR)
+sf.write(os.path.join(PUB, f"mix_{VER}{'_nomusic' if os.environ.get('NOMUSIC') else ''}.wav"), st.astype(np.float32), SR)
 if os.environ.get("STEMS"):
     # music + SFX + ambience only (same balance/ducking as the full mix), for laying a recorded voiceover on top
     bed = np.stack([L_ - vmono * 0.92, R_ - vmono * 0.92], 1)

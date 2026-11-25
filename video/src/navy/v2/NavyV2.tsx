@@ -48,7 +48,8 @@ export const NavyV2: React.FC<Props> = ({ audio = true, variant = "v2-night" }) 
     <AbsoluteFill style={{ background: theme.bgCss, overflow: "hidden" }}>
       {timeline.scenes.map((s) => {
         const from = Math.round(s.start * timeline.fps);
-        const to = Math.round(s.end * timeline.fps);
+        const isLast = s === timeline.scenes[timeline.scenes.length - 1];
+        const to = isLast ? timeline.frames : Math.round(s.end * timeline.fps); // last scene runs to the final frame
         const Comp = SCENES_V2[s.id];
         return (
           <Sequence key={s.id} from={from} durationInFrames={to - from} name={s.id} layout="none">

@@ -709,7 +709,7 @@ export const Finale: React.FC = () => {
   const flag = prog(g, 2, 26);
   const title = prog(f, W(37, 0) - 4, W(37, 0) + 12);
   return (
-    <Stage dur={dur} enter="fade">
+    <Stage dur={dur} enter="fade" exit="cut">
       <SkyHorizon cam={cam} warm={1} />
       <LightRays t={f} amt={0.9} from={[780, hy - 260]} />
       <Ocean cam={cam} t={f} />
