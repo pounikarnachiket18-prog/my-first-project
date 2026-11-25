@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1080" width="1080" height="1080">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="42%" r="70%"><stop offset="0" stop-color="#173452"/><stop offset="1" stop-color="#08111d"/></radialGradient>
+    <filter id="g" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="18"/></filter>
+  </defs>
+  <rect width="1080" height="1080" fill="url(#bg)"/>
+  <!-- light bulb whose filament is an M -->
+  <path d="M540 190 C 370 190 270 310 270 455 C 270 560 330 620 385 680 C 415 712 425 740 425 780 L655 780 C 655 740 665 712 695 680 C 750 620 810 560 810 455 C 810 310 710 190 540 190 Z"
+        fill="rgba(56,198,255,0.10)" stroke="#eef6ff" stroke-width="44" stroke-linejoin="round"/>
+  <path d="M420 590 L420 420 L540 530 L660 420 L660 590" fill="none" stroke="#38c6ff" stroke-width="64" stroke-linecap="round" stroke-linejoin="round" filter="url(#g)" opacity="0.8"/>
+  <path d="M420 590 L420 420 L540 530 L660 420 L660 590" fill="none" stroke="#5fd6ff" stroke-width="56" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="440" y="815" width="200" height="40" rx="20" fill="#ffd166"/>
+  <rect x="465" y="875" width="150" height="40" rx="20" fill="#ffd166"/>
+</svg>
