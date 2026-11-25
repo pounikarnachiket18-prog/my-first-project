@@ -6,8 +6,8 @@ import numpy as np, soundfile as sf
 from scipy.signal import butter, sosfilt
 
 HERE = os.path.dirname(__file__); PUB = os.path.join(HERE, "..", "public", "navy")
-tl = json.load(open(os.path.join(HERE, "..", "src", "navy", "hyper2", "timeline.json")))
-vpath = sys.argv[1] if len(sys.argv) > 1 else os.path.join(PUB, "voice_h2.wav")
+tl = json.load(open(os.environ.get("TL") or os.path.join(HERE, "..", "src", "navy", "hyper2", "timeline.json")))
+vpath = sys.argv[1] if len(sys.argv) > 1 else os.path.join(PUB, os.environ.get("VOICE", "voice_h2.wav"))
 voice, SR = sf.read(vpath, dtype="float64")
 if voice.ndim > 1: voice = voice.mean(1)
 LOGO_AT = round(tl["lines"][-1]["t0"] * 30) - 3          # mirrors HyperVideo2.tsx
@@ -164,5 +164,5 @@ sL, sR = nm(L_, 0.45), nm(R_, 0.45); mus = nm(mus, 0.18); amb = nm(amb, 0.05)
 L = voice * 0.92 + sL * duck_s + mus * duck_m + amb; R = voice * 0.92 + sR * duck_s + mus * duck_m + amb
 fade = np.ones(N); nf = int(0.6 * SR); fade[-nf:] = np.linspace(1, 0, nf)
 st = np.tanh(np.stack([L * fade, R * fade], 1) * 1.05) / np.tanh(1.05); st = st / np.abs(st).max() * 0.95
-sf.write(os.path.join(PUB, "mix_h2.wav"), st.astype(np.float32), SR)
+sf.write(os.path.join(PUB, os.environ.get("OUT", "mix_h2.wav")), st.astype(np.float32), SR)
 print("mix_h2 written", round(N / SR, 2), "s")

@@ -267,6 +267,7 @@ export const H5Hyper: React.FC = () => {
       <Svg>
         <Callout cam={cam} at={v(c, [L_HYP * 0.42, 0.1, 0])} dx={-40} dy={-250} text="PLASMA" sub="super-heated air glows" color={HYP} p={prog(f, Ls(7) + 16, Ls(7) + 30)} />
         <Callout cam={cam} at={v(c, [L_HYP * 0.49, 0, 0])} dx={60} dy={190} text="NOSE" sub="hottest point" color="#ffd0e6" p={prog(f, Ls(7) + 40, Ls(7) + 52)} />
+        <Callout cam={cam} at={v(c, [-L_HYP * 0.1, 0.3, 0])} dx={-80} dy={210} text="RADIO BLACKOUT" sub="plasma blocks signals" color="#9fe2ff" p={prog(f, Ls(7) + 64, Ls(7) + 76)} />
       </Svg>
       <RankCard f={f} at={2} until={Ls(7) + 10} rank="#1" name="HYPERSONIC" place="5× FASTER THAN SOUND" mach={5} plus color={HYP} bar={0.85} />
       <MachGauge mach={lerp(5.0, 5.8, prog(f, 0, dur))} color={HYP} p={prog(f, Ls(7) + 6, Ls(7) + 16)} label="HYPERSONIC" />

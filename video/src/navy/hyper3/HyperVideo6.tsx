@@ -8,13 +8,13 @@ import { SCENES_H5, H5Strike } from "./scenes_h5";
 import { useS, Big, Illus } from "./scenes_h3";
 
 const FPS = 30;
-const CLIP = "navy/dogfight.mp4";
-const HOOK = 152;            // clip 0 -> 5.07 s (cut just before its missile-flight shot)
+export const CLIP = "navy/dogfight.mp4";
+export const HOOK = 152;            // clip 0 -> 5.07 s (cut just before its missile-flight shot)
 const HIT1 = 7.17, HIT2 = 7.87; // flash times of the two impacts in the clip
 export const HYPER6_FRAMES = HOOK + HYPER5_FRAMES;
 
 /** strike: our race shots, then the user's impact footage time-mapped onto hyperHit / superHit */
-const H6Strike: React.FC = () => {
+export const H6Strike: React.FC = () => {
   const { f, Le, W, dur } = useS("strike");
   const cf = useCurrentFrame();
   const hyperHit = Le(10) - 10, superHit = W(11, 1);
@@ -45,7 +45,7 @@ const H6Strike: React.FC = () => {
 const SCENES_H6: Record<string, React.FC> = { ...SCENES_H5, strike: H6Strike };
 
 /** hook: the user's dogfight, cockpit lock and weapon release, with the series title */
-const Hook: React.FC = () => {
+export const Hook: React.FC = () => {
   const f = useCurrentFrame();
   const flash = interpolate(f, [HOOK - 4, HOOK], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
   const title = interpolate(f, [6, 16, HOOK - 10, HOOK - 2], [0, 1, 1, 0], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
