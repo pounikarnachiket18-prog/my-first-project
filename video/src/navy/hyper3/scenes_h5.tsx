@@ -5,9 +5,16 @@
 import React from "react";
 import { prog, lerp, clamp01, ease } from "../engine";
 import { GLState, Vec3, Missile, projectGL } from "./GLView";
-import { Sprite, MarkingsCtx, SHIP_NAME } from "./Sprite";
+import { Sprite, MarkingsCtx, SHIP_NAME, RealismCtx } from "./Sprite";
 import { useS, Svg, Big, Flag, Illus, SUN, Panel } from "./scenes_h3";
-import { Bg, Fx, Lock, Velocity, MachGauge, Streaks, coldWorld, ctr } from "./scenes_h4";
+import { Bg, Fx, Lock as LockBase, Velocity as VelocityBase, MachGauge as MachGaugeBase, Streaks as StreaksBase, coldWorld, ctr } from "./scenes_h4";
+
+// v8 ("reference copy"): only the reference's own graphics -> drop extra brackets/gauges/arrows/overlay streaks
+const useRef8 = () => React.useContext(RealismCtx);
+const Lock: typeof LockBase = (p) => (useRef8() && !/^(TARGET|TEJAS)/.test(p.tag) ? null : <LockBase {...p} />);
+const Velocity: typeof VelocityBase = (p) => (useRef8() ? null : <VelocityBase {...p} />);
+const MachGauge: typeof MachGaugeBase = (p) => (useRef8() ? null : <MachGaugeBase {...p} />);
+const Streaks: typeof StreaksBase = (p) => (useRef8() ? null : <StreaksBase {...p} />);
 import { useTL } from "../v2/ctx";
 
 const FPS = 30;
@@ -23,9 +30,11 @@ const shake = (f: number, amt: number): Vec3 => [Math.sin(f * 2.3) * amt + Math.
 
 /** day state with the reference look: mountains, mist, motion blur from the camera's own velocity */
 const look = (t: number, camFn: CamFn, f: number, extra: Partial<GLState> = {}, blur = 1): GLState => {
+  const ref8 = React.useContext(RealismCtx);
   const a = camFn(f), b = camFn(f + 1);
   const vel: Vec3 = [(b.pos[0] - a.pos[0]) * FPS, (b.pos[1] - a.pos[1]) * FPS, (b.pos[2] - a.pos[2]) * FPS];
-  return { t, cam: a, exposure: 0.78, day: true, hideObjects: true, moonDir: SUN, mountains: 1, mist: 1, vel, shutter: blur / 50, ...extra };
+  const env: Partial<GLState> = ref8 ? { mountains: 1.3, mist: 0.7, ice: 1, shutter: blur / 24 } : { mountains: 1, mist: 1, shutter: blur / 50 };
+  return { t, cam: a, exposure: 0.78, day: true, hideObjects: true, moonDir: SUN, vel, ...env, ...extra };
 };
 
 // ---------------------------------------------------------------- reference-style motion graphics
@@ -107,7 +116,7 @@ export const H5Cold: React.FC = () => {
   };
   const w = coldWorld(f, rel);
   const sC = ctr(w.sup), hC = ctr(w.hyp);
-  const s = look(T, camFn, f, { m0: w.sup, m1: w.hyp }, onSup(f) || onHyp(f) ? 1.2 : 0.6);
+  const s = look(T, camFn, f, { m0: w.sup, m1: w.hyp, ship: { pos: w.ship, yaw: 0, damage: 0, fire: 0, sink: 0 } }, onSup(f) || onHyp(f) ? 1.2 : 0.6);
   const cam = { ...s.cam, pos: v(s.cam.pos, w.tt > 0.35 && w.tt < 1.3 ? shake(f, 0.12) : [0, 0, 0]) };
   s.cam = cam;
   const wide = f >= Ls(1) - 4;
@@ -355,7 +364,7 @@ export const H5Radar: React.FC = () => {
   // ballistic (predictable) vs hypersonic (stays low and steers) — drawn over a wide daytime sea
   const g = f - diag;
   const camFn: CamFn = (fr) => { const q = fr - diag; return { pos: [-330 + q * 0.8, 150, -620], target: [0, 70, 80], fov: 0.66 }; };
-  const s = look(T, camFn, f, {}, 0.2);
+  const s = look(T, camFn, f, { ship: { pos: [220, 0, 380], yaw: 0, damage: 0, fire: 0, sink: 0 } }, 0.2);
   const cam = s.cam;
   const P = (x: number, y: number, z: number) => projectGL(cam, [x, y, z]);
   const launch: Vec3 = [-230, 0, -120], ship: Vec3 = [220, 0, 380];
@@ -470,7 +479,7 @@ export const H5Strike: React.FC = () => {
     const mc = (fr: number): Vec3 => [0, 7, -1500 + (fr - supAt) * 24];
     const camFn: CamFn = (fr) => ({ pos: v(mc(fr), [-17, 2.2, 6]), target: v(mc(fr), [0, 0, -1.2]), fov: 0.62 });
     const c = mc(f);
-    const s = look(T, camFn, f, { m0: { on: true, nose: v(c, [0, 0, L_SUP / 2]), dir: [0, 0, 1], len: L_SUP, radius: 0.3, plasma: 0, glide: false, burn: 1, trail: { len: 140, width: 0.55, pink: false, opacity: 0.85 } } }, 1.2);
+    const s = look(T, camFn, f, { m0: { on: true, nose: v(c, [0, 0, L_SUP / 2]), dir: [0, 0, 1], len: L_SUP, radius: 0.3, plasma: 0, glide: false, burn: 1, trail: { len: 140, width: 0.55, pink: false, opacity: 0.85 } }, ship: { pos: ship, yaw: 0, damage: 0, fire: 0, sink: 0 } }, 1.2);
     return (
       <>
         <Bg s={s} />

@@ -23,6 +23,7 @@ export type GLState = {
   shutter?: number;    // seconds
   mountains?: number;
   mist?: number;
+  ice?: number;
 };
 
 const norm = (v: Vec3): Vec3 => { const l = Math.hypot(...v) || 1; return [v[0] / l, v[1] / l, v[2] / l]; };
@@ -79,7 +80,7 @@ export const GLView: React.FC<{ s: GLState; scale?: number; layer?: "bg" | "fx" 
       const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf);
       gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
       const a = gl.getAttribLocation(prog, "p"); gl.enableVertexAttribArray(a); gl.vertexAttribPointer(a, 2, gl.FLOAT, false, 0, 0);
-      const names = ["uRes", "uTime", "uCamPos", "uCamTarget", "uFov", "uRoll", "uExposure", "uMoonDir", "uM0a", "uM0b", "uM0c", "uM1a", "uM1b", "uM1c", "uTrail0", "uTrail1", "uJet", "uJetD", "uShip", "uShipX", "uBoom", "uEx0", "uEx0b", "uEx1", "uEx1b", "uFlash", "uSeaAmp", "uWake", "uDay", "uLayer", "uHideObj", "uVel", "uShutter", "uMountains", "uMist"];
+      const names = ["uRes", "uTime", "uCamPos", "uCamTarget", "uFov", "uRoll", "uExposure", "uMoonDir", "uM0a", "uM0b", "uM0c", "uM1a", "uM1b", "uM1c", "uTrail0", "uTrail1", "uJet", "uJetD", "uShip", "uShipX", "uBoom", "uEx0", "uEx0b", "uEx1", "uEx1b", "uFlash", "uSeaAmp", "uWake", "uDay", "uLayer", "uHideObj", "uVel", "uShutter", "uMountains", "uMist", "uIce"];
       const loc: Record<string, WebGLUniformLocation | null> = {};
       names.forEach((n) => (loc[n] = gl.getUniformLocation(prog, n)));
       glRef.current = { gl, prog, loc };
@@ -115,7 +116,7 @@ export const GLView: React.FC<{ s: GLState; scale?: number; layer?: "bg" | "fx" 
     };
     ex("0", s.ex0); ex("1", s.ex1);
     u1("uFlash", layer === "fx" ? 0 : s.flash ?? 0); u1("uSeaAmp", s.seaAmp ?? 1); u1("uWake", 0);
-    u3("uVel", s.vel ?? [0, 0, 0]); u1("uShutter", s.shutter ?? 1 / 60); u1("uMountains", s.mountains ?? 0); u1("uMist", s.mist ?? 0);
+    u3("uVel", s.vel ?? [0, 0, 0]); u1("uShutter", s.shutter ?? 1 / 60); u1("uMountains", s.mountains ?? 0); u1("uMist", s.mist ?? 0); u1("uIce", s.ice ?? 0);
     u1("uDay", s.day ? 1 : 0); u1("uLayer", layer === "fx" ? 1 : 0); u1("uHideObj", s.hideObjects ? 1 : 0);
     gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT);
     gl.drawArrays(gl.TRIANGLES, 0, 3);

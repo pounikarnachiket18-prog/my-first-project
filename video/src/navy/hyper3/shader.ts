@@ -23,7 +23,7 @@ uniform vec4 uBoom;                // shock (vapour) cone on missile 0: amount, 
 uniform vec4 uEx0, uEx0b, uEx1, uEx1b; // explosion pos + age(s) ; size, 0,0,0
 uniform float uFlash, uSeaAmp, uWake;
 uniform vec3 uVel;        // camera velocity (m/s) for motion blur of the sea + mist
-uniform float uShutter, uMountains, uMist;
+uniform float uShutter, uMountains, uMist, uIce; // uIce: frozen-sea surface (reference look)
 uniform float uDay, uLayer, uHideObj; // day look ; 0 = background layer, 1 = effects layer (transparent) ; skip SDF objects (sprites used)
 
 #define PI 3.14159265
@@ -65,7 +65,7 @@ vec2 waveSlope(vec2 x, float t, float dist){
 float fbm2(vec2 p){ float a = 0.5, s = 0.0; for (int i = 0; i < 5; i++){ s += a * noise(p); p = p * 2.07 + vec2(1.7, 9.2); a *= 0.5; } return s; }
 vec3 skyDay(vec3 rd){
   float h = max(rd.y, 0.0);
-  vec3 zen = vec3(0.04, 0.20, 0.62), hor = vec3(0.36, 0.60, 0.90);
+  vec3 zen = vec3(0.02, 0.13, 0.48), hor = vec3(0.30, 0.52, 0.82);
   vec3 c = mix(hor, zen, pow(h, 0.55));
   float sd = max(dot(rd, uMoonDir), 0.0);
   c += vec3(1.0, 0.92, 0.75) * pow(sd, 8.0) * 0.35 + vec3(1.0, 0.95, 0.85) * pow(sd, 300.0) * 1.2;
@@ -102,6 +102,34 @@ vec3 skyDay(vec3 rd){
   }
   return c;
 }
+// ---------------- frozen sea (reference look) ----------------
+vec2 hash22(vec2 p){ p = vec2(dot(p, vec2(127.1, 311.7)), dot(p, vec2(269.5, 183.3))); return fract(sin(p) * 43758.5453); }
+// distance to the nearest crack (Voronoi F2-F1) in metres-ish units
+float cracks(vec2 x){
+  vec2 n = floor(x), f = fract(x);
+  float d1 = 8.0, d2 = 8.0;
+  for (int j = -1; j <= 1; j++) for (int i = -1; i <= 1; i++){
+    vec2 g = vec2(float(i), float(j));
+    vec2 o = hash22(n + g);
+    float d = length(g + o - f);
+    if (d < d1){ d2 = d1; d1 = d; } else if (d < d2) d2 = d;
+  }
+  return d2 - d1;
+}
+vec3 iceColor(vec2 xz, float dist){
+  // dark glossy blue ice, big wind-streaked snow drifts, sparse irregular cracks
+  float plate = fbm2(xz * 0.003 + 7.0);
+  vec3 c = mix(vec3(0.010, 0.040, 0.085), vec3(0.04, 0.12, 0.21), smoothstep(0.3, 0.8, plate));
+  vec2 fd = length(uVel.xz) > 1.0 ? normalize(uVel.xz) : vec2(0.8, 0.6);
+  vec2 sw = vec2(dot(xz, fd) * 0.0045, dot(xz, vec2(-fd.y, fd.x)) * 0.035);   // drifts streak along the flight line
+  float drift = smoothstep(0.44, 0.6, fbm2(sw)) + smoothstep(0.5, 0.64, fbm2(sw * 2.7 + 2.0)) * 0.35;
+  c = mix(c, vec3(0.92, 0.95, 1.0), clamp(drift, 0.0, 1.0));
+  float show = smoothstep(0.5, 0.7, noise(xz * 0.004 + 3.0));          // cracks only in some areas
+  float cr = 1.0 - smoothstep(0.0, 0.02, cracks(xz * 0.009 + vec2(noise(xz * 0.02) * 0.6)));
+  c = mix(c, vec3(0.75, 0.85, 0.95), cr * show * 0.7 * exp(-dist * 0.003));
+  return c;
+}
+
 vec3 sky(vec3 rd){
   if (uDay > 0.5) return skyDay(rd);
   float h = max(rd.y, 0.0);
@@ -440,6 +468,33 @@ void main(){
     }
     vec3 n = normalize(vec3(-g.x, 1.0, -g.y));
     // wake behind the ship
+    if (uIce > 0.0){
+      // open water lead around the ship, ice everywhere else
+      float lead = uShip.w > 0.5 ? smoothstep(260.0, 160.0, length(p.xz - uShip.xz)) : 0.0;
+      float iceAmt = uIce * (1.0 - lead);
+      if (iceAmt > 0.01){
+        vec3 ic = vec3(0.0);
+        for (int k = 0; k < 8; k++){
+          vec3 pk = p + uVel * uShutter * (float(k) / 7.0 - 0.5);
+          ic += iceColor(pk.xz, dist) * 0.125;
+        }
+        vec3 rr0 = reflect(rd, vec3(0.0, 1.0, 0.0));
+        float fr0 = 0.04 + 0.5 * pow(1.0 - max(-rd.y, 0.0), 6.0);
+        vec3 iceC = mix(ic, skyDay(rr0), fr0 * 0.3) + vec3(1.0, 0.95, 0.85) * pow(max(dot(rr0, uMoonDir), 0.0), 300.0) * 2.0;
+        float fogI = 1.0 - exp(-dist * 0.00030);
+        iceC = mix(iceC, skyDay(normalize(vec3(rd.x, -0.01, rd.z))), fogI);
+        // keep the water shading for the lead and blend
+        g *= 1.0;
+        n = normalize(vec3(-g.x, 1.0, -g.y));
+        vec3 rrw = reflect(rd, n); rrw.y = abs(rrw.y);
+        float fresw = 0.02 + 0.98 * pow(1.0 - max(dot(n, -rd), 0.0), 5.0);
+        vec3 water = mix(vec3(0.01, 0.06, 0.11), skyDay(rrw), fresw * 0.7) + vec3(1.0, 0.96, 0.88) * pow(max(dot(rrw, uMoonDir), 0.0), 900.0) * 18.0;
+        water = mix(water, skyDay(normalize(vec3(rd.x, -0.01, rd.z))), 1.0 - exp(-dist * 0.00025));
+        col = mix(water, iceC, iceAmt);
+        col += glows(p + vec3(0.0, 0.05, 0.0), reflect(rd, vec3(0.0, 1.0, 0.0)), 2000.0, 0.0, 2.0) * 0.35;
+      }
+    }
+    if (!(uIce > 0.0 && uIce * (1.0 - (uShip.w > 0.5 ? smoothstep(260.0, 160.0, length(p.xz - uShip.xz)) : 0.0)) > 0.01)) {
     vec3 rr = reflect(rd, n); rr.y = abs(rr.y);
     float fres = 0.02 + 0.98 * pow(1.0 - max(dot(n, -rd), 0.0), 5.0);
     vec3 refl = sky(rr) + glows(p + n * 0.05, rr, 2000.0, 0.0, 2.0) * 0.55;
@@ -452,6 +507,7 @@ void main(){
     // distance haze toward horizon
     float fog = 1.0 - exp(-dist * mix(0.00045, 0.00025, uDay));
     col = mix(col, sky(normalize(vec3(rd.x, uDay > 0.5 ? -0.01 : 0.002, rd.z))), fog);
+    }
   } else {
     col = sky(rd);
   }
