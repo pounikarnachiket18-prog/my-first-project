@@ -22,6 +22,8 @@ uniform vec4 uShip, uShipX;        // pos + on ; yaw, damage, fire, sink
 uniform vec4 uBoom;                // shock (vapour) cone on missile 0: amount, mach, 0, 0
 uniform vec4 uEx0, uEx0b, uEx1, uEx1b; // explosion pos + age(s) ; size, 0,0,0
 uniform float uFlash, uSeaAmp, uWake;
+uniform vec3 uVel;        // camera velocity (m/s) for motion blur of the sea + mist
+uniform float uShutter, uMountains, uMist;
 uniform float uDay, uLayer, uHideObj; // day look ; 0 = background layer, 1 = effects layer (transparent) ; skip SDF objects (sprites used)
 
 #define PI 3.14159265
@@ -79,6 +81,25 @@ vec3 skyDay(vec3 rd){
   }
   // low haze
   c = mix(c, vec3(0.62, 0.76, 0.92), exp(-abs(rd.y) * 40.0) * 0.35);
+  // snowy mountain ranges on the horizon (far away: no parallax)
+  if (uMountains > 0.0 && rd.y > -0.002){
+    float az = atan(rd.z, rd.x);
+    float range = smoothstep(0.30, 0.62, noise(vec2(az * 2.2 + 3.0, 1.7)));
+    float ridge = uMountains * range * (0.01 + 0.07 * pow(fbm2(vec2(az * 9.0, 0.5)), 1.5) + 0.012 * fbm2(vec2(az * 45.0, 2.0)));
+    if (rd.y < ridge){
+      float hh = clamp(rd.y / max(ridge, 1e-4), 0.0, 1.0);
+      vec2 mp = vec2(az * 38.0, rd.y * 160.0);
+      float n1 = fbm2(mp), n2 = fbm2(mp * 2.7 + 5.0);
+      float snowLine = 0.35 + 0.25 * n1;
+      float rock = smoothstep(snowLine - 0.08, snowLine + 0.08, 1.0 - hh + (n2 - 0.5) * 0.6);
+      float lit = 0.55 + 0.45 * smoothstep(0.35, 0.65, fbm2(vec2(az * 70.0, rd.y * 60.0)));   // sunlit vs shaded slopes
+      vec3 snow = mix(vec3(0.62, 0.72, 0.86), vec3(1.0, 1.0, 1.0), lit);
+      vec3 stone = mix(vec3(0.10, 0.13, 0.18), vec3(0.28, 0.32, 0.38), lit);
+      vec3 m = mix(snow, stone, rock * 0.9);
+      m = mix(m, vec3(0.58, 0.70, 0.86), 0.18 + 0.3 * (1.0 - range));   // light aerial haze
+      c = mix(c, m, smoothstep(0.0, 0.004, ridge - rd.y));
+    }
+  }
   return c;
 }
 vec3 sky(vec3 rd){
@@ -411,7 +432,12 @@ void main(){
   } else if (tSea < 1e8){
     vec3 p = ro + rd * tSea;
     float dist = tSea;
-    vec2 g = waveSlope(p.xz, uTime, dist);
+    vec2 g = vec2(0.0);
+    vec3 blurV = uVel * uShutter;
+    for (int k = 0; k < 5; k++){
+      vec3 pk = p + blurV * (float(k) / 4.0 - 0.5);
+      g += waveSlope(pk.xz, uTime, dist) * 0.2;
+    }
     vec3 n = normalize(vec3(-g.x, 1.0, -g.y));
     // wake behind the ship
     vec3 rr = reflect(rd, n); rr.y = abs(rr.y);
@@ -425,9 +451,29 @@ void main(){
     col += (uDay > 0.5 ? vec3(1.0, 0.96, 0.88) * 1.4 : vec3(0.85, 0.9, 1.0)) * sp;
     // distance haze toward horizon
     float fog = 1.0 - exp(-dist * mix(0.00045, 0.00025, uDay));
-    col = mix(col, sky(normalize(vec3(rd.x, 0.002, rd.z))), fog);
+    col = mix(col, sky(normalize(vec3(rd.x, uDay > 0.5 ? -0.01 : 0.002, rd.z))), fog);
   } else {
     col = sky(rd);
+  }
+  // low mist / sea-smoke streaks rushing past (reference look)
+  if (uMist > 0.0 && uDay > 0.5){
+    vec2 fd = length(uVel.xz) > 1.0 ? normalize(uVel.xz) : vec2(1.0, 0.0);
+    vec2 fs = vec2(-fd.y, fd.x);
+    float tEnd = min(tHit, 320.0);
+    float dm = 0.0;
+    for (int i = 0; i < 6; i++){
+      float tt = mix(4.0, tEnd, pow((float(i) + 0.5) / 6.0, 1.7));
+      vec3 pp = ro + rd * tt;
+      if (pp.y > 9.0 || pp.y < 0.0) continue;
+      float acc = 0.0;
+      for (int k = 0; k < 3; k++){
+        vec3 pk = pp + uVel * uShutter * (float(k) / 2.0 - 0.5);
+        vec2 q = vec2(dot(pk.xz, fd) * 0.012, dot(pk.xz, fs) * 0.07);
+        acc += smoothstep(0.6, 0.9, fbm2(q + vec2(0.0, 3.0))) / 3.0;
+      }
+      dm += acc * exp(-pp.y / 2.5) * (tEnd / 6.0) * 0.004;
+    }
+    col = mix(col, vec3(0.93, 0.96, 1.0), clamp(dm * uMist, 0.0, 0.6));
   }
   // emissive volumes in front of the hit
   col += glows(ro, rd, tHit, tObj < tSea ? idObj : 0.0, uHideObj > 0.5 ? 0.0 : 2.0);

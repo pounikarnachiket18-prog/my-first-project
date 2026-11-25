@@ -6,6 +6,7 @@ import { HyperVideo2, HYPER2_FRAMES } from "./hyper2/HyperVideo2";
 import { LookTest } from "./hyper3/LookTest";
 import { LookTestDay } from "./hyper3/LookTestDay";
 import { HyperVideo4, HYPER4_FRAMES } from "./hyper3/HyperVideo4";
+import { HyperVideo5, HYPER5_FRAMES } from "./hyper3/HyperVideo5";
 import { HyperVideo3, HYPER3_FRAMES } from "./hyper3/HyperVideo3";
 import { NavyV2, NAVY_V2_FRAMES, NAVY_V3_FRAMES, NAVY_V4_FRAMES, NAVY_V5_FRAMES } from "./v2/NavyV2";
 
@@ -18,6 +19,7 @@ export const NavyRoot: React.FC = () => (
     <Composition id="IndianNavyV5Day60EL" component={NavyV2} durationInFrames={NAVY_V5_FRAMES} fps={30} width={1080} height={1920} defaultProps={{ variant: "v5-day60-el" as const }} />
     <Composition id="SupersonicVsHypersonic" component={HyperVideo} durationInFrames={HYPER_FRAMES} fps={30} width={1080} height={1920} />
     <Composition id="SupersonicVsHypersonicV3" component={HyperVideo3} durationInFrames={HYPER3_FRAMES} fps={30} width={1080} height={1920} />
+    <Composition id="SupersonicVsHypersonicV5Best" component={HyperVideo5} durationInFrames={HYPER5_FRAMES} fps={30} width={1080} height={1920} />
     <Composition id="SupersonicVsHypersonicV4Day" component={HyperVideo4} durationInFrames={HYPER4_FRAMES} fps={30} width={1080} height={1920} />
     <Composition id="H4LookTestDay" component={LookTestDay} durationInFrames={4} fps={30} width={1080} height={1920} />
     <Composition id="H3LookTest" component={LookTest} durationInFrames={4} fps={30} width={1080} height={1920} />

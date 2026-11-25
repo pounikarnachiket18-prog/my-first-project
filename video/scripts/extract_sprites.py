@@ -80,7 +80,7 @@ def main():
         y0c, y1c = max(0, ys.min() - pad), min(H, ys.max() + pad)
         # symmetric about the turntable axis x = 540 so the anchor is the image centre in x
         half = max(540 - x0, x1 - 540); x0, x1 = 540 - half, 540 + half
-        scale = min(1.0, 640 / (x1 - x0))
+        scale = min(1.0, (1000 if name == "missile" else 640) / (x1 - x0))  # missile gets close-ups: keep more pixels
         os.makedirs(os.path.join(out, name), exist_ok=True)
         side = (FRONT[name] + 30) % n  # nose pointing screen-left
         a = alphas[side]

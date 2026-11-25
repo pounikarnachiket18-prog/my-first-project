@@ -20,12 +20,12 @@ const shake = (f: number, amt: number): Vec3 => [Math.sin(f * 2.3) * amt + Math.
 type Cam = GLState["cam"];
 
 const day = (s: Omit<GLState, "t"> & { t: number }): GLState => ({ exposure: 0.85, ...s, day: true, hideObjects: true, moonDir: SUN });
-const Bg: React.FC<{ s: GLState; filter?: string }> = ({ s, filter }) => <div style={{ position: "absolute", inset: 0, filter }}><GLView s={s} scale={GLS} /></div>;
-const Fx: React.FC<{ s: GLState }> = ({ s }) => <div style={{ position: "absolute", inset: 0 }}><GLView s={s} scale={GLS} layer="fx" /></div>;
+export const Bg: React.FC<{ s: GLState; filter?: string }> = ({ s, filter }) => <div style={{ position: "absolute", inset: 0, filter }}><GLView s={s} scale={GLS} /></div>;
+export const Fx: React.FC<{ s: GLState }> = ({ s }) => <div style={{ position: "absolute", inset: 0 }}><GLView s={s} scale={GLS} layer="fx" /></div>;
 
 // ---------------------------------------------------------------- motion-graphic labelling
 /** lock-on brackets that snap onto an object, with a typed tag and optional live readout */
-const Lock: React.FC<{ cam: Cam; at: Vec3; size: number; p: number; color: string; tag: string; sub?: string; side?: "r" | "l"; f: number }> = ({ cam, at, size, p, color, tag, sub, side = "r", f }) => {
+export const Lock: React.FC<{ cam: Cam; at: Vec3; size: number; p: number; color: string; tag: string; sub?: string; side?: "r" | "l"; f: number }> = ({ cam, at, size, p, color, tag, sub, side = "r", f }) => {
   if (p <= 0) return null;
   const c = projectGL(cam, at);
   if (!c) return null;
@@ -61,7 +61,7 @@ const Lock: React.FC<{ cam: Cam; at: Vec3; size: number; p: number; color: strin
 };
 
 /** velocity arrow + streaks along the screen-space heading of an object */
-const Velocity: React.FC<{ cam: Cam; at: Vec3; dir: Vec3; len: number; color: string; p: number }> = ({ cam, at, dir, len, color, p }) => {
+export const Velocity: React.FC<{ cam: Cam; at: Vec3; dir: Vec3; len: number; color: string; p: number }> = ({ cam, at, dir, len, color, p }) => {
   if (p <= 0) return null;
   const a = projectGL(cam, at), b = projectGL(cam, v(at, [dir[0] * len, dir[1] * len, dir[2] * len]));
   if (!a || !b) return null;
@@ -77,7 +77,7 @@ const Velocity: React.FC<{ cam: Cam; at: Vec3; dir: Vec3; len: number; color: st
 };
 
 /** animated Mach gauge (bottom HUD) */
-const MachGauge: React.FC<{ mach: number; color: string; p: number; label: string }> = ({ mach, color, p, label }) => {
+export const MachGauge: React.FC<{ mach: number; color: string; p: number; label: string }> = ({ mach, color, p, label }) => {
   if (p <= 0) return null;
   const frac = clamp01(mach / 6);
   return (
@@ -98,11 +98,11 @@ const MachGauge: React.FC<{ mach: number; color: string; p: number; label: strin
   );
 };
 
-const Streaks: React.FC<{ f: number; amt: number; dir?: number; seed?: number }> = ({ f, amt, dir = 180, seed = 3 }) => <Svg><SpeedLines f={f} amt={amt} dir={dir} seed={seed} /></Svg>;
+export const Streaks: React.FC<{ f: number; amt: number; dir?: number; seed?: number }> = ({ f, amt, dir = 180, seed = 3 }) => <Svg><SpeedLines f={f} amt={amt} dir={dir} seed={seed} /></Svg>;
 
 // ---------------------------------------------------------------- 0. COLD OPEN: Tejas fires both
 type ColdS = { jet: Vec3; sup: Missile; hyp: Missile; ship: Vec3; tt: number; ig: number };
-const coldWorld = (f: number, rel: number): ColdS => {
+export const coldWorld = (f: number, rel: number): ColdS => {
   const jz = (fr: number) => -300 + (fr / FPS) * 150;
   const jet: Vec3 = [0, 55 + Math.sin(f * 0.05) * 0.3, jz(f)];
   const tt = (f - rel) / FPS;
@@ -118,7 +118,7 @@ const coldWorld = (f: number, rel: number): ColdS => {
     hyp: { on: true, nose: v(hN, [0, 0, L_HYP / 2]), dir: [0, 0, 1], len: L_HYP, radius: 0.35, plasma: clamp01((ig - 0.4) / 1.0), glide: true, burn: tt > 0.4 ? 1 : 0, trail: { len: Math.min(180, ig * 230), width: 0.45, pink: true, opacity: 0.8 } },
   };
 };
-const ctr = (m: Missile): Vec3 => v(m.nose, [-m.dir[0] * m.len / 2, -m.dir[1] * m.len / 2, -m.dir[2] * m.len / 2]);
+export const ctr = (m: Missile): Vec3 => v(m.nose, [-m.dir[0] * m.len / 2, -m.dir[1] * m.len / 2, -m.dir[2] * m.len / 2]);
 
 export const H4Cold: React.FC = () => {
   const { f, Ls, W, dur, T } = useS("cold");
