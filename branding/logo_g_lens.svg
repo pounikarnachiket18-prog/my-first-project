@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1080" width="1080" height="1080">
+  <defs><radialGradient id="bg" cx="50%" cy="42%" r="72%"><stop offset="0" stop-color="#1a3757"/><stop offset="1" stop-color="#08111d"/></radialGradient></defs>
+  <rect width="1080" height="1080" fill="url(#bg)"/>
+  <!-- magnifying glass = curiosity / "let's find out" -->
+  <line x1="650" y1="650" x2="830" y2="830" stroke="#ffd166" stroke-width="100" stroke-linecap="round"/>
+  <circle cx="480" cy="480" r="250" fill="rgba(56,198,255,0.12)" stroke="#f4f7fb" stroke-width="60"/>
+  <path d="M370 580 L370 390 L480 495 L590 390 L590 580" fill="none" stroke="#38c6ff" stroke-width="66" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

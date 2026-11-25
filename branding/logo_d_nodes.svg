@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1080" width="1080" height="1080">
+  <defs><radialGradient id="bg" cx="50%" cy="42%" r="72%"><stop offset="0" stop-color="#1a3757"/><stop offset="1" stop-color="#08111d"/></radialGradient><filter id="g" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="16"/></filter></defs>
+  <rect width="1080" height="1080" fill="url(#bg)"/>
+  <!-- M drawn as a knowledge graph: connected idea nodes -->
+  <path d="M290 770 L290 340 L540 610 L790 340 L790 770" fill="none" stroke="#38c6ff" stroke-width="46" stroke-linejoin="round" stroke-linecap="round"/>
+  <g fill="#0b1830" stroke="#e9f6ff" stroke-width="22">
+    <circle cx="290" cy="770" r="54"/><circle cx="290" cy="340" r="54"/><circle cx="790" cy="340" r="54"/><circle cx="790" cy="770" r="54"/>
+  </g>
+  <circle cx="540" cy="610" r="86" fill="#ffd166" filter="url(#g)" opacity="0.7"/>
+  <circle cx="540" cy="610" r="70" fill="#ffd166"/>
+</svg>

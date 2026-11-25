@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1080" width="1080" height="1080">
+  <defs><radialGradient id="bg" cx="50%" cy="42%" r="72%"><stop offset="0" stop-color="#1a3757"/><stop offset="1" stop-color="#08111d"/></radialGradient></defs>
+  <rect width="1080" height="1080" fill="url(#bg)"/>
+  <!-- speech bubble = "explained to you" -->
+  <path d="M330 230 H750 Q880 230 880 360 V640 Q880 770 750 770 H470 L320 880 L350 770 H330 Q200 770 200 640 V360 Q200 230 330 230 Z" fill="#f4f7fb"/>
+  <path d="M370 650 L370 380 L540 545 L710 380 L710 650" fill="none" stroke="#0e2340" stroke-width="96" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="820" cy="270" r="58" fill="#ffd166" stroke="#08111d" stroke-width="18"/>
+</svg>

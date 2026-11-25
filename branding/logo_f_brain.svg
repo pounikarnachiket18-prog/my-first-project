@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1080" width="1080" height="1080">
+  <defs><radialGradient id="bg" cx="50%" cy="42%" r="72%"><stop offset="0" stop-color="#1a3757"/><stop offset="1" stop-color="#08111d"/></radialGradient><linearGradient id="c" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6fdcff"/><stop offset="1" stop-color="#1c9fe0"/></linearGradient></defs>
+  <rect width="1080" height="1080" fill="url(#bg)"/>
+  <!-- lowercase m whose two arches are brain lobes -->
+  <path d="M290 790 L290 520 Q290 360 415 360 Q540 360 540 520 L540 790 M540 520 Q540 360 665 360 Q790 360 790 520 L790 790"
+        fill="none" stroke="url(#c)" stroke-width="112" stroke-linecap="round" stroke-linejoin="round"/>
+  <g fill="none" stroke="#0b2038" stroke-width="18" stroke-linecap="round" opacity="0.85">
+    <path d="M335 540 Q335 415 415 415 Q470 415 488 470"/><path d="M595 470 Q612 415 665 415 Q745 415 745 540"/>
+    <path d="M415 470 Q440 495 430 540"/><path d="M665 470 Q640 495 650 540"/>
+  </g>
+  <circle cx="540" cy="250" r="54" fill="#ffd166"/>
+</svg>
