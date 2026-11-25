@@ -226,7 +226,7 @@ const useFonts = () => {
 };
 
 /** Reel 2 v5 (best-of): merges both references with the user's models; day, mist, motion blur, rank cards, console, finale card, branding, logo */
-export const HyperVideo5: React.FC<{ audio?: boolean }> = ({ audio = true }) => {
+export const HyperVideo5: React.FC<{ audio?: boolean; scenes?: Record<string, React.FC> }> = ({ audio = true, scenes = SCENES_H5 }) => {
   useFonts();
   const timeline = tl as unknown as TL;
   return (
@@ -240,7 +240,7 @@ export const HyperVideo5: React.FC<{ audio?: boolean }> = ({ audio = true }) => 
         const post = i < SC.length - 1 ? TRANS[i].h : 0;
         const from = s.a - pre;
         const to = i === SC.length - 1 ? LOGO_AT + LOGO_IN + 2 : s.b + post;
-        const Comp = SCENES_H5[s.id];
+        const Comp = scenes[s.id];
         return (
           <Sequence key={s.id} from={from} durationInFrames={to - from} name={s.id} layout="none">
             <SceneXCtx.Provider value={{ managed: true, shift: pre }}>
