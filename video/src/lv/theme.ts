@@ -25,8 +25,8 @@ export const L = {
 };
 
 export const STATION = { hi: "धोनीपुर", en: "DHONIPUR" };
-export const BRAND = "MINDSET MODE | EXPLAINERS";
-export const BRAND_SHORT = { a: "Mindset Mode", b: "Explainers" };
+export const BRAND = "JUST KNOWIT"; // channel name
+export const LOGO = { brain: "brand/justknowit-brain.png", text: "brand/justknowit-text.png", red: "#C00211" };
 
 export const UI = {
   ink: "#15161A",

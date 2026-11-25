@@ -305,7 +305,7 @@ export const Coach: React.FC<{
           ))}
           {/* branding */}
           <mesh position={[s * 1.62, 1.6, 0.4]} rotation={[0, s * (Math.PI / 2), 0]}>
-            <planeGeometry args={[11.5, 0.86]} />
+            <planeGeometry args={[9, 0.9]} />
             <meshStandardMaterial map={tex.brand} transparent />
           </mesh>
           {!lowDetail && (

@@ -32,7 +32,7 @@ const VO = "vo/voiceover-40s.mp3"; // ElevenLabs VO, pauses tightened + 1.37x (p
  */
 export const SoundDesign: React.FC = () => (
   <>
-    <Clip src={VO} at={0.6} from={0} to={38.5} vol={() => 1} />
+    <Clip src={VO} at={0.6} from={0} to={37.5} vol={curve([0, 36.7, 36.9], [1, 1, 0])} />
     <Clip
       src={AMB}
       at={0}

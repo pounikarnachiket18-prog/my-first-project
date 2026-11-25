@@ -7,7 +7,7 @@ import { ScaleCtx } from "./overlay";
 import { DayReveal, NightHook, Outro, StationCheckDay, StationCheckNight, VerdictNo, VerdictOk, WhyLast } from "./scenes";
 
 // New scene order: mystery (night lamp) -> reveal (X / LV) -> why last coach -> station master check
-// -> verdict (line clear / blocked) -> outro + Mindset Mode end card.
+// -> verdict (line clear / blocked) -> outro + Just KnowIt end card.
 // [scene, frames on screen, time scale]. Scenes are authored on a slower timeline; the scale plays them
 // faster so each one fits its voiceover line (VO: pauses tightened, 1.37x, starts at 0.6s) -> 40s total.
 export const SCENES: [React.FC, number, number][] = [

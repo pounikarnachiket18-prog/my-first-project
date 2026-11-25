@@ -207,7 +207,7 @@ export const StationCheckDay: React.FC = () => {
         )}
       />
       <Title text="Station master ki **nazar**" from={6} plate />
-      <Chip text="Mindset Mode | Explainers" x={540} y={1500} from={4} to={48} kind="white" />
+      <Chip text="JUST KNOWIT" x={540} y={1500} from={4} to={48} kind="white" />
       <Callout a={project([SM_POS[0], 2.95, SM_POS[2]], SC_CAM)} lx={400} ly={640} text="Station master" sub="har train dekhta hai" color={UI.blue} from={49} to={179} />
       <Callout a={project([6.2, 5.0, -30], SC_CAM)} lx={1000} ly={1000} side="left" text="Dhonipur" sub="station" color="#C99A00" from={70} to={179} />
       <Chip text="aakhri dabba dekha ✓" x={540} y={1500} from={112} to={179} kind="green" />

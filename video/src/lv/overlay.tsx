@@ -1,6 +1,6 @@
 import React, { createContext, useContext } from "react";
-import { AbsoluteFill, Easing, interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
-import { F, L, UI } from "./theme";
+import { AbsoluteFill, Easing, Img, interpolate, spring, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
+import { F, L, LOGO, UI } from "./theme";
 
 /** Per-scene time scale: scenes were authored on a longer timeline and are played faster to fit the VO */
 export const ScaleCtx = createContext(1);
@@ -154,59 +154,21 @@ export const Captions: React.FC<{ lines: { from: number; to: number; text: strin
   );
 };
 
+/** End card: the Just KnowIt logo on its own red, brain pops in, wordmark slides up */
 export const EndCard: React.FC<{ from: number }> = ({ from }) => {
   const f = useF();
   const { fps } = useVideoConfig();
   if (f < from) return null;
-  const bg = ip(f, [from, from + 14], [0, 1]);
-  const s1 = spring({ frame: f - from - 6, fps, config: { damping: 14, stiffness: 140 } });
-  const s2 = spring({ frame: f - from - 14, fps, config: { damping: 14, stiffness: 140 } });
-  const bar = ip(f, [from + 10, from + 30], [0, 1]);
+  const bg = ip(f, [from, from + 10], [0, 1]);
+  const s1 = spring({ frame: f - from - 4, fps, config: { damping: 11, stiffness: 160 } });
+  const s2 = spring({ frame: f - from - 12, fps, config: { damping: 16, stiffness: 140 } });
   return (
-    <AbsoluteFill style={{ background: `rgba(122,27,42,${0.94 * bg})`, alignItems: "center", justifyContent: "center" }}>
-      <div style={{ position: "relative", width: 150, height: 150, marginBottom: 50, transform: `scale(${s1})` }}>
-        {[45, -45].map((r) => (
-          <div
-            key={r}
-            style={{
-              position: "absolute",
-              left: 55,
-              top: -10,
-              width: 40,
-              height: 170,
-              background: UI.yellow,
-              transform: `rotate(${r}deg)`,
-            }}
-          />
-        ))}
-      </div>
-      <div
-        style={{
-          fontFamily: F.ui,
-          fontWeight: 800,
-          fontSize: 104,
-          color: "#fff",
-          letterSpacing: -2,
-          opacity: s1,
-          transform: `translateY(${(1 - s1) * 30}px)`,
-        }}
-      >
-        Mindset Mode
-      </div>
-      <div style={{ width: 520 * bar, height: 8, background: UI.yellow, borderRadius: 4, margin: "18px 0 26px" }} />
-      <div
-        style={{
-          fontFamily: F.ui,
-          fontWeight: 600,
-          fontSize: 58,
-          letterSpacing: 14,
-          color: L.cream,
-          opacity: s2,
-          transform: `translateY(${(1 - s2) * 30}px)`,
-        }}
-      >
-        EXPLAINERS
-      </div>
+    <AbsoluteFill style={{ background: LOGO.red, opacity: bg, alignItems: "center", justifyContent: "center" }}>
+      <Img src={staticFile(LOGO.brain)} style={{ height: 300, transform: `scale(${s1})`, marginBottom: 70 }} />
+      <Img
+        src={staticFile(LOGO.text)}
+        style={{ width: 900, opacity: Math.min(1, s2), transform: `translateY(${(1 - s2) * 60}px)` }}
+      />
     </AbsoluteFill>
   );
 };

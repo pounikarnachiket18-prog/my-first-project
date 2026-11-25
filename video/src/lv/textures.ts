@@ -1,14 +1,26 @@
 import { useEffect, useMemo, useState } from "react";
-import { useDelayRender } from "remotion";
+import { staticFile, useDelayRender } from "remotion";
 import * as THREE from "three";
-import { BRAND, F, FONTS_READY, L, STATION } from "./theme";
+import { F, FONTS_READY, L, LOGO, STATION } from "./theme";
+
+const loadImg = (src: string) =>
+  new Promise<HTMLImageElement>((res, rej) => {
+    const i = new Image();
+    i.onload = () => res(i);
+    i.onerror = rej;
+    i.src = src;
+  });
+let logo: HTMLImageElement[] = [];
+const LOGO_READY = Promise.all([loadImg(staticFile(LOGO.brain)), loadImg(staticFile(LOGO.text))]).then((x) => {
+  logo = x;
+});
 
 export const useFontsReady = () => {
   const { delayRender, continueRender } = useDelayRender();
   const [ready, setReady] = useState(false);
   const [handle] = useState(() => delayRender("Loading fonts for textures"));
   useEffect(() => {
-    FONTS_READY.then(() => {
+    Promise.all([FONTS_READY, LOGO_READY]).then(() => {
       setReady(true);
       continueRender(handle);
     });
@@ -95,14 +107,21 @@ const plainFace = () =>
   });
 
 /** Side branding strip */
+/** Side livery: Just KnowIt logo as a horizontal lockup (brain + wordmark), painted cream */
 const brand = () =>
-  make(2400, 180, (c) => {
-    c.clearRect(0, 0, 2400, 180);
+  make(2400, 240, (c) => {
+    const [brain, text] = logo;
+    const bh = 210;
+    const bw = (brain.width / brain.height) * bh;
+    const th = 118;
+    const tw = (text.width / text.height) * th;
+    const gap = 56;
+    const x0 = (2400 - (bw + gap + tw)) / 2;
+    c.drawImage(brain, x0, (240 - bh) / 2, bw, bh);
+    c.drawImage(text, x0 + bw + gap, (240 - th) / 2 + 6, tw, th);
+    c.globalCompositeOperation = "source-in";
     c.fillStyle = L.cream;
-    c.textAlign = "center";
-    c.textBaseline = "middle";
-    c.font = `800 118px ${F.ui}`;
-    c.fillText(BRAND, 1200, 96);
+    c.fillRect(0, 0, 2400, 240);
   });
 
 /** Coach number + class, near the door */
