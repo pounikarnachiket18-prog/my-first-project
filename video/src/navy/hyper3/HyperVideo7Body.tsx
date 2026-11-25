@@ -146,17 +146,14 @@ const SeriesTitle: React.FC = () => {
   const op = interpolate(f, [2, 12, LOGO_AT - 8, LOGO_AT + 2], [0, 1, 1, 0], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
   if (op <= 0) return null;
   return (
-    <div style={{ position: "absolute", left: 0, width: 1080, top: 150, whiteSpace: "nowrap", textAlign: "center", opacity: op, fontFamily: "Inter", textShadow: "0 3px 0 rgba(0,0,0,0.35), 0 2px 4px rgba(0,0,0,0.6), 0 4px 22px rgba(0,0,0,0.5)" }}>
-      <div style={{ display: "inline-block", transform: "scaleX(0.8)", fontWeight: 900, fontSize: 60, letterSpacing: 0, color: "#fff" }}>
-        SUPERSONIC <span style={{ fontSize: 40, color: "#ffc233" }}>vs</span> HYPERSONIC
-      </div>
-      <div style={{ marginTop: 4, display: "flex", justifyContent: "center", alignItems: "center", gap: 10 }}>
-        <span style={{ width: 34, height: 34, borderRadius: "50%", background: CREAM, overflow: "hidden", display: "inline-flex" }}>
-          <Img src={staticFile("navy/logo_mm_icon.png")} style={{ width: 34, height: 34 }} />
+    <div style={{ position: "absolute", right: 40, top: 150, whiteSpace: "nowrap", opacity: op, fontFamily: "Inter", textShadow: "0 3px 0 rgba(0,0,0,0.35), 0 2px 4px rgba(0,0,0,0.6), 0 4px 22px rgba(0,0,0,0.5)" }}>
+      <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 10, padding: "6px 14px 6px 6px", borderRadius: 26, background: "rgba(6,12,20,0.35)" }}>
+        <span style={{ width: 40, height: 40, borderRadius: "50%", background: CREAM, overflow: "hidden", display: "inline-flex" }}>
+          <Img src={staticFile("navy/logo_mm_icon.png")} style={{ width: 40, height: 40 }} />
         </span>
-        <span style={{ fontWeight: 800, fontSize: 19, letterSpacing: 3, color: "#f2f5f9" }}>MINDSET MODE</span>
+        <span style={{ fontWeight: 800, fontSize: 22, letterSpacing: 3, color: "#f2f5f9" }}>MINDSET MODE</span>
         <span style={{ fontWeight: 600, fontSize: 19, color: "rgba(255,255,255,0.4)" }}>|</span>
-        <span style={{ fontWeight: 700, fontSize: 17, letterSpacing: 3, color: "#9fe2ff" }}>EXPLAINERS</span>
+        <span style={{ fontWeight: 700, fontSize: 20, letterSpacing: 3, color: "#9fe2ff" }}>EXPLAINERS</span>
       </div>
     </div>
   );

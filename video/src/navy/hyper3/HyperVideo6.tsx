@@ -55,12 +55,9 @@ export const Hook: React.FC = () => {
   return (
     <AbsoluteFill style={{ background: "#000" }}>
       <OffthreadVideo src={staticFile(CLIP)} muted style={{ width: 1080, height: 1920, objectFit: "cover" }} />
-      <div style={{ position: "absolute", left: 0, width: 1080, top: 150, textAlign: "center", opacity: title, fontFamily: "Inter", whiteSpace: "nowrap",
+      <div style={{ position: "absolute", right: 40, top: 156, opacity: title, fontFamily: "Inter", whiteSpace: "nowrap",
         textShadow: "0 3px 0 rgba(0,0,0,0.35), 0 2px 4px rgba(0,0,0,0.6), 0 4px 22px rgba(0,0,0,0.5)" }}>
-        <div style={{ display: "inline-block", transform: "scaleX(0.8)", fontWeight: 900, fontSize: 60, color: "#fff" }}>
-          SUPERSONIC <span style={{ fontSize: 40, color: "#ffc233" }}>vs</span> HYPERSONIC
-        </div>
-        <div style={{ marginTop: 2, fontWeight: 800, fontSize: 19, letterSpacing: 3, color: "#f2f5f9" }}>MINDSET MODE <span style={{ color: "rgba(255,255,255,0.45)" }}>|</span> <span style={{ color: "#9fe2ff" }}>EXPLAINERS</span></div>
+        <div style={{ marginTop: 2, fontWeight: 800, fontSize: 22, letterSpacing: 3, color: "#f2f5f9" }}>MINDSET MODE <span style={{ color: "rgba(255,255,255,0.45)" }}>|</span> <span style={{ color: "#9fe2ff" }}>EXPLAINERS</span></div>
       </div>
       <Illus />
       <AbsoluteFill style={{ background: "#fff", opacity: flash }} />
