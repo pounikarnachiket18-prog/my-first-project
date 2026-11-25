@@ -1,9 +1,10 @@
-// v8 ending: Tejas pulls up past the camera on full afterburner, then a "FOLLOW · MINDSET MODE | EXPLAINERS" motion graphic.
+// v8 ending: Tejas pulls up past the camera on full afterburner, then a "FOLLOW · JUSTKNOW IT" motion graphic.
 import React from "react";
 import { AbsoluteFill, Img, staticFile, useCurrentFrame, interpolate, Easing } from "remotion";
 import { GLView, GLState, Vec3 } from "./GLView";
 import { Sprite } from "./Sprite";
 import { SUN } from "./scenes_h3";
+import { BrandMark, BrandWord } from "./brand";
 
 const FPS = 30;
 const cl = { extrapolateLeft: "clamp", extrapolateRight: "clamp" } as const;
@@ -14,16 +15,28 @@ export const JetEndCard: React.FC<{ t0: number }> = ({ t0 }) => {
   // flight path: low and fast from behind-left, then a climbing pull-up away from the camera
   const jetAt = (fr: number): Vec3 => {
     const u = fr / FPS;
-    return [-26 + u * 22, 15 + Math.max(0, u - 1.0) ** 2 * 24, -18 + u * 150];
+    return [-26 + u * 22, 15 + Math.max(0, u - 1.0) * 14, -18 + u * 150];
   };
   const p = jetAt(f), q = jetAt(f + 1);
   const dir: Vec3 = [q[0] - p[0], q[1] - p[1], q[2] - p[2]];
-  const camPos: Vec3 = [-52 + f * 0.75, 10 + f * 0.05, -52 + f * 3.4];
-  const cam: GLState["cam"] = { pos: camPos, target: [p[0], p[1] + 2, p[2]], fov: 0.62, roll: Math.sin(f * 0.05) * 0.03 };
+  // camera: low fly-by first, then settles into a chase that keeps Tejas in frame (lower third) behind the FOLLOW graphic
+  const camAt = (fr: number): { pos: Vec3; target: Vec3 } => {
+    const pj = jetAt(fr);
+    const k = ease(Math.min(1, Math.max(0, (fr - 22) / 30)));
+    const flyPos: Vec3 = [-52 + fr * 0.75, 10 + fr * 0.05, -52 + fr * 3.4];
+    const chasePos: Vec3 = [pj[0] - 10, pj[1] + 5, pj[2] - 62];
+    const flyT: Vec3 = [pj[0], pj[1] + 2, pj[2]];
+    const chaseT: Vec3 = [pj[0] - 1, pj[1] + 11, pj[2] + 40];
+    const mix = (x: Vec3, y: Vec3): Vec3 => [x[0] + (y[0] - x[0]) * k, x[1] + (y[1] - x[1]) * k, x[2] + (y[2] - x[2]) * k];
+    return { pos: mix(flyPos, chasePos), target: mix(flyT, chaseT) };
+  };
+  const c0 = camAt(f), c1 = camAt(f + 1);
+  const camPos = c0.pos;
+  const cam: GLState["cam"] = { pos: camPos, target: c0.target, fov: 0.62, roll: Math.sin(f * 0.05) * 0.03 };
   const n = Math.hypot(...dir) || 1;
   const s: GLState = {
     t: t0 + f / FPS, cam, exposure: 0.8, day: true, hideObjects: true, moonDir: SUN, mountains: 1.3, mist: 0.7, ice: 1,
-    vel: [0.6 * FPS, 0.05 * FPS, 3.2 * FPS], shutter: 1 / 24,
+    vel: [(c1.pos[0] - c0.pos[0]) * FPS, (c1.pos[1] - c0.pos[1]) * FPS, (c1.pos[2] - c0.pos[2]) * FPS], shutter: 1 / 24,
     jet: { pos: p, dir: [dir[0] / n, dir[1] / n, dir[2] / n], scale: 1 },
   };
   // motion graphic
@@ -47,12 +60,8 @@ export const JetEndCard: React.FC<{ t0: number }> = ({ t0 }) => {
         </div>
         <div style={{ margin: "14px auto 0", width: 700 * line, height: 6, borderRadius: 3, background: "linear-gradient(90deg, #ff9933, #ffffff, #138808)" }} />
         <div style={{ marginTop: 26, display: "flex", justifyContent: "center", alignItems: "center", gap: 18, opacity: b, transform: `translateY(${(1 - b) * 30}px)` }}>
-          <span style={{ width: 92, height: 92, borderRadius: "50%", background: "#f1ede3", overflow: "hidden", display: "inline-flex", boxShadow: "0 4px 20px rgba(0,0,0,0.45)", transform: `scale(${0.6 + 0.4 * b}) rotate(${(1 - b) * -90}deg)` }}>
-            <Img src={staticFile("navy/logo_mm_icon.png")} style={{ width: 92, height: 92 }} />
-          </span>
-          <span style={{ fontWeight: 900, fontSize: 58, color: "#fff", letterSpacing: 2, transform: "scaleX(0.86)" }}>MINDSET MODE</span>
-          <span style={{ fontWeight: 600, fontSize: 56, color: "rgba(255,255,255,0.55)" }}>|</span>
-          <span style={{ fontWeight: 800, fontSize: 50, color: "#9fe2ff", letterSpacing: 3, transform: "scaleX(0.9)" }}>EXPLAINERS</span>
+          <span style={{ display: "inline-flex", transform: `scale(${0.6 + 0.4 * b}) rotate(${(1 - b) * -90}deg)` }}><BrandMark size={110} /></span>
+          <span style={{ textAlign: "left" }}><BrandWord size={74} sub="EXPLAINERS · FOLLOW FOR MORE" /></span>
         </div>
       </div>
     </AbsoluteFill>
