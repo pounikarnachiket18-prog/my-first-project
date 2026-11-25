@@ -22,6 +22,7 @@ uniform vec4 uShip, uShipX;        // pos + on ; yaw, damage, fire, sink
 uniform vec4 uBoom;                // shock (vapour) cone on missile 0: amount, mach, 0, 0
 uniform vec4 uEx0, uEx0b, uEx1, uEx1b; // explosion pos + age(s) ; size, 0,0,0
 uniform float uFlash, uSeaAmp, uWake;
+uniform float uDay, uLayer, uHideObj; // day look ; 0 = background layer, 1 = effects layer (transparent) ; skip SDF objects (sprites used)
 
 #define PI 3.14159265
 
@@ -59,7 +60,29 @@ vec2 waveSlope(vec2 x, float t, float dist){
 }
 
 // ---------------- sky ----------------
+float fbm2(vec2 p){ float a = 0.5, s = 0.0; for (int i = 0; i < 5; i++){ s += a * noise(p); p = p * 2.07 + vec2(1.7, 9.2); a *= 0.5; } return s; }
+vec3 skyDay(vec3 rd){
+  float h = max(rd.y, 0.0);
+  vec3 zen = vec3(0.04, 0.20, 0.62), hor = vec3(0.36, 0.60, 0.90);
+  vec3 c = mix(hor, zen, pow(h, 0.55));
+  float sd = max(dot(rd, uMoonDir), 0.0);
+  c += vec3(1.0, 0.92, 0.75) * pow(sd, 8.0) * 0.35 + vec3(1.0, 0.95, 0.85) * pow(sd, 300.0) * 1.2;
+  c += vec3(3.0, 2.9, 2.6) * smoothstep(0.99955, 0.99975, sd);
+  // clouds on a high layer, drifting
+  if (rd.y > 0.0){
+    float tc = 1800.0 / max(rd.y, 0.02);
+    vec2 cp = rd.xz * tc * 0.00055 + vec2(uTime * 0.012, uTime * 0.004);
+    float n = fbm2(cp);
+    float cov = smoothstep(0.48, 0.78, n) * smoothstep(0.0, 0.12, rd.y);
+    vec3 cc = mix(vec3(0.78, 0.82, 0.88), vec3(1.0), smoothstep(0.5, 0.9, n)) + vec3(1.0, 0.95, 0.85) * pow(sd, 6.0) * 0.4;
+    c = mix(c, cc, cov * 0.92);
+  }
+  // low haze
+  c = mix(c, vec3(0.62, 0.76, 0.92), exp(-abs(rd.y) * 40.0) * 0.35);
+  return c;
+}
 vec3 sky(vec3 rd){
+  if (uDay > 0.5) return skyDay(rd);
   float h = max(rd.y, 0.0);
   vec3 zen = vec3(0.003, 0.005, 0.013), hor = vec3(0.022, 0.034, 0.060);
   vec3 c = mix(hor, zen, pow(h, 0.45));
@@ -176,7 +199,8 @@ vec3 raySeg(vec3 ro, vec3 rd, vec3 a, vec3 b){
 vec3 plasmaCol(float mode){ return mode > 0.5 ? vec3(1.0, 0.28, 0.78) : vec3(1.0, 0.62, 0.22); }
 
 // emissive glows along a ray up to distance tMax (plasma sheath, exhaust trail, jet burner, explosions)
-vec3 glows(vec3 ro, vec3 rd, float tMax, float hitId){
+vec3 glows(vec3 ro, vec3 rd, float tMax, float hitId, float part){
+  bool bgP = part != 1.0, fxP = part != 0.0;
   vec3 c = vec3(0.0);
   for (int m = 0; m < 2; m++){
     vec4 A = m == 0 ? uM0a : uM1a; vec4 B = m == 0 ? uM0b : uM1b; vec4 C = m == 0 ? uM0c : uM1c; vec4 T = m == 0 ? uTrail0 : uTrail1;
@@ -184,24 +208,24 @@ vec3 glows(vec3 ro, vec3 rd, float tMax, float hitId){
     vec3 f = normalize(B.xyz), nose = A.xyz, tail = nose - f * B.w;
     float R = C.x;
     // plasma sheath hugging the body, hottest at the nose
-    if (C.y > 0.001){
+    if (fxP && C.y > 0.001){
       vec3 h = raySeg(ro, rd, nose + f * R * 0.6, tail);
       if (h.y < tMax + R * 4.0){
         float w = R * (0.3 + 0.6 * h.z * h.z);
         float k = exp(-pow(max(h.x - R * 0.9, 0.0) / w, 1.3));
         float own = abs(hitId - float(m + 1)) < 0.1 ? 0.03 : 1.0;
         float hot = mix(1.8, 0.6, h.z) * own;
-        c += mix(vec3(1.0, 0.85, 0.95), plasmaCol(1.0), clamp(h.z * 1.6 + 0.2, 0.0, 1.0)) * k * hot * C.y;
+        c += mix(vec3(1.0, 0.85, 0.95), plasmaCol(1.0), clamp(h.z * 1.6 + 0.2, 0.0, 1.0)) * k * hot * C.y * mix(1.0, 0.08, uDay);
       }
     }
     // engine flame / exhaust
-    if (C.w > 0.001){
+    if (bgP && C.w > 0.001){
       vec3 h = raySeg(ro, rd, tail, tail - f * R * 7.0);
       float k = exp(-pow(h.x / (R * (0.5 + 1.3 * h.z)), 2.0)) * (1.0 - h.z);
       c += vec3(1.0, 0.7, 0.35) * k * 1.8 * C.w;
     }
     // long trail
-    if (T.x > 0.0){
+    if (bgP && T.x > 0.0 && (T.z > 0.5 || uDay < 0.5)){
       vec3 h = raySeg(ro, rd, tail, tail - f * T.x);
       float wdt = T.y * (0.4 + 0.9 * h.z);
       float k = exp(-pow(h.x / wdt, 2.0)) * pow(1.0 - h.z, 1.6) * smoothstep(6.0, 40.0, h.y);
@@ -210,7 +234,7 @@ vec3 glows(vec3 ro, vec3 rd, float tMax, float hitId){
     }
   }
   // shock-wave rings around missile 0: uBoom = amount, mach, phase (0..1), 0
-  if (uBoom.x > 0.001 && uM0a.w > 0.5){
+  if (fxP && uBoom.x > 0.001 && uM0a.w > 0.5){
     vec3 f = normalize(uM0b.xyz); float R = uM0c.x, L = uM0b.w;
     for (int k = 0; k < 3; k++){
       float ph = fract(uBoom.z + float(k) / 3.0);
@@ -224,23 +248,24 @@ vec3 glows(vec3 ro, vec3 rd, float tMax, float hitId){
       float d = abs(length(q) - rr);
       float w = R * (0.25 + ph * 1.2);
       float vap = 0.6 + 0.6 * noise(vec2(atan(q.y, q.x) * 3.0, ph * 5.0 + uTime));
-      c += vec3(0.85, 0.92, 1.0) * exp(-pow(d / w, 2.0)) * (1.0 - ph) * vap * uBoom.x * 1.4;
+      c += vec3(0.85, 0.92, 1.0) * exp(-pow(d / (w * mix(1.0, 0.6, uDay)), 2.0)) * (1.0 - ph) * vap * uBoom.x * mix(1.4, 0.4, uDay);
     }
   }
   // jet burner + nav lights
-  if (uJet.w > 0.5){
+  if (bgP && uJet.w > 0.5){
     vec3 f = normalize(uJetD.xyz); float S = uJetD.w; mat3 Bj = basis(f);
     vec3 tail = uJet.xyz - f * 6.2 * S;
     vec3 h = raySeg(ro, rd, tail, tail - f * 5.0 * S);
     c += vec3(0.45, 0.65, 1.0) * exp(-pow(h.x / (0.55 * S * (1.0 - h.z * 0.6)), 2.0)) * (1.0 - h.z) * 2.5;
     vec3 wl = uJet.xyz + Bj[0] * 4.1 * S - f * 6.0 * S, wr = uJet.xyz - Bj[0] * 4.1 * S - f * 6.0 * S;
     vec3 hl = raySeg(ro, rd, wl, wl + f * 0.01), hr = raySeg(ro, rd, wr, wr + f * 0.01);
-    float blink = step(0.5, fract(uTime * 1.2));
-    c += vec3(1.0, 0.1, 0.1) * exp(-hl.x / (0.12 * S)) * 1.4 + vec3(0.1, 1.0, 0.3) * exp(-hr.x / (0.12 * S)) * 1.4;
+    float blink = step(0.5, fract(uTime * 1.2)) * (1.0 - uDay);
+    c += (vec3(1.0, 0.1, 0.1) * exp(-hl.x / (0.12 * S)) * 1.4 + vec3(0.1, 1.0, 0.3) * exp(-hr.x / (0.12 * S)) * 1.4) * (1.0 - uDay);
     c += vec3(1.0) * exp(-raySeg(ro, rd, uJet.xyz + Bj[1] * 2.8 * S - f * 6.1 * S, uJet.xyz + Bj[1] * 2.8 * S - f * 6.1 * S + f * 0.01).x / (0.1 * S)) * blink * 2.0;
   }
   // explosions
   for (int e = 0; e < 2; e++){
+    if (!fxP) break;
     vec4 E = e == 0 ? uEx0 : uEx1; float sz = e == 0 ? uEx0b.x : uEx1b.x;
     if (E.w < 0.0 || E.w > 8.0) continue;
     float age = E.w;
@@ -255,13 +280,51 @@ vec3 glows(vec3 ro, vec3 rd, float tMax, float hitId){
     c += fire * k * (heat * 4.0 + 0.1) * smoothstep(0.25, 0.65, n0 + heat * 0.3);
   }
   // ship fires
-  if (uShip.w > 0.5 && uShipX.z > 0.001){
+  if (fxP && uShip.w > 0.5 && uShipX.z > 0.001){
     vec3 fp = uShip.xyz + vec3(0.0, 12.0 - uShipX.w * 10.0, 4.0);
     vec3 h = raySeg(ro, rd, fp, fp + vec3(0.0, 18.0, 0.0));
     float fl = fbm3(vec3(h.z * 3.0, uTime * 2.5, 0.0));
     c += vec3(1.0, 0.45, 0.1) * exp(-pow(h.x / (5.0 * (1.0 - h.z * 0.7)), 2.0)) * (1.0 - h.z) * (1.2 + fl) * uShipX.z * 2.0;
   }
   return c;
+}
+
+// returns (density) of grey smoke along the ray: day contrails behind missiles, explosion/fire smoke
+float smoke(vec3 ro, vec3 rd, float tMax, bool trails, bool fires){
+  float dens = 0.0;
+  if (trails && uDay > 0.5){
+    for (int m = 0; m < 2; m++){
+      vec4 A = m == 0 ? uM0a : uM1a; vec4 B = m == 0 ? uM0b : uM1b; vec4 T = m == 0 ? uTrail0 : uTrail1;
+      if (A.w < 0.5 || T.x <= 0.0 || T.z > 0.5) continue;
+      vec3 f = normalize(B.xyz), tail = A.xyz - f * B.w;
+      vec3 h = raySeg(ro, rd, tail, tail - f * T.x);
+      if (h.y > tMax) continue;
+      float wdt = T.y * (0.6 + 2.2 * h.z);
+      float n = 0.65 + 0.5 * noise(vec2(h.z * 40.0, uTime * 0.5 + float(m) * 7.0));
+      dens += exp(-pow(h.x / wdt, 2.0)) * pow(1.0 - h.z, 1.2) * T.w * n * smoothstep(6.0, 40.0, h.y);
+    }
+  }
+  if (fires){
+    for (int e = 0; e < 2; e++){
+      vec4 E = e == 0 ? uEx0 : uEx1; float sz = e == 0 ? uEx0b.x : uEx1b.x;
+      if (E.w < 0.15) continue;
+      float age = E.w;
+      vec3 base = E.xyz + vec3(age * 2.0, 0.0, 0.0);
+      float top = sz * (10.0 + age * 14.0);
+      vec3 h = raySeg(ro, rd, base, base + vec3(age * 6.0, top, 0.0));
+      if (h.y > tMax + 40.0) continue;
+      float w = sz * (5.0 + 9.0 * h.z + age * 2.5);
+      float n = fbm3((ro + rd * h.y) * 0.05 + vec3(0.0, -uTime * 0.6, 0.0));
+      dens += exp(-pow(h.x / (w * (0.7 + 0.6 * n)), 2.0)) * smoothstep(0.15, 0.6, age) * (0.6 + 0.6 * n) * 0.9;
+    }
+    if (uShip.w > 0.5 && uShipX.z > 0.001){
+      vec3 fp = uShip.xyz + vec3(0.0, 16.0 - uShipX.w * 10.0, 4.0);
+      vec3 h = raySeg(ro, rd, fp, fp + vec3(40.0, 120.0, 10.0));
+      float n = fbm3((ro + rd * h.y) * 0.04 + vec3(0.0, -uTime * 0.5, 0.0));
+      dens += exp(-pow(h.x / ((6.0 + 30.0 * h.z) * (0.7 + 0.6 * n)), 2.0)) * (1.0 - h.z * 0.6) * uShipX.z * (0.5 + 0.6 * n);
+    }
+  }
+  return clamp(dens, 0.0, 1.0);
 }
 
 vec3 shadeObj(vec3 p, vec3 rd, float id){
@@ -314,7 +377,7 @@ void main(){
       vec3 oc = ro - c; bool inside = dot(oc, oc) < r * r;
       if (t0 > 0.0 || inside){ float te = inside ? 0.0 : t0; tStart = min(tStart, te); float b = dot(oc, rd); float h = sqrt(max(b*b - dot(oc,oc) + r*r, 0.0)); tEnd = max(tEnd, -b + h); }
     }
-    if (tStart < 1e8){
+    if (tStart < 1e8 && uHideObj < 0.5){
       float t = tStart;
       for (int i = 0; i < 110; i++){
         vec3 p = ro + rd * t; float id; float d = mapObj(p, id);
@@ -327,6 +390,19 @@ void main(){
 
   // --- ocean
   float tSea = rd.y < -1e-4 ? -ro.y / rd.y : 1e9;
+  vec2 q = gl_FragCoord.xy / uRes;
+  if (uLayer > 0.5){
+    // effects layer: emissive glows + smoke on transparent background (premultiplied alpha)
+    vec3 g = glows(ro, rd, tSea, 0.0, 1.0) * uExposure;
+    float sm = smoke(ro, rd, tSea, false, true);
+    vec3 gc = aces(g);
+    float ga = clamp(max(gc.r, max(gc.g, gc.b)), 0.0, 1.0);
+    vec3 smc = mix(vec3(0.16, 0.15, 0.15), vec3(0.42, 0.42, 0.44), uDay) * sm;
+    float a = clamp(ga + sm * (1.0 - ga), 0.0, 1.0);
+    vec3 outc = gc + smc * (1.0 - ga);
+    gl_FragColor = vec4(pow(max(outc, 0.0), vec3(1.0 / 2.2)) * (a > 0.0 ? 1.0 : 0.0), a);
+    return;
+  }
   vec3 col;
   float tHit = min(tObj, tSea);
   if (tObj < tSea){
@@ -340,27 +416,29 @@ void main(){
     // wake behind the ship
     vec3 rr = reflect(rd, n); rr.y = abs(rr.y);
     float fres = 0.02 + 0.98 * pow(1.0 - max(dot(n, -rd), 0.0), 5.0);
-    vec3 refl = sky(rr) + glows(p + n * 0.05, rr, 2000.0, 0.0) * 0.55;
+    vec3 refl = sky(rr) + glows(p + n * 0.05, rr, 2000.0, 0.0, 2.0) * 0.55;
     // object reflections (cheap: only if reflected ray hits an object bound within 400 m)
-    vec3 deep = vec3(0.002, 0.007, 0.014);
-    col = mix(deep, refl, fres);
-    // moon glitter
+    vec3 deep = uDay > 0.5 ? vec3(0.01, 0.08, 0.14) + vec3(0.0, 0.06, 0.06) * max(0.0, g.x + g.y) : vec3(0.002, 0.007, 0.014);
+    col = mix(deep, refl, uDay > 0.5 ? fres * 0.7 : fres);
+    // moon / sun glitter
     float sp = pow(max(dot(rr, uMoonDir), 0.0), 900.0) * 18.0 + pow(max(dot(rr, uMoonDir), 0.0), 90.0) * 0.35;
-    col += vec3(0.85, 0.9, 1.0) * sp;
+    col += (uDay > 0.5 ? vec3(1.0, 0.96, 0.88) * 1.4 : vec3(0.85, 0.9, 1.0)) * sp;
     // distance haze toward horizon
-    float fog = 1.0 - exp(-dist * 0.00045);
+    float fog = 1.0 - exp(-dist * mix(0.00045, 0.00025, uDay));
     col = mix(col, sky(normalize(vec3(rd.x, 0.002, rd.z))), fog);
   } else {
     col = sky(rd);
   }
   // emissive volumes in front of the hit
-  col += glows(ro, rd, tHit, tObj < tSea ? idObj : 0.0);
+  col += glows(ro, rd, tHit, tObj < tSea ? idObj : 0.0, uHideObj > 0.5 ? 0.0 : 2.0);
+  float smk = smoke(ro, rd, tHit, true, uHideObj < 0.5);
+  col = mix(col, uDay > 0.5 ? vec3(0.93, 0.94, 0.96) : vec3(0.15), smk * 0.85);
   col += vec3(1.0) * uFlash;
   col *= uExposure;
   col = aces(col);
+  if (uDay > 0.5){ float l = dot(col, vec3(0.299, 0.587, 0.114)); col = clamp(mix(vec3(l), col, 1.28), 0.0, 1.0); }
   // vignette + grain
-  vec2 q = gl_FragCoord.xy / uRes;
-  col *= 0.55 + 0.45 * pow(16.0 * q.x * q.y * (1.0 - q.x) * (1.0 - q.y), 0.22);
+  col *= mix(0.55, 0.8, uDay) + mix(0.45, 0.2, uDay) * pow(16.0 * q.x * q.y * (1.0 - q.x) * (1.0 - q.y), 0.22);
   col += (hash(gl_FragCoord.xy + uTime * 61.0) - 0.5) * 0.018;
   gl_FragColor = vec4(pow(col, vec3(1.0 / 2.2)), 1.0);
 }

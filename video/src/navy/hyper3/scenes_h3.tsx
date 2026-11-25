@@ -10,7 +10,7 @@ const FPS = 30;
 const SUP = "#ffd166", HYP = "#ff6fb0", TEAL = "#39d0ff";
 const GLS = 0.75; // internal render scale of the 3D view
 
-const useS = (id: string) => {
+export const useS = (id: string) => {
   const timeline = useTL();
   const sc = timeline.scenes.find((s) => s.id === id)!;
   const f = useCurrentFrame() - useSceneX().shift;
@@ -28,12 +28,12 @@ const nrm = (a: Vec3): Vec3 => { const l = Math.hypot(...a) || 1; return [a[0] /
 const shake = (f: number, amt: number): Vec3 => [Math.sin(f * 2.3) * amt + Math.sin(f * 5.1) * amt * 0.4, Math.cos(f * 1.9) * amt, 0];
 
 // ---------------------------------------------------------------- overlays (reference style)
-const Svg: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+export const Svg: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <svg width={1080} height={1920} viewBox="0 0 1080 1920" style={{ position: "absolute", inset: 0 }}>{children}</svg>
 );
 
 /** small-caps tag with a thin leader line to a 3D point */
-const Lbl: React.FC<{ cam: GLState["cam"]; at: Vec3; dx: number; dy: number; text: string; color?: string; p: number }> = ({ cam, at, dx, dy, text, color = "#e9eef5", p }) => {
+export const Lbl: React.FC<{ cam: GLState["cam"]; at: Vec3; dx: number; dy: number; text: string; color?: string; p: number }> = ({ cam, at, dx, dy, text, color = "#e9eef5", p }) => {
   if (p <= 0) return null;
   const a = projectGL(cam, at);
   if (!a) return null;
@@ -53,19 +53,19 @@ const Lbl: React.FC<{ cam: GLState["cam"]; at: Vec3; dx: number; dy: number; tex
 };
 
 /** big centre word that pops (RUKO!, KAUN PEHLE?, HIT!) */
-const Big: React.FC<{ text: string; f: number; at: number; until: number; y?: number; size?: number; color?: string }> = ({ text, f, at, until, y = 760, size = 120, color = "#ffffff" }) => {
+export const Big: React.FC<{ text: string; f: number; at: number; until: number; y?: number; size?: number; color?: string }> = ({ text, f, at, until, y = 760, size = 120, color = "#ffffff" }) => {
   if (f < at || f > until + 8) return null;
   const k = clamp01((f - at) / 5), out = clamp01((f - until) / 8);
   const sc = 1.35 - 0.35 * (1 - Math.pow(1 - k, 3));
   return (
     <div style={{ position: "absolute", left: 0, width: 1080, top: y - size * 0.6, textAlign: "center", opacity: k * (1 - out), transform: `scale(${sc}) translateY(${-out * 16}px)`, whiteSpace: "pre-line",
-      fontFamily: "Inter", fontWeight: 900, fontSize: size, lineHeight: 0.95, letterSpacing: -2, color, textShadow: "0 6px 30px rgba(0,0,0,0.65)" }}>
+      fontFamily: "Inter", fontWeight: 900, fontSize: size, lineHeight: 0.95, letterSpacing: -2, color, textShadow: "0 3px 0 rgba(0,0,0,0.35), 0 6px 30px rgba(0,0,0,0.65)", WebkitTextStroke: "2px rgba(0,0,0,0.25)" }}>
       <span style={{ display: "inline-block", transform: "scaleX(0.86)" }}>{text}</span>
     </div>
   );
 };
 
-const Flag: React.FC<{ w?: number }> = ({ w = 34 }) => (
+export const Flag: React.FC<{ w?: number }> = ({ w = 34 }) => (
   <span style={{ display: "inline-flex", flexDirection: "column", width: w, height: w * 0.66, verticalAlign: "middle", boxShadow: "0 1px 4px rgba(0,0,0,0.5)" }}>
     <span style={{ flex: 1, background: "#ff9933" }} />
     <span style={{ flex: 1, background: "#fff", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -76,7 +76,7 @@ const Flag: React.FC<{ w?: number }> = ({ w = 34 }) => (
 );
 
 /** reference-2 style card: name, speed in Mach, speed bar */
-const Card: React.FC<{ f: number; at: number; until?: number; name: string; mach: string; sub?: React.ReactNode; color: string; bar: number }> = ({ f, at, until = 1e9, name, mach, sub, color, bar }) => {
+export const Card: React.FC<{ f: number; at: number; until?: number; name: string; mach: string; sub?: React.ReactNode; color: string; bar: number }> = ({ f, at, until = 1e9, name, mach, sub, color, bar }) => {
   const p = prog(f, at, at + 8), out = prog(f, until, until + 8);
   if (p <= 0 || out >= 1) return null;
   const bp = prog(f, at + 6, at + 30);
@@ -92,13 +92,19 @@ const Card: React.FC<{ f: number; at: number; until?: number; name: string; mach
   );
 };
 
-const Illus: React.FC<{ text?: string; o?: number }> = ({ text = "Illustration", o = 1 }) => (
+export const Illus: React.FC<{ text?: string; o?: number }> = ({ text = "Illustration", o = 1 }) => (
   <div style={{ position: "absolute", left: 40, top: 1590, opacity: 0.6 * o, fontFamily: "Inter", fontWeight: 600, fontSize: 18, letterSpacing: 1, color: "#cfd6e0" }}>{text}</div>
 );
 
-const glScene = (s: GLState, filter?: string) => (
-  <div style={{ position: "absolute", inset: 0, filter }}><GLView s={s} scale={GLS} /></div>
-);
+/** day variant switch (v4 reuses the console scenes over a daytime sea) */
+export const DayCtx = React.createContext(false);
+export const SUN: Vec3 = [0.45, 0.42, 1];
+const GLScene: React.FC<{ s: GLState; filter?: string }> = ({ s, filter }) => {
+  const day = React.useContext(DayCtx);
+  const st: GLState = day ? { ...s, day: true, hideObjects: true, moonDir: SUN, exposure: 0.85 } : s;
+  return <div style={{ position: "absolute", inset: 0, filter }}><GLView s={st} scale={GLS} /></div>;
+};
+const glScene = (s: GLState, filter?: string) => <GLScene s={s} filter={filter} />;
 
 // ---------------------------------------------------------------- 0. COLD OPEN: Tejas fires both
 type ColdOut = { s: GLState; sup: Missile; hyp: Missile; ship: Vec3; jet: Vec3; wide: number };
@@ -276,7 +282,7 @@ export const H3Hyper: React.FC = () => {
 };
 
 // ---------------------------------------------------------------- 5. RADAR: the ship's console
-const Panel: React.FC<{ y: number; h: number; title: string; children: React.ReactNode; f: number }> = ({ y, h, title, children, f }) => (
+export const Panel: React.FC<{ y: number; h: number; title: string; children: React.ReactNode; f: number }> = ({ y, h, title, children, f }) => (
   <g>
     <rect x={56} y={y} width={968} height={h} rx={10} fill="rgba(3,10,16,0.88)" stroke={TEAL} strokeWidth={4} />
     <rect x={56} y={y} width={968} height={h} rx={10} fill="none" stroke={TEAL} strokeWidth={14} opacity={0.12} />

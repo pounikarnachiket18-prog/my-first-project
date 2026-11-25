@@ -17,6 +17,8 @@ export type GLState = {
   ex1?: { pos: Vec3; age: number; size: number };
   flash?: number;
   seaAmp?: number;
+  day?: boolean;
+  hideObjects?: boolean;
 };
 
 const norm = (v: Vec3): Vec3 => { const l = Math.hypot(...v) || 1; return [v[0] / l, v[1] / l, v[2] / l]; };
@@ -49,7 +51,7 @@ export const pxPerMetre = (cam: GLState["cam"], p: Vec3, H = 1920) => {
 const OFF: Missile = { on: false, nose: [0, 0, 0], dir: [0, 0, 1], len: 1, radius: 0.1, plasma: 0, glide: false, burn: 0 };
 
 /** full-frame WebGL view; scale < 1 renders at reduced internal resolution (upscaled by the browser) */
-export const GLView: React.FC<{ s: GLState; scale?: number }> = ({ s, scale = 1 }) => {
+export const GLView: React.FC<{ s: GLState; scale?: number; layer?: "bg" | "fx" }> = ({ s, scale = 1, layer = "bg" }) => {
   const ref = useRef<HTMLCanvasElement>(null);
   const glRef = useRef<{ gl: WebGLRenderingContext; prog: WebGLProgram; loc: Record<string, WebGLUniformLocation | null> } | null>(null);
   const { width, height } = useVideoConfig();
@@ -59,7 +61,7 @@ export const GLView: React.FC<{ s: GLState; scale?: number }> = ({ s, scale = 1 
   useLayoutEffect(() => {
     const cv = ref.current!;
     if (!glRef.current) {
-      const gl = cv.getContext("webgl", { preserveDrawingBuffer: true, antialias: false, alpha: false })!;
+      const gl = cv.getContext("webgl", { preserveDrawingBuffer: true, antialias: false, alpha: layer === "fx", premultipliedAlpha: true })!;
       const mk = (type: number, src: string) => {
         const sh = gl.createShader(type)!; gl.shaderSource(sh, src); gl.compileShader(sh);
         if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) throw new Error("shader: " + gl.getShaderInfoLog(sh));
@@ -73,7 +75,7 @@ export const GLView: React.FC<{ s: GLState; scale?: number }> = ({ s, scale = 1 
       const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf);
       gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
       const a = gl.getAttribLocation(prog, "p"); gl.enableVertexAttribArray(a); gl.vertexAttribPointer(a, 2, gl.FLOAT, false, 0, 0);
-      const names = ["uRes", "uTime", "uCamPos", "uCamTarget", "uFov", "uRoll", "uExposure", "uMoonDir", "uM0a", "uM0b", "uM0c", "uM1a", "uM1b", "uM1c", "uTrail0", "uTrail1", "uJet", "uJetD", "uShip", "uShipX", "uBoom", "uEx0", "uEx0b", "uEx1", "uEx1b", "uFlash", "uSeaAmp", "uWake"];
+      const names = ["uRes", "uTime", "uCamPos", "uCamTarget", "uFov", "uRoll", "uExposure", "uMoonDir", "uM0a", "uM0b", "uM0c", "uM1a", "uM1b", "uM1c", "uTrail0", "uTrail1", "uJet", "uJetD", "uShip", "uShipX", "uBoom", "uEx0", "uEx0b", "uEx1", "uEx1b", "uFlash", "uSeaAmp", "uWake", "uDay", "uLayer", "uHideObj"];
       const loc: Record<string, WebGLUniformLocation | null> = {};
       names.forEach((n) => (loc[n] = gl.getUniformLocation(prog, n)));
       glRef.current = { gl, prog, loc };
@@ -108,7 +110,9 @@ export const GLView: React.FC<{ s: GLState; scale?: number }> = ({ s, scale = 1 
       u4(`uEx${k}b`, e?.size ?? 1, 0, 0, 0);
     };
     ex("0", s.ex0); ex("1", s.ex1);
-    u1("uFlash", s.flash ?? 0); u1("uSeaAmp", s.seaAmp ?? 1); u1("uWake", 0);
+    u1("uFlash", layer === "fx" ? 0 : s.flash ?? 0); u1("uSeaAmp", s.seaAmp ?? 1); u1("uWake", 0);
+    u1("uDay", s.day ? 1 : 0); u1("uLayer", layer === "fx" ? 1 : 0); u1("uHideObj", s.hideObjects ? 1 : 0);
+    gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
     gl.finish();
   });
