@@ -5,7 +5,7 @@
 import React from "react";
 import { prog, lerp, clamp01, ease } from "../engine";
 import { GLState, Vec3, Missile, projectGL } from "./GLView";
-import { Sprite } from "./Sprite";
+import { Sprite, MarkingsCtx, SHIP_NAME } from "./Sprite";
 import { useS, Svg, Big, Flag, Illus, SUN, Panel } from "./scenes_h3";
 import { Bg, Fx, Lock, Velocity, MachGauge, Streaks, coldWorld, ctr } from "./scenes_h4";
 import { useTL } from "../v2/ctx";
@@ -87,6 +87,7 @@ const Callout: React.FC<{ cam: Cam; at: Vec3; dx: number; dy: number; text: stri
 
 // ---------------------------------------------------------------- 0. COLD OPEN
 export const H5Cold: React.FC = () => {
+  const shipTag = React.useContext(MarkingsCtx) ? `TARGET · ${SHIP_NAME}` : "TARGET";
   const { f, Ls, W, dur, T } = useS("cold");
   const rel = W(0, 5);
   const onSup = (fr: number) => fr >= W(0, 7) - 3 && fr < W(0, 9) - 3;
@@ -123,7 +124,7 @@ export const H5Cold: React.FC = () => {
         <Lock cam={cam} at={w.jet} size={L_JET * 0.8} f={f} p={prog(f, 6, 16) * (1 - prog(f, rel + 4, rel + 10))} color="#ffffff" tag="TEJAS · LCA" sub="illustration" />
         <Lock cam={cam} at={sC} size={L_SUP * 0.7} f={f} p={onSup(f) ? prog(f, W(0, 8) - 4, W(0, 8) + 10) : 0} color={SUP} tag="SUPERSONIC" sub={`MACH ${Math.min(2.8, 0.8 + w.ig * 1.4).toFixed(1)}`} side="l" />
         <Lock cam={cam} at={hC} size={L_HYP * 0.7} f={f} p={onHyp(f) ? prog(f, W(0, 11) - 4, W(0, 11) + 10) : 0} color={HYP} tag="HYPERSONIC" sub={`MACH ${Math.min(5.0, 0.8 + w.ig * 2.4).toFixed(1)}`} side="l" />
-        <Lock cam={cam} at={v(w.ship, [0, 14, 0])} size={60} f={f} p={wide ? prog(f, Ls(1) + 18, Ls(1) + 34) : 0} color="#ff5a3c" tag="TARGET" side="l" />
+        <Lock cam={cam} at={v(w.ship, [0, 14, 0])} size={60} f={f} p={wide ? prog(f, Ls(1) + 18, Ls(1) + 34) : 0} color="#ff5a3c" tag={shipTag} side="l" />
       </Svg>
       <Big text={"KAUN\nPEHLE?"} f={f} at={W(1, 5) - 2} until={dur + 20} y={720} size={150} />
       <Illus text="Illustration · Tejas carries no hypersonic missile today" o={prog(f, rel - 4, rel + 6)} />
@@ -278,6 +279,7 @@ export const H5Hyper: React.FC = () => {
 
 // ---------------------------------------------------------------- 5. RADAR: operator console ("SEEN LATE"), then ballistic vs steering
 export const H5Radar: React.FC = () => {
+  const shipLbl = React.useContext(MarkingsCtx) ? SHIP_NAME : "SHIP";
   const { f, W, dur, T } = useS("radar");
   const turn = W(8, 20), diag = W(8, 19) - 4;
   if (f < diag) {
@@ -309,7 +311,7 @@ export const H5Radar: React.FC = () => {
                 {Array.from({ length: 9 }, (_, i) => <line key={i} x1={0} y1={i * 52} x2={300} y2={i * 52} stroke="rgba(57,208,255,0.08)" />)}
                 <path d="M40 0 C70 90 30 160 90 230 C140 290 110 360 170 420" stroke="rgba(160,220,255,0.35)" strokeWidth={3} fill="none" />
                 <circle cx={230} cy={150} r={7} fill="#fff" />
-                <text x={150} y={130} fill="#cfe9ff" fontFamily="JetBrains Mono" fontSize={18}>SHIP</text>
+                <text x={130} y={130} fill="#cfe9ff" fontFamily="JetBrains Mono" fontSize={18}>{shipLbl}</text>
                 <path d={`M${20 + f * 0.6} ${380 - f * 0.9} L230 150`} stroke={SUP} strokeWidth={2} strokeDasharray="6 8" opacity={0.8} />
                 <path d={`M${30 + f * 1.1} ${400 - f * 1.6} L230 150`} stroke={HYP} strokeWidth={2} strokeDasharray="6 8" opacity={hyOn} />
                 <text x={12} y={410} fill="rgba(255,255,255,0.5)" fontFamily="JetBrains Mono" fontSize={15}>TRACKS</text>
@@ -441,6 +443,7 @@ export const H5Time: React.FC = () => {
 
 // ---------------------------------------------------------------- 7. STRIKE
 export const H5Strike: React.FC = () => {
+  const shipTag = React.useContext(MarkingsCtx) ? `TARGET · ${SHIP_NAME}` : "TARGET";
   const { f, Le, W, dur, T } = useS("strike");
   const hyperHit = Le(10) - 10, superHit = W(11, 1);
   const cut = hyperHit - 26;
@@ -477,7 +480,7 @@ export const H5Strike: React.FC = () => {
         <Streaks f={f} amt={0.7} dir={0} seed={17} />
         <Svg>
           <Lock cam={s.cam} at={c} size={L_SUP * 0.7} f={f} p={prog(f, supAt + 2, supAt + 14)} color={SUP} tag="SUPERSONIC · BEHIND" sub="MACH 2.8" side="l" />
-          <Lock cam={s.cam} at={v(ship, [0, 14, 0])} size={60} f={f} p={prog(f, supAt + 6, supAt + 18)} color="#ff5a3c" tag="TARGET" />
+          <Lock cam={s.cam} at={v(ship, [0, 14, 0])} size={60} f={f} p={prog(f, supAt + 6, supAt + 18)} color="#ff5a3c" tag={shipTag} />
         </Svg>
         <Illus />
       </>
@@ -509,7 +512,7 @@ export const H5Strike: React.FC = () => {
       {f < superHit && sq > 0 && <Sprite cam={cam} model="missile_cool" center={sC} dir={sDir} length={L_SUP * 2.2} />}
       <Fx s={s} />
       <Svg>
-        <Lock cam={cam} at={v(ship, [0, 16, 0])} size={70} f={f} p={prog(f, 0, 12) * (1 - prog(f, hyperHit - 4, hyperHit))} color="#ff5a3c" tag="TARGET" side="l" />
+        <Lock cam={cam} at={v(ship, [0, 16, 0])} size={70} f={f} p={prog(f, 0, 12) * (1 - prog(f, hyperHit - 4, hyperHit))} color="#ff5a3c" tag={shipTag} side="l" />
         <Lock cam={cam} at={[0, 22, 0]} size={20} f={f} p={prog(f, hyperHit + 2, hyperHit + 12)} color={HYP} tag="HYPERSONIC · 1st" side="l" />
         <Lock cam={cam} at={[-6, 12, -4]} size={20} f={f} p={prog(f, superHit + 4, superHit + 14)} color={SUP} tag="SUPERSONIC · 2nd" />
       </Svg>

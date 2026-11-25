@@ -42,6 +42,7 @@ export const spriteXform = (cam: GLState["cam"], model: ModelName, center: Vec3,
 
 /** national markings painted onto the sprites (v7): IAF roundel + tricolour, projected in 3D */
 export const MarkingsCtx = React.createContext(false);
+export const SHIP_NAME = "BOKA-14";
 
 const cross = (a: Vec3, b: Vec3): Vec3 => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
 const dot = (a: Vec3, b: Vec3) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
@@ -61,8 +62,14 @@ const FlagArt: React.FC = () => (
   </svg>
 );
 
+const NameArt: React.FC = () => (
+  <svg viewBox="0 0 600 100" width={100} height={100} preserveAspectRatio="none" style={{ display: "block" }}>
+    <text x={300} y={82} textAnchor="middle" fill="#f4f6f8" fontFamily="Inter" fontWeight={900} fontSize={96} letterSpacing={6}>{SHIP_NAME}</text>
+  </svg>
+);
+
 /** a flat decal on the camera-facing side of a body: u = metres along the axis from the centre, up/side = offsets */
-export const Decal: React.FC<{ cam: GLState["cam"]; center: Vec3; dir: Vec3; u: number; up: number; side: number; w: number; h: number; kind: "roundel" | "flag" }> =
+export const Decal: React.FC<{ cam: GLState["cam"]; center: Vec3; dir: Vec3; u: number; up: number; side: number; w: number; h: number; kind: "roundel" | "flag" | "name" }> =
   ({ cam, center, dir, u, up, side, w, h, kind }) => {
     const a = norm(dir);
     let n = norm(cross(a, [0, 1, 0]));
@@ -82,14 +89,16 @@ export const Decal: React.FC<{ cam: GLState["cam"]; center: Vec3; dir: Vec3; u: 
     if (Math.hypot(...ex) < 1.5 || Math.hypot(...ey) < 1.5) return null;
     const m = `matrix(${ex[0] / 50}, ${ex[1] / 50}, ${ey[0] / 50}, ${ey[1] / 50}, ${S0[0] - ex[0] - ey[0]}, ${S0[1] - ex[1] - ey[1]})`;
     return (
-      <div style={{ position: "absolute", left: 0, top: 0, width: 100, height: 100, transformOrigin: "0 0", transform: m, opacity: op * 0.95, mixBlendMode: "multiply", filter: "saturate(1.1)" }}>
-        {kind === "roundel" ? <RoundelArt /> : <FlagArt />}
+      <div style={{ position: "absolute", left: 0, top: 0, width: 100, height: 100, transformOrigin: "0 0", transform: m, opacity: op * 0.95, mixBlendMode: kind === "name" ? "normal" : "multiply", filter: kind === "name" ? "drop-shadow(0 0 1px rgba(0,0,0,0.6))" : "saturate(1.1)" }}>
+        {kind === "roundel" ? <RoundelArt /> : kind === "flag" ? <FlagArt /> : <NameArt />}
       </div>
     );
   };
 
 /** per-model decal layout (metres; model lengths as used in the scenes) */
-const MARKS: Partial<Record<ModelName, (L: number) => { u: number; up: number; side: number; w: number; h: number; kind: "roundel" | "flag" }[]>> = {
+const MARKS: Partial<Record<ModelName, (L: number) => { u: number; up: number; side: number; w: number; h: number; kind: "roundel" | "flag" | "name" }[]>> = {
+  // hull name near the bow, above the waterline (`center` is the sea point under the ship)
+  ship: (L) => [{ u: 0.08 * L, up: 0.04 * L, side: 0.065 * L, w: 0.16 * L, h: 0.028 * L, kind: "name" }],
   jet: (L) => [
     { u: -0.10 * L, up: 0.05 * L, side: 0.055 * L, w: 0.075 * L, h: 0.075 * L, kind: "roundel" },
     { u: -0.40 * L, up: 0.17 * L, side: 0.01 * L, w: 0.085 * L, h: 0.057 * L, kind: "flag" },
@@ -110,7 +119,7 @@ export const Sprite: React.FC<{ cam: GLState["cam"]; model: ModelName; center: V
     const { m } = t;
     const ay = waterline ? m.bottom[t.k] - 2 : m.axisY; // waterline: `center` is the point on the sea surface under the hull
     const f = [filter, glow ? `drop-shadow(0 0 ${Math.min(10, 4 + 4 * t.scale)}px ${glow}) drop-shadow(0 0 ${Math.min(22, 8 + 8 * t.scale)}px ${glow})` : ""].filter(Boolean).join(" ");
-    const decals = marked && !waterline ? (MARKS[model]?.(length) ?? []) : [];
+    const decals = marked ? (MARKS[model]?.(length) ?? []) : [];
     return (
       <>
       <Img
