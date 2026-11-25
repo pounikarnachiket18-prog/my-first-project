@@ -335,8 +335,8 @@ export const Outro: React.FC = () => {
           </>
         )}
       />
-      <Title text={"Ek chhota **X**,\npoori line ki safety."} dark hi={UI.yellow} from={6} to={100} />
-      <EndCard from={100} />
+      <Title text={"Ek chhota **X**,\npoori line ki safety."} dark hi={UI.yellow} from={6} to={92} />
+      <EndCard from={90} origin={project([0, LAMP_Y, rearZ + 0.1], { pos: [4.5, 3.2, 16], look: [0.5, 2.6, -40], fov: 44 })} />
     </AbsoluteFill>
   );
 };

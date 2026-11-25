@@ -154,21 +154,96 @@ export const Captions: React.FC<{ lines: { from: number; to: number; text: strin
   );
 };
 
-/** End card: the Just KnowIt logo on its own red, brain pops in, wordmark slides up */
-export const EndCard: React.FC<{ from: number }> = ({ from }) => {
+/**
+ * End card / logo sting. The tail lamp's red grows into the logo red (circle reveal from `origin`),
+ * drifting X pattern, brain pops with pulse rings + sparks, wordmark wipes in, underline sweeps,
+ * FOLLOW button pops and gets tapped.
+ */
+export const EndCard: React.FC<{ from: number; origin?: { x: number; y: number } }> = ({ from, origin = { x: 540, y: 960 } }) => {
   const f = useF();
   const { fps } = useVideoConfig();
   if (f < from) return null;
-  const bg = ip(f, [from, from + 10], [0, 1]);
-  const s1 = spring({ frame: f - from - 4, fps, config: { damping: 11, stiffness: 160 } });
-  const s2 = spring({ frame: f - from - 12, fps, config: { damping: 16, stiffness: 140 } });
+  const t = f - from;
+  const reveal = ip(t, [0, 14], [0, 2300], Easing.in(Easing.cubic));
+  const pat = ip(t, [6, 20], [0, 1]);
+  const brain = spring({ frame: t - 6, fps, config: { damping: 10, stiffness: 170 } });
+  const wipe = ip(t, [14, 30], [0, 1], Easing.out(Easing.cubic));
+  const bar = ip(t, [26, 38], [0, 1], Easing.inOut(Easing.cubic));
+  const btn = spring({ frame: t - 34, fps, config: { damping: 11, stiffness: 190 } });
+  const tap = 1 - 0.08 * Math.sin(Math.PI * ip(t, [48, 56], [0, 1]));
+  const tapped = t > 52;
+  const B = { x: 540, y: 820 }; // brain centre
   return (
-    <AbsoluteFill style={{ background: LOGO.red, opacity: bg, alignItems: "center", justifyContent: "center" }}>
-      <Img src={staticFile(LOGO.brain)} style={{ height: 300, transform: `scale(${s1})`, marginBottom: 70 }} />
+    <AbsoluteFill style={{ clipPath: `circle(${reveal}px at ${origin.x}px ${origin.y}px)`, background: LOGO.red }}>
+      {/* drifting X pattern */}
+      <svg width={1080} height={1920} style={{ position: "absolute", inset: 0, opacity: pat * 0.16 }}>
+        {Array.from({ length: 7 * 12 }).map((_, i) => {
+          const cx = (i % 7) * 170 + ((Math.floor(i / 7) % 2) * 85) - 40 + t * 0.8;
+          const cy = Math.floor(i / 7) * 170 - 40 - t * 0.5;
+          return (
+            <g key={i} transform={`translate(${cx},${cy}) rotate(${t * 0.6})`} stroke="#000" strokeWidth={10} strokeLinecap="round">
+              <line x1={-18} y1={-18} x2={18} y2={18} />
+              <line x1={18} y1={-18} x2={-18} y2={18} />
+            </g>
+          );
+        })}
+      </svg>
+      {/* pulse rings + sparks behind the brain */}
+      <svg width={1080} height={1920} style={{ position: "absolute", inset: 0 }}>
+        {[0, 9].map((d) => {
+          const p = ip(t, [10 + d, 34 + d], [0, 1], Easing.out(Easing.cubic));
+          return p > 0 && p < 1 ? <circle key={d} cx={B.x} cy={B.y} r={120 + p * 260} fill="none" stroke="#fff" strokeWidth={6} opacity={(1 - p) * 0.6} /> : null;
+        })}
+        {Array.from({ length: 10 }).map((_, i) => {
+          const p = ip(t, [12, 28], [0, 1], Easing.out(Easing.cubic));
+          if (p <= 0 || p >= 1) return null;
+          const ang = (i / 10) * Math.PI * 2 + 0.3;
+          const r0 = 170 + p * 120;
+          const r1 = r0 + 50 * (1 - p);
+          return (
+            <line
+              key={i}
+              x1={B.x + Math.cos(ang) * r0}
+              y1={B.y + Math.sin(ang) * r0}
+              x2={B.x + Math.cos(ang) * r1}
+              y2={B.y + Math.sin(ang) * r1}
+              stroke={UI.yellow}
+              strokeWidth={8}
+              strokeLinecap="round"
+              opacity={1 - p}
+            />
+          );
+        })}
+      </svg>
       <Img
-        src={staticFile(LOGO.text)}
-        style={{ width: 900, opacity: Math.min(1, s2), transform: `translateY(${(1 - s2) * 60}px)` }}
+        src={staticFile(LOGO.brain)}
+        style={{ position: "absolute", left: B.x - 135, top: B.y - 150, height: 300, transform: `scale(${brain}) rotate(${(1 - Math.min(1, brain)) * -20}deg)` }}
       />
+      <div style={{ position: "absolute", left: 90, top: 1060, width: 900, clipPath: `inset(0 ${(1 - wipe) * 100}% 0 0)` }}>
+        <Img src={staticFile(LOGO.text)} style={{ width: 900, transform: `translateY(${(1 - wipe) * 30}px)` }} />
+      </div>
+      <div style={{ position: "absolute", left: 540 - 300 * bar, top: 1200, width: 600 * bar, height: 10, borderRadius: 5, background: "#fff" }} />
+      {btn > 0.01 && (
+        <div
+          style={{
+            position: "absolute",
+            left: 540,
+            top: 1370,
+            transform: `translate(-50%, -50%) scale(${btn * tap})`,
+            background: tapped ? UI.yellow : "#fff",
+            color: tapped ? UI.ink : LOGO.red,
+            fontFamily: F.ui,
+            fontWeight: 800,
+            fontSize: 52,
+            letterSpacing: 4,
+            padding: "22px 64px",
+            borderRadius: 999,
+            boxShadow: "0 14px 40px rgba(0,0,0,0.3)",
+          }}
+        >
+          {tapped ? "FOLLOWED ✓" : "FOLLOW"}
+        </div>
+      )}
     </AbsoluteFill>
   );
 };
