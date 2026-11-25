@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pomodoro Timer</title>
+<style>
+  :root {
+    --bg: #faf7f5; --surface: #ffffff; --text: #1f1d1b; --muted: #6b6560; --border: #e7e1dc;
+    --accent: #d9480f; --accent-soft: #fde8de; --track: #eee7e2;
+  }
+  :root[data-mode="short"] { --accent: #2b8a3e; --accent-soft: #e3f4e6; }
+  :root[data-mode="long"]  { --accent: #1c7ed6; --accent-soft: #e1effb; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #161412; --surface: #201d1b; --text: #f2eeea; --muted: #a39b94; --border: #34302c;
+            --accent: #ff7a3d; --accent-soft: #3a2419; --track: #2e2a27; }
+    :root[data-mode="short"] { --accent: #51cf66; --accent-soft: #1c3322; }
+    :root[data-mode="long"]  { --accent: #4dabf7; --accent-soft: #172b3d; }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 24px 16px;
+    background: var(--bg); color: var(--text);
+    font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    transition: background .3s;
+  }
+  main { width: 100%; max-width: 420px; text-align: center; }
+  .tabs { display: inline-flex; gap: 4px; padding: 4px; border-radius: 999px; background: var(--surface); border: 1px solid var(--border); }
+  .tabs button { border: 0; background: none; color: var(--muted); font: inherit; font-size: 14px; padding: 6px 14px; border-radius: 999px; cursor: pointer; }
+  .tabs button[aria-selected="true"] { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+  .ring { position: relative; width: min(300px, 80vw); aspect-ratio: 1; margin: 32px auto 24px; }
+  .ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+  .ring circle { fill: none; stroke-width: 8; }
+  .ring .track { stroke: var(--track); }
+  .ring .bar { stroke: var(--accent); stroke-linecap: round; transition: stroke .3s; }
+  .ring .center { position: absolute; inset: 0; display: grid; place-content: center; }
+  #time { font-size: clamp(48px, 16vw, 72px); font-weight: 600; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
+  #label { color: var(--muted); font-size: 14px; }
+  .controls { display: flex; justify-content: center; align-items: center; gap: 12px; }
+  .btn { border: 1px solid var(--border); background: var(--surface); color: var(--text); font: inherit; font-size: 15px;
+         padding: 10px 18px; border-radius: 999px; cursor: pointer; }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; min-width: 120px; font-weight: 600; }
+  .btn:focus-visible, .tabs button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .dots { display: flex; justify-content: center; gap: 8px; margin-top: 24px; }
+  .dots span { width: 10px; height: 10px; border-radius: 50%; background: var(--track); }
+  .dots span.done { background: var(--accent); }
+  #count { color: var(--muted); font-size: 14px; margin-top: 8px; }
+  details { margin-top: 28px; text-align: left; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 12px 16px; }
+  summary { cursor: pointer; font-weight: 600; }
+  .grid { display: grid; grid-template-columns: 1fr auto; gap: 10px 12px; align-items: center; margin-top: 12px; font-size: 14px; }
+  .grid input[type=number] { width: 72px; padding: 6px 8px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text); font: inherit; }
+  .hint { color: var(--muted); font-size: 12px; margin-top: 16px; }
+  kbd { font: 12px ui-monospace, monospace; padding: 1px 5px; border: 1px solid var(--border); border-radius: 4px; }
+</style>
+</head>
+<body>
+<main>
+  <div class="tabs" role="tablist" aria-label="Mode">
+    <button role="tab" data-mode="focus" aria-selected="true">Focus</button>
+    <button role="tab" data-mode="short" aria-selected="false">Short break</button>
+    <button role="tab" data-mode="long" aria-selected="false">Long break</button>
+  </div>
+
+  <div class="ring">
+    <svg viewBox="0 0 120 120" aria-hidden="true">
+      <circle class="track" cx="60" cy="60" r="54"/>
+      <circle class="bar" id="bar" cx="60" cy="60" r="54"/>
+    </svg>
+    <div class="center">
+      <div id="time" role="timer" aria-live="off">25:00</div>
+      <div id="label">Time to focus</div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button class="btn" id="reset" title="Reset (R)">Reset</button>
+    <button class="btn primary" id="toggle" title="Start / pause (Space)">Start</button>
+    <button class="btn" id="skip" title="Skip (S)">Skip</button>
+  </div>
+
+  <div class="dots" id="dots" aria-hidden="true"></div>
+  <div id="count">Session #1</div>
+
+  <details>
+    <summary>Settings</summary>
+    <div class="grid">
+      <label for="s-focus">Focus (minutes)</label><input id="s-focus" type="number" min="1" max="180">
+      <label for="s-short">Short break (minutes)</label><input id="s-short" type="number" min="1" max="60">
+      <label for="s-long">Long break (minutes)</label><input id="s-long" type="number" min="1" max="120">
+      <label for="s-every">Long break every N sessions</label><input id="s-every" type="number" min="2" max="12">
+      <label for="s-auto">Auto-start next session</label><input id="s-auto" type="checkbox">
+      <label for="s-sound">Sound on finish</label><input id="s-sound" type="checkbox">
+    </div>
+  </details>
+  <p class="hint"><kbd>Space</kbd> start/pause · <kbd>R</kbd> reset · <kbd>S</kbd> skip</p>
+</main>
+
+<script>
+(() => {
+  const LABELS = { focus: "Time to focus", short: "Take a short break", long: "Take a long break" };
+  const defaults = { focus: 25, short: 5, long: 15, every: 4, auto: false, sound: true };
+  const store = {
+    get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch { return d; } },
+    set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} }
+  };
+
+  const settings = { ...defaults, ...store.get("pomodoro.settings", {}) };
+  const state = { mode: "focus", remaining: settings.focus * 60, endAt: null, completed: 0, tick: null };
+
+  const $ = id => document.getElementById(id);
+  const bar = $("bar"), CIRC = 2 * Math.PI * 54;
+  bar.style.strokeDasharray = CIRC;
+
+  const duration = m => settings[m] * 60;
+  const fmt = s => `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
+
+  function render() {
+    const s = Math.max(0, Math.ceil(state.remaining));
+    $("time").textContent = fmt(s);
+    $("label").textContent = LABELS[state.mode];
+    bar.style.strokeDashoffset = CIRC * (1 - state.remaining / duration(state.mode));
+    $("toggle").textContent = state.endAt ? "Pause" : (state.remaining < duration(state.mode) ? "Resume" : "Start");
+    document.documentElement.dataset.mode = state.mode;
+    document.querySelectorAll(".tabs button").forEach(b => b.setAttribute("aria-selected", b.dataset.mode === state.mode));
+    document.title = state.endAt ? `${fmt(s)} · ${state.mode === "focus" ? "Focus" : "Break"}` : "Pomodoro Timer";
+    const inCycle = state.completed % settings.every;
+    $("dots").innerHTML = Array.from({ length: settings.every }, (_, i) => `<span class="${i < inCycle ? "done" : ""}"></span>`).join("");
+    $("count").textContent = `Session #${state.completed + 1} · ${state.completed} completed`;
+  }
+
+  function loop() {
+    state.remaining = (state.endAt - Date.now()) / 1000;
+    if (state.remaining <= 0) return finish();
+    render();
+  }
+
+  function start() {
+    if (state.endAt) return;
+    state.endAt = Date.now() + state.remaining * 1000;
+    state.tick = setInterval(loop, 250);
+    render();
+  }
+  function pause() {
+    if (!state.endAt) return;
+    clearInterval(state.tick);
+    state.remaining = Math.max(0, (state.endAt - Date.now()) / 1000);
+    state.endAt = null;
+    render();
+  }
+  function setMode(mode, autoStart = false) {
+    pause();
+    state.mode = mode;
+    state.remaining = duration(mode);
+    render();
+    if (autoStart) start();
+  }
+  function next() {
+    if (state.mode === "focus") {
+      state.completed++;
+      setMode(state.completed % settings.every === 0 ? "long" : "short", settings.auto);
+    } else {
+      setMode("focus", settings.auto);
+    }
+  }
+  function finish() {
+    clearInterval(state.tick);
+    state.endAt = null;
+    state.remaining = 0;
+    if (settings.sound) chime();
+    notify(state.mode === "focus" ? "Focus session done — take a break." : "Break over — back to focus.");
+    next();
+  }
+
+  function chime() {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      [0, 0.25, 0.5].forEach((t, i) => {
+        const o = ctx.createOscillator(), g = ctx.createGain();
+        o.frequency.value = [660, 880, 990][i];
+        g.gain.setValueAtTime(0.0001, ctx.currentTime + t);
+        g.gain.exponentialRampToValueAtTime(0.25, ctx.currentTime + t + 0.02);
+        g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + t + 0.4);
+        o.connect(g).connect(ctx.destination);
+        o.start(ctx.currentTime + t); o.stop(ctx.currentTime + t + 0.45);
+      });
+    } catch {}
+  }
+  function notify(msg) {
+    try { if ("Notification" in window && Notification.permission === "granted") new Notification("Pomodoro", { body: msg }); } catch {}
+  }
+
+  $("toggle").onclick = () => {
+    if ("Notification" in window && Notification.permission === "default") Notification.requestPermission().catch(() => {});
+    state.endAt ? pause() : start();
+  };
+  $("reset").onclick = () => setMode(state.mode);
+  $("skip").onclick = () => { pause(); next(); };
+  document.querySelectorAll(".tabs button").forEach(b => b.onclick = () => setMode(b.dataset.mode));
+
+  document.addEventListener("keydown", e => {
+    if (e.target.matches("input, textarea, select") || e.metaKey || e.ctrlKey || e.altKey) return;
+    if (e.code === "Space") { e.preventDefault(); $("toggle").click(); }
+    else if (e.key === "r" || e.key === "R") $("reset").click();
+    else if (e.key === "s" || e.key === "S") $("skip").click();
+  });
+
+  const fields = { focus: "s-focus", short: "s-short", long: "s-long", every: "s-every" };
+  for (const [k, id] of Object.entries(fields)) {
+    const el = $(id);
+    el.value = settings[k];
+    el.onchange = () => {
+      const v = Math.round(Number(el.value));
+      if (!(v >= Number(el.min) && v <= Number(el.max))) { el.value = settings[k]; return; }
+      settings[k] = v;
+      store.set("pomodoro.settings", settings);
+      if (k === state.mode && !state.endAt) state.remaining = duration(k);
+      if (k === state.mode && state.endAt) state.remaining = Math.min(state.remaining, duration(k));
+      render();
+    };
+  }
+  for (const k of ["auto", "sound"]) {
+    const el = $("s-" + k);
+    el.checked = settings[k];
+    el.onchange = () => { settings[k] = el.checked; store.set("pomodoro.settings", settings); };
+  }
+
+  render();
+})();
+</script>
+</body>
+</html>
