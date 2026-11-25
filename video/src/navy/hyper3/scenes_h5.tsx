@@ -11,7 +11,11 @@ import { Bg, Fx, Lock as LockBase, Velocity as VelocityBase, MachGauge as MachGa
 
 // v8 ("reference copy"): only the reference's own graphics -> drop extra brackets/gauges/arrows/overlay streaks
 const useRef8 = () => React.useContext(RealismCtx);
-const Lock: typeof LockBase = (p) => (useRef8() && !/^(TARGET|TEJAS)/.test(p.tag) ? null : <LockBase {...p} />);
+const Lock: typeof LockBase = (p) => {
+  if (!useRef8()) return <LockBase {...p} />;
+  const left = p.side === "l";
+  return <Svg><Callout cam={p.cam} at={p.at} dx={left ? -110 : 110} dy={-200} text={p.tag} sub={p.sub} color={p.color} p={p.p} /></Svg>;
+};
 const Velocity: typeof VelocityBase = (p) => (useRef8() ? null : <VelocityBase {...p} />);
 const MachGauge: typeof MachGaugeBase = (p) => (useRef8() ? null : <MachGaugeBase {...p} />);
 const Streaks: typeof StreaksBase = (p) => (useRef8() ? null : <StreaksBase {...p} />);
@@ -75,13 +79,13 @@ const Callout: React.FC<{ cam: Cam; at: Vec3; dx: number; dy: number; text: stri
   const lp = ease(clamp01(p * 1.8));
   const bx = Math.max(40, Math.min(1040, a[0] + dx)), by = Math.max(320, Math.min(1200, a[1] + dy));
   const n = Math.round(text.length * clamp01((p - 0.3) * 2.4));
-  const w = Math.max(text.length * 14, (sub?.length ?? 0) * 12) + 30;
-  const x0 = dx < 0 ? bx - w : bx;
+  const w = Math.max(text.length * 17.5, (sub?.length ?? 0) * 12.5) + 34;
+  const x0 = Math.max(30, Math.min(1050 - w, dx < 0 ? bx - w : bx));
   return (
     <g>
       <circle cx={a[0]} cy={a[1]} r={7} fill="none" stroke={color} strokeWidth={2.5} opacity={lp} />
       <circle cx={a[0]} cy={a[1]} r={3} fill={color} opacity={lp} />
-      <path d={`M${a[0]} ${a[1]} L${lerp(a[0], bx, lp)} ${lerp(a[1], by + 22, lp)}`} stroke={color} strokeWidth={2} fill="none" />
+      <path d={`M${a[0]} ${a[1]} L${lerp(a[0], dx < 0 ? x0 + w : x0, lp)} ${lerp(a[1], by + 22, lp)}`} stroke={color} strokeWidth={2} fill="none" />
       {n > 0 && (
         <g>
           <rect x={x0} y={by} width={w} height={sub ? 74 : 44} rx={4} fill="rgba(4,10,18,0.74)" />
@@ -244,6 +248,7 @@ export const H5Super: React.FC = () => {
       <Svg>
         <Velocity cam={cam} at={v(c, [L_SUP * 0.6, 0, 0])} dir={[1, 0, 0]} len={12} color={SUP} p={prog(f, Ls(5) - 4, Ls(5) + 10) * (1 - prog(f, boom - 6, boom))} />
         <Callout cam={cam} at={v(c, [-1.4, 1.0, 0])} dx={70} dy={-230} text="SHOCK WAVE" sub="air squeezed hard" color="#ffffff" p={prog(f, boom + 3, boom + 14)} />
+        <Callout cam={cam} at={v(c, [0.5, 0.3, 0])} dx={-60} dy={200} text="SUPERSONIC MISSILE" sub="MACH 2.8 · illustrative" color={SUP} p={prog(f, Ls(5) - 4, Ls(5) + 10) * (1 - prog(f, boom - 4, boom + 2))} />
       </Svg>
       <RankCard f={f} at={4} rank="#2" name="SUPERSONIC" flags={<><Flag /><RussiaFlag /></>} place="e.g. BRAHMOS · MACH 1–5" mach={2.8} color={SUP} bar={0.47} />
       <Big text={"SONIC\nBOOM!"} f={f} at={W(5, 11) - 2} until={dur + 20} y={1010} size={130} color="#ffffff" />
@@ -275,6 +280,7 @@ export const H5Hyper: React.FC = () => {
       <Fx s={s} />
       <Streaks f={f} amt={0.95} dir={180} seed={11} />
       <Svg>
+        <Callout cam={cam} at={v(c, [0, 0.4, 0])} dx={60} dy={230} text="HYPERSONIC MISSILE" sub="MACH 5+ · illustrative" color={HYP} p={prog(f, 40, 52) * (1 - prog(f, Ls(7) - 6, Ls(7)))} />
         <Callout cam={cam} at={v(c, [L_HYP * 0.42, 0.1, 0])} dx={-40} dy={-250} text="PLASMA" sub="super-heated air glows" color={HYP} p={prog(f, Ls(7) + 16, Ls(7) + 30)} />
         <Callout cam={cam} at={v(c, [L_HYP * 0.49, 0, 0])} dx={60} dy={190} text="NOSE" sub="hottest point" color="#ffd0e6" p={prog(f, Ls(7) + 40, Ls(7) + 52)} />
         <Callout cam={cam} at={v(c, [-L_HYP * 0.1, 0.3, 0])} dx={-80} dy={210} text="RADIO BLACKOUT" sub="plasma blocks signals" color="#9fe2ff" p={prog(f, Ls(7) + 64, Ls(7) + 76)} />

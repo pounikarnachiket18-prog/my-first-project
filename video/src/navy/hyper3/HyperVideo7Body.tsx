@@ -12,7 +12,8 @@ import { TimelineCtx, MotionCtx, SceneXCtx, TL } from "../v2/ctx";
 import { ThemeCtx, DAY } from "../theme";
 import { FastLabels } from "../world";
 import { SCENES_H5 } from "./scenes_h5";
-import { MarkingsCtx } from "./Sprite";
+import { MarkingsCtx, RealismCtx } from "./Sprite";
+import { JetEndCard } from "./endcard";
 
 const FPS = tl.fps;
 const CREAM = "#f1ede3"; // background of the channel logo animation
@@ -227,6 +228,7 @@ const useFonts = () => {
 export const HyperVideo7Body: React.FC<{ audio?: boolean; scenes?: Record<string, React.FC> }> = ({ audio = true, scenes = SCENES_H5 }) => {
   useFonts();
   const timeline = tl as unknown as TL;
+  const real = React.useContext(RealismCtx);
   return (
     <MarkingsCtx.Provider value={true}>
     <ThemeCtx.Provider value={DAY}>
@@ -251,7 +253,7 @@ export const HyperVideo7Body: React.FC<{ audio?: boolean; scenes?: Record<string
       <TransFX />
       <SeriesTitle />
       <Sequence from={LOGO_AT} name="logo" layout="none">
-        <LogoCard />
+        {real ? <JetEndCard t0={LOGO_AT / FPS} /> : <LogoCard />}
       </Sequence>
       <Captions3 />
       {audio && <Audio src={staticFile("navy/mix_h6.wav")} />}

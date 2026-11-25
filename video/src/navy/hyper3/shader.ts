@@ -301,11 +301,19 @@ vec3 glows(vec3 ro, vec3 rd, float tMax, float hitId, float part){
     }
   }
   // jet burner + nav lights
-  if (bgP && uJet.w > 0.5){
+  if ((uHideObj > 0.5 ? fxP : bgP) && uJet.w > 0.5){   // with sprites the burner must draw over the model
     vec3 f = normalize(uJetD.xyz); float S = uJetD.w; mat3 Bj = basis(f);
     vec3 tail = uJet.xyz - f * 6.2 * S;
-    vec3 h = raySeg(ro, rd, tail, tail - f * 5.0 * S);
-    c += vec3(0.45, 0.65, 1.0) * exp(-pow(h.x / (0.55 * S * (1.0 - h.z * 0.6)), 2.0)) * (1.0 - h.z) * 2.5;
+    vec3 h = raySeg(ro, rd, tail, tail - f * mix(5.0, 9.0, uDay) * S);
+    {
+      float w = mix(0.55, 0.8, uDay) * S * (1.0 - h.z * 0.55);
+      float core = exp(-pow(h.x / w, 2.0)) * pow(1.0 - h.z, 1.3);
+      float hot = exp(-pow(h.x / (w * 0.4), 2.0)) * exp(-h.z * 5.0);
+      float diamonds = 0.55 + 0.45 * pow(0.5 + 0.5 * cos(h.z * 34.0 - uTime * 40.0), 3.0);
+      vec3 flame = mix(vec3(1.0, 0.32, 0.04), vec3(1.0, 0.62, 0.18), exp(-h.z * 2.5));
+      vec3 ab = mix(vec3(0.45, 0.65, 1.0) * core * 2.5, flame * core * diamonds * 3.2 + vec3(1.0, 0.95, 0.85) * hot * 3.0, uDay);
+      c += ab;
+    }
     vec3 wl = uJet.xyz + Bj[0] * 4.1 * S - f * 6.0 * S, wr = uJet.xyz - Bj[0] * 4.1 * S - f * 6.0 * S;
     vec3 hl = raySeg(ro, rd, wl, wl + f * 0.01), hr = raySeg(ro, rd, wr, wr + f * 0.01);
     float blink = step(0.5, fract(uTime * 1.2)) * (1.0 - uDay);

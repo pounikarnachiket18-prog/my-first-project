@@ -103,7 +103,6 @@ const MARKS: Partial<Record<ModelName, (L: number) => { u: number; up: number; s
   ship: (L) => [{ u: 0.08 * L, up: 0.04 * L, side: 0.065 * L, w: 0.16 * L, h: 0.028 * L, kind: "name" }],
   jet: (L) => [
     { u: -0.10 * L, up: 0.05 * L, side: 0.055 * L, w: 0.075 * L, h: 0.075 * L, kind: "roundel" },
-    { u: -0.40 * L, up: 0.17 * L, side: 0.01 * L, w: 0.085 * L, h: 0.057 * L, kind: "flag" },
   ],
   missile: (L) => [
     { u: 0.02 * L, up: 0.0, side: 0.055 * L, w: 0.085 * L, h: 0.085 * L, kind: "roundel" },
