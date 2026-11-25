@@ -17,6 +17,10 @@ const SECTIONS = [
   { label: "HYPERSONIC", color: "#ff8a4c", scenes: ["hypersonic"], dash: 2 },
   { label: "TARGET", color: "#ff6b5e", scenes: ["attack"], dash: 3 },
   { label: "MINDSET MODE", color: "#e9eef5", scenes: ["outro"], dash: 4 },
+  { label: "RUKO!", color: "#e9eef5", scenes: ["pause"], dash: 0 },
+  { label: "RADAR", color: "#7fffc4", scenes: ["radar"], dash: 3 },
+  { label: "TRAVEL TIME", color: "#ffd166", scenes: ["time"], dash: 3 },
+  { label: "TARGET", color: "#ff6b5e", scenes: ["strike"], dash: 4 },
 ];
 
 const ShipIcon: React.FC<{ x: number; y: number; p: number }> = ({ x, y, p }) => (

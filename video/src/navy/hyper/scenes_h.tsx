@@ -50,7 +50,7 @@ export const HCold: React.FC = () => {
 };
 
 // ======================= wavefront diagram (sound -> Mach 1 -> supersonic) =======================
-const WaveDiagram: React.FC<{ f: number; speed: (fr: number) => number; v0?: number; title?: string }> = ({ f, speed }) => {
+export const WaveDiagram: React.FC<{ f: number; speed: (fr: number) => number; v0?: number; title?: string }> = ({ f, speed }) => {
   const th = useTheme();
   const c = 7; // px per frame = speed of sound
   // integrate source position

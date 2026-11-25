@@ -2,6 +2,7 @@ import React from "react";
 import { Composition } from "remotion";
 import { NavyVideo, NAVY_FRAMES } from "./NavyVideo";
 import { HyperVideo, HYPER_FRAMES } from "./hyper/HyperVideo";
+import { HyperVideo2, HYPER2_FRAMES } from "./hyper2/HyperVideo2";
 import { NavyV2, NAVY_V2_FRAMES, NAVY_V3_FRAMES, NAVY_V4_FRAMES, NAVY_V5_FRAMES } from "./v2/NavyV2";
 
 export const NavyRoot: React.FC = () => (
@@ -12,5 +13,6 @@ export const NavyRoot: React.FC = () => (
     <Composition id="IndianNavyV4Day60" component={NavyV2} durationInFrames={NAVY_V4_FRAMES} fps={30} width={1080} height={1920} defaultProps={{ variant: "v4-day60" as const }} />
     <Composition id="IndianNavyV5Day60EL" component={NavyV2} durationInFrames={NAVY_V5_FRAMES} fps={30} width={1080} height={1920} defaultProps={{ variant: "v5-day60-el" as const }} />
     <Composition id="SupersonicVsHypersonic" component={HyperVideo} durationInFrames={HYPER_FRAMES} fps={30} width={1080} height={1920} />
+    <Composition id="SupersonicVsHypersonicV2" component={HyperVideo2} durationInFrames={HYPER2_FRAMES} fps={30} width={1080} height={1920} />
   </>
 );

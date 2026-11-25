@@ -5,7 +5,7 @@ import { Cam, V3, project, depthOf, clamp01, lerp } from "../engine";
 import { Defs, SEA, C } from "../world";
 import { SkyDef } from "../ui";
 import { useTheme } from "../theme";
-import { useMotion } from "./ctx";
+import { useMotion, useSceneX } from "./ctx";
 
 const D = Math.PI / 180;
 const zmOf = (c: Cam) => c.zoom * (c.boost ?? 1);
@@ -224,9 +224,11 @@ export const Puffs: React.FC<{ at: [number, number]; age: number; scale?: number
 /** scene wrapper: own svg, defs, zoom-through enter/exit, optional camera shake and freeze tint */
 export const Stage: React.FC<{ children: React.ReactNode; dur: number; enter?: "zoom" | "cut" | "fade"; exit?: "zoom" | "cut"; tint?: number; flash?: number }> =
   ({ children, dur, enter = "zoom", exit = "zoom", tint = 0, flash = 0 }) => {
-    const f = useCurrentFrame();
+    const x = useSceneX();
+    const f = useCurrentFrame() - x.shift;
     const { fast } = useMotion();
     const EI = fast ? 6 : 9, EO = fast ? 5 : 7;
+    if (x.managed) { enter = enter === "fade" && f > 0 ? "fade" : "cut"; exit = "cut"; }
     const ein = enter === "zoom" ? 1 - clamp01(f / EI) : 0;
     const eout = exit === "zoom" ? clamp01((f - (dur - EO)) / EO) : 0;
     const fade = enter === "fade" ? clamp01(f / 10) : enter === "zoom" ? clamp01(f / 4) : 1;
