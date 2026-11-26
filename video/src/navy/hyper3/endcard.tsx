@@ -2,7 +2,8 @@
 import React from "react";
 import { AbsoluteFill, Img, staticFile, useCurrentFrame, interpolate, Easing } from "remotion";
 import { GLView, GLState, Vec3 } from "./GLView";
-import { Sprite } from "./Sprite";
+import { Sprite, NightCtx } from "./Sprite";
+import { MOON } from "./GLView";
 import { SUN } from "./scenes_h3";
 import { BrandMark, BrandWord } from "./brand";
 
@@ -12,6 +13,7 @@ const ease = Easing.bezier(0.2, 0.8, 0.2, 1);
 
 export const JetEndCard: React.FC<{ t0: number }> = ({ t0 }) => {
   const f = useCurrentFrame();
+  const night = React.useContext(NightCtx);
   // flight path: low and fast from behind-left, then a climbing pull-up away from the camera
   const jetAt = (fr: number): Vec3 => {
     const u = fr / FPS;
@@ -35,7 +37,7 @@ export const JetEndCard: React.FC<{ t0: number }> = ({ t0 }) => {
   const cam: GLState["cam"] = { pos: camPos, target: c0.target, fov: 0.62, roll: Math.sin(f * 0.05) * 0.03 };
   const n = Math.hypot(...dir) || 1;
   const s: GLState = {
-    t: t0 + f / FPS, cam, exposure: 0.8, day: true, hideObjects: true, moonDir: SUN, mountains: 1.3, mist: 0.7, ice: 1,
+    t: t0 + f / FPS, cam, exposure: night ? 0.95 : 0.8, day: !night, hideObjects: true, moonDir: night ? MOON : SUN, mountains: night ? 0 : 1.3, mist: night ? 0 : 0.7, ice: night ? 0 : 1,
     vel: [(c1.pos[0] - c0.pos[0]) * FPS, (c1.pos[1] - c0.pos[1]) * FPS, (c1.pos[2] - c0.pos[2]) * FPS], shutter: 1 / 24,
     jet: { pos: p, dir: [dir[0] / n, dir[1] / n, dir[2] / n], scale: 1 },
   };

@@ -5,7 +5,8 @@ import { prog, lerp, clamp01, ease } from "../engine";
 import { GLState, Vec3 } from "./GLView";
 import { useS, Svg, Panel, SUN } from "./scenes_h3";
 import { Bg, Fx } from "./scenes_h4";
-import { RealismCtx } from "./Sprite";
+import { RealismCtx, NightCtx } from "./Sprite";
+import { MOON } from "./GLView";
 
 const FPS = 30;
 const SUP = "#ffb703", HYP = "#ff3d9a";
@@ -23,6 +24,7 @@ const MUM: [number, number] = [19.08, 72.88], KAR: [number, number] = [24.86, 67
 export const H7Time: React.FC = () => {
   const { f, W, dur, T } = useS("time");
   const ref8 = React.useContext(RealismCtx);
+  const night = React.useContext(NightCtx);
   const p1 = W(9, 4), p2 = W(9, 9);
   // map projection into the panel (equirectangular, cos-lat scaled)
   const X0 = 90, Y0 = 400, MW = 900, MH = 470;
@@ -44,7 +46,9 @@ export const H7Time: React.FC = () => {
   const camFn = (fr: number): GLState["cam"] => ({ pos: [fr * 14, 30, -fr * 4], target: [fr * 14 + 400, 60, 900], fov: 0.7 });
   const a = camFn(f), b = camFn(f + 1);
   const vel: Vec3 = [(b.pos[0] - a.pos[0]) * FPS, 0, (b.pos[2] - a.pos[2]) * FPS];
-  const s: GLState = { t: T, cam: a, exposure: 0.78, day: true, hideObjects: true, moonDir: SUN, mountains: ref8 ? 1.3 : 1, mist: ref8 ? 0.7 : 1, ice: ref8 ? 1 : 0, vel, shutter: ref8 ? 1 / 24 : 1 / 60 };
+  const s: GLState = night
+    ? { t: T, cam: a, exposure: 0.95, day: false, hideObjects: true, moonDir: MOON, vel, shutter: 1 / 30 }
+    : { t: T, cam: a, exposure: 0.78, day: true, hideObjects: true, moonDir: SUN, mountains: ref8 ? 1.3 : 1, mist: ref8 ? 0.7 : 1, ice: ref8 ? 1 : 0, vel, shutter: ref8 ? 1 / 24 : 1 / 60 };
   const phase2 = f >= p2;
   const base = phase2 ? p2 : p1;
   const ln = (d: number) => {

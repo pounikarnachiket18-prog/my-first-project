@@ -5,7 +5,8 @@
 import React from "react";
 import { prog, lerp, clamp01, ease } from "../engine";
 import { GLState, Vec3, Missile, projectGL } from "./GLView";
-import { Sprite, MarkingsCtx, SHIP_NAME, RealismCtx } from "./Sprite";
+import { Sprite, MarkingsCtx, SHIP_NAME, RealismCtx, NightCtx } from "./Sprite";
+import { MOON } from "./GLView";
 import { useS, Svg, Big, Flag, Illus, SUN, Panel } from "./scenes_h3";
 import { Bg, Fx, Lock as LockBase, Velocity as VelocityBase, MachGauge as MachGaugeBase, Streaks as StreaksBase, coldWorld, ctr } from "./scenes_h4";
 
@@ -35,8 +36,10 @@ const shake = (f: number, amt: number): Vec3 => [Math.sin(f * 2.3) * amt + Math.
 /** day state with the reference look: mountains, mist, motion blur from the camera's own velocity */
 const look = (t: number, camFn: CamFn, f: number, extra: Partial<GLState> = {}, blur = 1): GLState => {
   const ref8 = React.useContext(RealismCtx);
+  const night = React.useContext(NightCtx);
   const a = camFn(f), b = camFn(f + 1);
   const vel: Vec3 = [(b.pos[0] - a.pos[0]) * FPS, (b.pos[1] - a.pos[1]) * FPS, (b.pos[2] - a.pos[2]) * FPS];
+  if (night) return { t, cam: a, exposure: 0.95, day: false, hideObjects: true, moonDir: MOON, vel, shutter: blur / 30, ...extra };
   const env: Partial<GLState> = ref8 ? { mountains: 1.3, mist: 0.7, ice: 1, shutter: blur / 24 } : { mountains: 1, mist: 1, shutter: blur / 50 };
   return { t, cam: a, exposure: 0.78, day: true, hideObjects: true, moonDir: SUN, vel, ...env, ...extra };
 };

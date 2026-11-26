@@ -45,6 +45,8 @@ export const MarkingsCtx = React.createContext(false);
 export const SHIP_NAME = "BOKA-14";
 /** v8 realism: daylight grade, soft edges, distance haze, surface reflection */
 export const RealismCtx = React.createContext(false);
+/** night version: moonlit open sea; sprites + footage graded day-for-night */
+export const NightCtx = React.createContext(false);
 
 const cross = (a: Vec3, b: Vec3): Vec3 => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
 const dot = (a: Vec3, b: Vec3) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
@@ -116,6 +118,7 @@ export const Sprite: React.FC<{ cam: GLState["cam"]; model: ModelName; center: V
   ({ cam, model, center, dir, length, glow, opacity = 1, filter, waterline }) => {
     const marked = React.useContext(MarkingsCtx);
     const real = React.useContext(RealismCtx);
+    const night = React.useContext(NightCtx);
     const t = spriteXform(cam, model, center, dir, length);
     if (!t || t.scale <= 0.002) return null;
     const { m } = t;
@@ -126,7 +129,9 @@ export const Sprite: React.FC<{ cam: GLState["cam"]; model: ModelName; center: V
     // realism grade: studio-lit sprites -> daylight (cool sky fill), softened cut edges, aerial perspective with distance
     const dist = Math.hypot(cam.pos[0] - center[0], cam.pos[1] - center[1], cam.pos[2] - center[2]);
     const haze = Math.max(0, Math.min(1, (dist - 120) / 1600));
-    const grade = real ? `brightness(${1.1 + 0.22 * haze}) contrast(${1.08 - 0.4 * haze}) saturate(${0.95 - 0.35 * haze}) blur(${0.45 + 0.6 * haze}px)` : "";
+    const grade = !real ? "" : night
+      ? `brightness(${0.46 - 0.12 * haze}) contrast(${1.18 - 0.3 * haze}) saturate(${0.55 - 0.25 * haze}) blur(${0.45 + 0.6 * haze}px)`
+      : `brightness(${1.1 + 0.22 * haze}) contrast(${1.08 - 0.4 * haze}) saturate(${0.95 - 0.35 * haze}) blur(${0.45 + 0.6 * haze}px)`;
     const height = waterline ? 0 : center[1];
     const reflOp = real ? 0.38 * Math.exp(-height / 35) : 0;
     let refl: React.ReactNode = null;

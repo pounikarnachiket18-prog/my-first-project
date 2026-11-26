@@ -6,11 +6,13 @@ import { AbsoluteFill, Sequence, OffthreadVideo, Audio, staticFile, useCurrentFr
 import { HyperVideo5, HYPER5_FRAMES } from "./HyperVideo5";
 import { SCENES_H5, H5Strike } from "./scenes_h5";
 import { useS, Big, Illus } from "./scenes_h3";
-import { MarkingsCtx, SHIP_NAME } from "./Sprite";
+import { MarkingsCtx, SHIP_NAME, NightCtx } from "./Sprite";
 
 const FPS = 30;
 export const CLIP = "navy/dogfight.mp4";
-export const HOOK = 152;            // clip 0 -> 5.07 s (cut just before its missile-flight shot)
+export const HOOK = 152;
+/** day-for-night: darken, cool, desaturate (explosions stay bright through the curve) */
+export const DAY_FOR_NIGHT = "brightness(0.5) contrast(1.35) saturate(0.55) hue-rotate(-8deg)";            // clip 0 -> 5.07 s (cut just before its missile-flight shot)
 const HIT1 = 7.17, HIT2 = 7.87; // flash times of the two impacts in the clip
 export const HYPER6_FRAMES = HOOK + HYPER5_FRAMES;
 
@@ -19,6 +21,7 @@ export const H6Strike: React.FC = () => {
   const { f, Le, W, dur } = useS("strike");
   const cf = useCurrentFrame();
   const named = React.useContext(MarkingsCtx);
+  const night = React.useContext(NightCtx);
   const hyperHit = Le(10) - 10, superHit = W(11, 1);
   const rate = (HIT2 - HIT1) / ((superHit - hyperHit) / FPS);
   const start = hyperHit - Math.round(((HIT1 - 6.68) / rate) * FPS); // first frame of the clip's ship shot
@@ -34,7 +37,7 @@ export const H6Strike: React.FC = () => {
   return (
     <AbsoluteFill>
       <Sequence from={start - f + cf} layout="none">
-        <OffthreadVideo src={staticFile(CLIP)} trimBefore={Math.round(clipStart * FPS)} playbackRate={rate} muted style={{ position: "absolute", inset: 0, width: 1080, height: 1920, objectFit: "cover" }} />
+        <OffthreadVideo src={staticFile(CLIP)} trimBefore={Math.round(clipStart * FPS)} playbackRate={rate} muted style={{ position: "absolute", inset: 0, width: 1080, height: 1920, objectFit: "cover", filter: night ? DAY_FOR_NIGHT : undefined }} />
       </Sequence>
       {named && tag(330, 1250, `TARGET · ${SHIP_NAME}`, "#ff5a3c", interpolate(f, [start, start + 8, hyperHit - 2, hyperHit + 4], [0, 1, 1, 0], { extrapolateLeft: "clamp", extrapolateRight: "clamp" }))}
       {tag(560, 900, "HYPERSONIC · 1st", "#ff3d9a", p1)}

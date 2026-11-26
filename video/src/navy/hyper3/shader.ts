@@ -264,7 +264,7 @@ vec3 glows(vec3 ro, vec3 rd, float tMax, float hitId, float part){
         float k = exp(-pow(max(h.x - R * 0.9, 0.0) / w, 1.3));
         float own = abs(hitId - float(m + 1)) < 0.1 ? 0.03 : 1.0;
         float hot = mix(1.8, 0.6, h.z) * own;
-        c += mix(vec3(1.0, 0.85, 0.95), plasmaCol(1.0), clamp(h.z * 1.6 + 0.2, 0.0, 1.0)) * k * hot * C.y * mix(1.0, 0.08, uDay);
+        c += mix(vec3(1.0, 0.85, 0.95), plasmaCol(1.0), clamp(h.z * 1.6 + 0.2, 0.0, 1.0)) * k * hot * C.y * mix(1.0, 0.08, uDay) * (uHideObj > 0.5 && uDay < 0.5 ? 0.3 : 1.0);
       }
     }
     // engine flame / exhaust
@@ -279,7 +279,7 @@ vec3 glows(vec3 ro, vec3 rd, float tMax, float hitId, float part){
       float wdt = T.y * (0.4 + 0.9 * h.z);
       float k = exp(-pow(h.x / wdt, 2.0)) * pow(1.0 - h.z, 1.6) * smoothstep(6.0, 40.0, h.y);
       vec3 col = T.z > 0.5 ? vec3(1.0, 0.35, 0.8) : vec3(0.85, 0.9, 1.0);
-      c += col * k * T.w * 1.1 * (abs(hitId - float(m + 1)) < 0.1 ? 0.05 : 1.0);
+      c += col * k * T.w * 1.1 * (abs(hitId - float(m + 1)) < 0.1 ? 0.05 : 1.0) * (uHideObj > 0.5 && uDay < 0.5 && T.z > 0.5 ? 0.55 : 1.0);
     }
   }
   // shock-wave rings around missile 0: uBoom = amount, mach, phase (0..1), 0
@@ -304,14 +304,14 @@ vec3 glows(vec3 ro, vec3 rd, float tMax, float hitId, float part){
   if ((uHideObj > 0.5 ? fxP : bgP) && uJet.w > 0.5){   // with sprites the burner must draw over the model
     vec3 f = normalize(uJetD.xyz); float S = uJetD.w; mat3 Bj = basis(f);
     vec3 tail = uJet.xyz - f * 6.2 * S;
-    vec3 h = raySeg(ro, rd, tail, tail - f * mix(5.0, 9.0, uDay) * S);
+    vec3 h = raySeg(ro, rd, tail, tail - f * mix(5.0, 9.0, max(uDay, uHideObj)) * S);
     {
-      float w = mix(0.55, 0.8, uDay) * S * (1.0 - h.z * 0.55);
+      float w = mix(0.55, 0.8, max(uDay, uHideObj)) * S * (1.0 - h.z * 0.55);
       float core = exp(-pow(h.x / w, 2.0)) * pow(1.0 - h.z, 1.3);
       float hot = exp(-pow(h.x / (w * 0.4), 2.0)) * exp(-h.z * 5.0);
       float diamonds = 0.55 + 0.45 * pow(0.5 + 0.5 * cos(h.z * 34.0 - uTime * 40.0), 3.0);
       vec3 flame = mix(vec3(1.0, 0.32, 0.04), vec3(1.0, 0.62, 0.18), exp(-h.z * 2.5));
-      vec3 ab = mix(vec3(0.45, 0.65, 1.0) * core * 2.5, flame * core * diamonds * 3.2 + vec3(1.0, 0.95, 0.85) * hot * 3.0, uDay);
+      vec3 ab = mix(vec3(0.45, 0.65, 1.0) * core * 2.5, flame * core * diamonds * 3.2 + vec3(1.0, 0.95, 0.85) * hot * 3.0, max(uDay, uHideObj));
       c += ab;
     }
     vec3 wl = uJet.xyz + Bj[0] * 4.1 * S - f * 6.0 * S, wr = uJet.xyz - Bj[0] * 4.1 * S - f * 6.0 * S;
