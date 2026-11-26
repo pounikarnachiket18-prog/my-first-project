@@ -351,3 +351,29 @@ export const Callout: React.FC<{
     </AbsoluteFill>
   );
 };
+
+/** Corner logo bug shown on every frame (top-left, clear of titles and Shorts UI) */
+export const LogoBug: React.FC = () => (
+  <div
+    style={{
+      position: "absolute",
+      left: 34,
+      top: 28,
+      width: 152,
+      height: 128,
+      borderRadius: 26,
+      background: LOGO.red,
+      boxShadow: "0 8px 24px rgba(0,0,0,0.28)",
+      border: "3px solid rgba(255,255,255,0.9)",
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 8,
+      opacity: 0.95,
+    }}
+  >
+    <Img src={staticFile(LOGO.brain)} style={{ height: 60 }} />
+    <Img src={staticFile(LOGO.text)} style={{ width: 124 }} />
+  </div>
+);

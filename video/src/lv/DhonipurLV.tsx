@@ -3,7 +3,7 @@ import { AbsoluteFill } from "remotion";
 import { TransitionSeries, linearTiming } from "@remotion/transitions";
 import { fade } from "@remotion/transitions/fade";
 import { SoundDesign } from "./SoundDesign";
-import { ScaleCtx } from "./overlay";
+import { LogoBug, ScaleCtx } from "./overlay";
 import { DayReveal, NightHook, Outro, StationCheckDay, StationCheckNight, VerdictNo, VerdictOk, WhyLast } from "./scenes";
 
 // New scene order: mystery (night lamp) -> reveal (X / LV) -> why last coach -> station master check
@@ -38,5 +38,6 @@ export const DhonipurLV: React.FC = () => (
       ])}
     </TransitionSeries>
     <SoundDesign />
+    <LogoBug />
   </AbsoluteFill>
 );
