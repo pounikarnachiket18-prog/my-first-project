@@ -196,6 +196,16 @@ raw = subprocess.check_output(["ffmpeg", "-v", "error", "-ss", f"{(152 - 81) / F
 clip = np.frombuffer(raw, np.float32).astype(np.float64)
 clip = clip * env(len(clip), 0.02, 0.15)
 
+# ---------- "Roger that." radio call (user-supplied): at WEAPON AWAY in the hook HUD, and after the sign-off line
+if os.environ.get("ROGER") == "1":
+    rawr = subprocess.check_output(["ffmpeg", "-v", "error", "-i", os.path.join(PUB, "sfx_roger.mp3"), "-ac", "1", "-ar", str(SR), "-f", "f32le", "-"])
+    R = np.frombuffer(rawr, np.float32).astype(np.float64)
+    R = R / (np.abs(R).max() + 1e-9) * 0.85
+    weapon_away = 4.17 - (152 - 81) / FPS          # HUD "WEAPON AWAY" in the clip -> reel time
+    put(voice, R, weapon_away - 0.05)
+    put(voice, R, Le(13) + 0.25)
+    print("roger at", round(weapon_away - 0.05, 2), "and", round(Le(13) + 0.25, 2))
+
 # ---------- mix
 venv = np.sqrt(np.maximum(lp(voice ** 2, 6), 0)); vk = np.clip(venv / (venv.max() * 0.2 + 1e-9), 0, 1)
 duck_m = lp(1 - 0.62 * vk, 4); duck_s = lp(1 - 0.3 * vk, 6)
