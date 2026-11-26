@@ -212,4 +212,4 @@ export const CompareScene: React.FC = () => (
 );
 
 export const anchorA: V3 = [4.6, 2.5, A_CENTER[2]];
-export const anchorB: V3 = [4.6, 1.5, B_CENTER[2]];
+export const anchorB: V3 = [4.4, 1.2, B_CENTER[2] - 3.6];

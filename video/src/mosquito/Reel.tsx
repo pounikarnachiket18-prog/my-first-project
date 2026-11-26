@@ -133,7 +133,7 @@ export const Reel: React.FC<ReelProps> = ({ captions = false, audio = true }) =>
       <SciLabel at={20.3} until={22.2} shot={moleculeShot} anchor={coohA} text="–COOH" sub="carboxyl group" dx={130} dy={-220} color="#ffc04d" size={58} />
       <Headline at={CUE.carboxylic} until={24.45} lines={["*CARBOXYLIC", "*ACIDS"]} y={300} size={128} accent="#ffc04d" />
       <SciLabel at={CUE.comparison + 0.5} until={27.75} shot={compareShot} anchor={() => anchorA} text="SKIN A" sub="more carboxylic acids" dx={-60} dy={-170} color="#ffc04d" size={44} />
-      <SciLabel at={CUE.comparison + 0.8} until={27.75} shot={compareShot} anchor={() => anchorB} text="SKIN B" sub="fewer carboxylic acids" dx={-60} dy={170} color="#9fdcff" size={44} />
+      <SciLabel at={CUE.comparison + 0.8} until={27.75} shot={compareShot} anchor={() => anchorB} text="SKIN B" sub="fewer carboxylic acids" dx={-60} dy={-110} color="#9fdcff" size={44} />
       <Caveat at={26.0} until={27.75} text="Linked to higher attraction — one factor among several" />
 
       <Myth />

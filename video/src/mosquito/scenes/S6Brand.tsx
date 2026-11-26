@@ -21,7 +21,7 @@ export const brandShot = (t: number): Shot => {
     fov: 30,
     aperture: 0,
     grade: { exposure: 1.1, lift: [0, 0, 0], saturation: 1, contrast: 1.06, vignette: 0.5, grain: 0.03, fade: 0 },
-    bloom: { strength: 0.8, radius: 0.6, threshold: 0.6 },
+    bloom: { strength: 0.45, radius: 0.5, threshold: 0.85 },
   };
 };
 
@@ -87,7 +87,7 @@ const Sweep: React.FC = () => {
   useTick((t) => {
     const u = clamp((t - T0 - 0.4) / 1.2);
     l.position.set(lerp(-9, 9, u), 1.6, 2.4);
-    l.intensity = 90 * Math.sin(Math.PI * u);
+    l.intensity = 30 * Math.sin(Math.PI * u);
   });
   return <primitive object={l} />;
 };
@@ -96,7 +96,7 @@ export const BrandScene: React.FC = () => {
   const font = useBrandFont();
   return (
     <Stage from={SC.brand.from} shot={brandShot} env="studio" bg="#000000" envIntensity={0.9}>
-      <directionalLight position={[3, 5, 8]} intensity={1.2} />
+      <directionalLight position={[3, 5, 8]} intensity={2.6} />
       <directionalLight position={[-6, -2, -4]} intensity={2} color="#3fd8ff" />
       <Sweep />
       {font ? <Wordmark font={font} /> : null}

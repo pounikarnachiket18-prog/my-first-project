@@ -4,28 +4,136 @@
   "height": 1920,
   "durationInFrames": 1050,
   "scenes": {
-    "mystery":   { "from": 0,   "duration": 150, "title": "The mystery" },
-    "detection": { "from": 150, "duration": 180, "title": "Mosquito detection" },
-    "signals":   { "from": 330, "duration": 240, "title": "Your body's chemical signals" },
-    "reveal":    { "from": 570, "duration": 270, "title": "The scientific reveal" },
-    "payoff":    { "from": 840, "duration": 150, "title": "Final payoff" },
-    "brand":     { "from": 990, "duration": 60,  "title": "Brand ending" }
+    "mystery": {
+      "from": 0,
+      "duration": 150,
+      "title": "The mystery"
+    },
+    "detection": {
+      "from": 150,
+      "duration": 180,
+      "title": "Mosquito detection"
+    },
+    "signals": {
+      "from": 330,
+      "duration": 240,
+      "title": "Your body's chemical signals"
+    },
+    "reveal": {
+      "from": 570,
+      "duration": 270,
+      "title": "The scientific reveal"
+    },
+    "payoff": {
+      "from": 840,
+      "duration": 150,
+      "title": "Final payoff"
+    },
+    "brand": {
+      "from": 990,
+      "duration": 60,
+      "title": "Brand ending"
+    }
   },
   "vo": [
-    { "id": "vo1a", "start": 0.35, "slot": 1.35, "display": "कभी notice किया है?", "tts": "कभी नोटिस किया है?" },
-    { "id": "vo1b", "start": 1.75, "slot": 1.75, "display": "एक ही कमरे में बैठे 5 लोगों में से…", "tts": "एक ही कमरे में बैठे, पाँच लोगों में से" },
-    { "id": "vo1c", "start": 3.55, "slot": 1.6,  "display": "मच्छर सिर्फ आपको काट रहे हैं!", "tts": "मच्छर सिर्फ आपको काट रहे हैं!" },
-    { "id": "vo2a", "start": 5.6,  "slot": 2.6,  "display": "ऐसा इसलिए क्योंकि मच्छर सिर्फ इंसानों को देखते नहीं…", "tts": "ऐसा इसलिए, क्योंकि मच्छर सिर्फ इंसानों को देखते नहीं" },
-    { "id": "vo2b", "start": 8.45, "slot": 1.9,  "display": "वो उन्हें सूंघकर ढूंढते हैं!", "tts": "वो उन्हें सूंघकर ढूंढते हैं!" },
-    { "id": "vo3a", "start": 11.25,"slot": 2.0,  "display": "आपकी सांस से निकलने वाली CO₂,", "tts": "आपकी सांस से निकलने वाली सी ओ टू," },
-    { "id": "vo3b", "start": 13.4, "slot": 1.2,  "display": "शरीर की गर्मी", "tts": "शरीर की गर्मी," },
-    { "id": "vo3c", "start": 14.75,"slot": 1.85, "display": "और पसीने से निकलने वाले chemicals", "tts": "और पसीने से निकलने वाले केमिकल्स" },
-    { "id": "vo3d", "start": 16.75,"slot": 1.9,  "display": "उन्हें आपकी तरफ attract करते हैं।", "tts": "उन्हें आपकी तरफ अट्रैक्ट करते हैं।" },
-    { "id": "vo4a", "start": 19.35,"slot": 2.75, "display": "2022 की एक scientific study में पाया गया कि", "tts": "दो हज़ार बाईस की एक साइंटिफिक स्टडी में पाया गया कि" },
-    { "id": "vo4b", "start": 22.3, "slot": 2.7,  "display": "कुछ लोगों की skin पर मौजूद carboxylic acids", "tts": "कुछ लोगों की स्किन पर मौजूद, कार्बॉक्सिलिक एसिड्स" },
-    { "id": "vo4c", "start": 25.2, "slot": 2.5,  "display": "मच्छरों को ज़्यादा आकर्षित कर सकते हैं।", "tts": "मच्छरों को ज़्यादा आकर्षित कर सकते हैं।" },
-    { "id": "vo5a", "start": 28.2, "slot": 2.15, "display": "इसलिए ऐसा नहीं कि आपका खून ज़्यादा मीठा है…", "tts": "इसलिए ऐसा नहीं, कि आपका खून ज़्यादा मीठा है" },
-    { "id": "vo5b", "start": 30.5, "slot": 2.3,  "display": "आपकी skin की chemical signature अलग है!", "tts": "आपकी स्किन की केमिकल सिग्नेचर अलग है!" }
+    {
+      "id": "vo1a",
+      "start": 0.2,
+      "slot": 1.22,
+      "display": "कभी notice किया है?",
+      "tts": "कभी नोटिस किया है?"
+    },
+    {
+      "id": "vo1b",
+      "start": 1.5,
+      "slot": 1.97,
+      "display": "एक ही कमरे में बैठे 5 लोगों में से…",
+      "tts": "एक ही कमरे में बैठे, पाँच लोगों में से"
+    },
+    {
+      "id": "vo1c",
+      "start": 3.55,
+      "slot": 1.6,
+      "display": "मच्छर सिर्फ आपको काट रहे हैं!",
+      "tts": "मच्छर सिर्फ आपको काट रहे हैं!"
+    },
+    {
+      "id": "vo2a",
+      "start": 5.6,
+      "slot": 2.6,
+      "display": "ऐसा इसलिए क्योंकि मच्छर सिर्फ इंसानों को देखते नहीं…",
+      "tts": "ऐसा इसलिए, क्योंकि मच्छर सिर्फ इंसानों को देखते नहीं"
+    },
+    {
+      "id": "vo2b",
+      "start": 8.45,
+      "slot": 1.9,
+      "display": "वो उन्हें सूंघकर ढूंढते हैं!",
+      "tts": "वो उन्हें सूंघकर ढूंढते हैं!"
+    },
+    {
+      "id": "vo3a",
+      "start": 11.25,
+      "slot": 2.0,
+      "display": "आपकी सांस से निकलने वाली CO₂,",
+      "tts": "आपकी सांस से निकलने वाली सी ओ टू,"
+    },
+    {
+      "id": "vo3b",
+      "start": 13.4,
+      "slot": 1.2,
+      "display": "शरीर की गर्मी",
+      "tts": "शरीर की गर्मी,"
+    },
+    {
+      "id": "vo3c",
+      "start": 14.75,
+      "slot": 1.85,
+      "display": "और पसीने से निकलने वाले chemicals",
+      "tts": "और पसीने से निकलने वाले केमिकल्स"
+    },
+    {
+      "id": "vo3d",
+      "start": 16.75,
+      "slot": 1.9,
+      "display": "उन्हें आपकी तरफ attract करते हैं।",
+      "tts": "उन्हें आपकी तरफ अट्रैक्ट करते हैं।"
+    },
+    {
+      "id": "vo4a",
+      "start": 19.35,
+      "slot": 2.75,
+      "display": "2022 की एक scientific study में पाया गया कि",
+      "tts": "दो हज़ार बाईस की एक साइंटिफिक स्टडी में पाया गया कि"
+    },
+    {
+      "id": "vo4b",
+      "start": 22.3,
+      "slot": 2.7,
+      "display": "कुछ लोगों की skin पर मौजूद carboxylic acids",
+      "tts": "कुछ लोगों की स्किन पर मौजूद, कार्बॉक्सिलिक एसिड्स"
+    },
+    {
+      "id": "vo4c",
+      "start": 25.2,
+      "slot": 2.5,
+      "display": "मच्छरों को ज़्यादा आकर्षित कर सकते हैं।",
+      "tts": "मच्छरों को ज़्यादा आकर्षित कर सकते हैं।"
+    },
+    {
+      "id": "vo5a",
+      "start": 28.2,
+      "slot": 2.15,
+      "display": "इसलिए ऐसा नहीं कि आपका खून ज़्यादा मीठा है…",
+      "tts": "इसलिए ऐसा नहीं, कि आपका खून ज़्यादा मीठा है"
+    },
+    {
+      "id": "vo5b",
+      "start": 30.5,
+      "slot": 2.3,
+      "display": "आपकी skin की chemical signature अलग है!",
+      "tts": "आपकी स्किन की केमिकल सिग्नेचर अलग है!"
+    }
   ],
   "cues": {
     "whyYou": 3.6,
