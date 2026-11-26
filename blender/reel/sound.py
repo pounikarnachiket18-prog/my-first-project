@@ -13,11 +13,11 @@ import argparse, json, math, os, sys, wave
 import numpy as np
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from cuts import FPS, END, CUT, PULSE, ALARM, BLINK, WALKS, LABELS, METER
+from cuts import FPS, END, CUT, PULSE, ALARM, BLINK, WALKS, LABELS, METER, LOGO_IN, LOGO_HIT, OUT_END, STEPS
 
 SR = 48000
 C = CUT
-T = END / FPS
+T = OUT_END / FPS          # the reel runs on past the 3D (END) for the logo ending
 N = int((T + 0.6) * SR)
 rng = np.random.default_rng(23)
 BUS = {k: np.zeros((N, 2)) for k in ("amb", "music", "sfx", "long")}   # "long" = beds/swells (ducked harder)
@@ -189,7 +189,7 @@ def amb_level(f):
     for a, b in pts:
         if f >= a: v = b
     return v
-lv = np.array([amb_level(f) for f in range(END + 30)])
+lv = np.array([amb_level(f) for f in range(OUT_END + 30)])
 kern = np.ones(12) / 12
 lv = np.convolve(np.pad(lv, (6, 5), mode="edge"), kern, mode="valid")
 gain_curve = np.interp(np.arange(N) / SR * FPS, np.arange(len(lv)), lv)
@@ -221,7 +221,7 @@ place("sfx", impact(1.3, metal=True), fs(C["H2"]), -6)
 
 # alarm beeps synced with the red light; very loud only where the story calls for it
 for a, b in ALARM:
-    for i, f in enumerate(range(a, b, BLINK)):
+    for i, f in enumerate(range(a, min(b, LOGO_IN), BLINK)):
         g = -15
         if a == 137: g = -21
         if a == C["S20"]: g = -16 if f < C["S21"] else -26
@@ -287,6 +287,18 @@ place("long", np.sin(2 * np.pi * np.cumsum(fq) / SR) * np.sin(np.pi * t_g / t_g[
 place("sfx", tick(2400, 0.04, 300), fs(C["S23"] + 45), -24)
 for lab in LABELS:
     place("sfx", blip(2900, 0.035), fs(lab[0]), -33, 0.2)
+
+# Just KnowIt branding: a whoosh under the red wipe from the hook into the story, a soft tick as each step title
+# slides in, and the logo sting (rising whoosh into the iris, a soft hit as the wordmark lands, a bright A-major
+# shimmer that rings out under the logo)
+place("sfx", whoosh(0.45, 500, 3800, 0.6), fs(C["S1"] - 6), -19)
+for s0, _, _ in STEPS:
+    place("sfx", tick(1700, 0.05, 220), fs(s0 + 2), -27, -0.2)
+place("sfx", whoosh(0.75, 250, 5200, 0.95), fs(LOGO_IN) - 0.05, -13)
+place("sfx", impact(0.9), fs(LOGO_HIT), -13)
+place("long", reverb(tone([(880, 0.5), (1108.7, 0.35), (1318.5, 0.3), (1760, 0.18)], 2.4, 0.9), 2.2, 0.45),
+      fs(LOGO_HIT), -21)
+place("long", swell(1.6, [220, 277.2, 329.6, 440, 554.4]), fs(LOGO_IN) + 0.1, -22)
 
 # --------------------------------------------------------------------------- #
 # 5) Music bed: A minor, 96 bpm, enters after the hook. Builds through the physics, drops at the alarm,

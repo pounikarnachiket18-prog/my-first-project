@@ -5,7 +5,8 @@ Takes the Cycles frames (720x1280), upscales them to 1080x1920 and draws:
   * the cold-open typography (hook), Hinglish (or English, see cuts.CAPTIONS) subtitles with highlighted key words,
   * science labels that track their 3D anchors (anchors.json), a five-step explanation tracker,
   * the "signal strength" meter for coin / belt / bigger object, the alarm edge pulse,
-  * the Mindset Mode | Explainers brand bug and end card.
+  * Just KnowIt branding: the logo in the corner of every frame (with a light sweep), a red brand wipe from the
+    hook into the story, lower-third step titles, and the logo ending (iris transition into the full logo).
 Everything stays inside the Instagram Reels safe area (top ~230 px, bottom ~420 px, right ~120 px kept clear).
 
     python post.py --frames FRAMES_DIR --timeline build/timeline.json --anchors build/anchors.json \
@@ -16,18 +17,20 @@ import argparse, json, math, os, re, subprocess, sys
 from functools import lru_cache
 from multiprocessing import Pool
 
-from PIL import Image, ImageDraw, ImageFilter, ImageFont
+from PIL import Image, ImageChops, ImageDraw, ImageFilter, ImageFont
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from cuts import FPS, END, CUT, ALARM, BLINK, LABELS, STEPS, METER, HOOK_TEXT, END_CARD, CAPTIONS, END_CTA
+from cuts import (FPS, END, CUT, ALARM, BLINK, LABELS, STEPS, METER, HOOK_TEXT, CAPTIONS, END_CTA, LOGO_IN, LOGO_HIT,
+                  OUT_END, STEP_SUB)
+import brand
 
 W, H = 1080, 1920
 INTER = "/usr/share/fonts/opentype/inter/Inter-{}.otf"
 CAP = INTER.format("ExtraBold")      # caption face (Latin script)
 WHITE = (255, 255, 255)
 HIL = (255, 210, 64)                # highlighted words
-VIOLET = (124, 92, 255)
-VIOLET_L = (196, 182, 255)
+BR = brand.RED                       # Just KnowIt red
+BR_L = brand.RED_LIGHT
 COL = {"white": (235, 240, 250), "cyan": (70, 205, 255), "amber": (255, 165, 50), "rose": (255, 95, 155)}
 SUB_Y = 1312                         # subtitle centre line
 SAFE_TOP, SAFE_BOTTOM, SAFE_L, SAFE_R = 250, 1180, 50, 960
@@ -45,6 +48,11 @@ def inter(weight, size):
 def ease_out(t):
     t = min(max(t, 0.0), 1.0)
     return 1 - (1 - t) ** 3
+
+
+def ease_io(t):
+    t = min(max(t, 0.0), 1.0)
+    return 3 * t * t - 2 * t * t * t
 
 
 def ease_back(t, k=1.6):
@@ -132,30 +140,98 @@ def red_edge():
     return img
 
 
+# --------------------------------------------------------------------------- #
+# Just KnowIt corner logo, on every frame until it flies into the logo ending
+BUG_X, BUG_Y, BUG_H = 40, 222, 76
+BUG_MARK = 52
+
+
 @lru_cache(None)
-def brand_bug():
-    img = Image.new("RGBA", (560, 70), (0, 0, 0, 0)); d = ImageDraw.Draw(img)
-    d.rounded_rectangle([4, 6, 62, 64], 14, fill=VIOLET + (235,))
-    d.text((33, 36), "M", font=inter("ExtraBold", 36), fill=WHITE, anchor="mm")
-    x = 78
-    d.text((x, 36), "Mindset Mode", font=inter("Bold", 30), fill=WHITE, anchor="lm", stroke_width=2, stroke_fill=(0, 0, 0, 120))
-    x += inter("Bold", 30).getlength("Mindset Mode") + 12
-    d.text((x, 36), "|  Explainers", font=inter("Medium", 28), fill=VIOLET_L, anchor="lm", stroke_width=2, stroke_fill=(0, 0, 0, 120))
-    return img
+def bug_parts():
+    mark = brand.fit(brand.part("mark"), BUG_MARK)
+    word = brand.fit(brand.part("word"), 26)
+    w = 16 + mark.width + 14 + word.width + 26
+    pill = Image.new("RGBA", (w, BUG_H), (0, 0, 0, 0)); d = ImageDraw.Draw(pill)
+    d.rounded_rectangle([0, 0, w - 1, BUG_H - 1], BUG_H // 2, fill=BR + (238,))
+    shadow = Image.new("RGBA", (w + 40, BUG_H + 40), (0, 0, 0, 0))
+    shadow.putalpha(Image.new("L", (w + 40, BUG_H + 40), 0))
+    sd = ImageDraw.Draw(shadow); sd.rounded_rectangle([20, 26, w + 19, BUG_H + 25], BUG_H // 2, fill=(0, 0, 0, 110))
+    shadow = shadow.filter(ImageFilter.GaussianBlur(9))
+    return pill, mark, word, shadow
 
 
+def bug_mark_centre():
+    pill, mark, word, _ = bug_parts()
+    return BUG_X + 16 + mark.width / 2, BUG_Y + BUG_H / 2
+
+
+def shine_times():
+    ts = [s0 for s0, _, _ in STEPS] + list(range(150, LOGO_IN - 40, 150))
+    return sorted(t for t in ts if t > 20)
+
+
+def draw_bug(canvas, f):
+    pill, mark, word, shadow = bug_parts()
+    if f >= LOGO_IN + 6:
+        return
+    # intro: the brain pops, then the red pill unrolls to the right and the wordmark slides out of it
+    k_pop = ease_back(f / 8, 2.2)
+    k_roll = ease_out((f - 5) / 10)
+    out = 1.0 - ease_out((f - LOGO_IN) / 5)         # the pill hands over to the flying mark at the logo ending
+    lay = Image.new("RGBA", (pill.width + 40, BUG_H + 40), (0, 0, 0, 0))
+    wr = int(BUG_H + (pill.width - BUG_H) * k_roll)
+    if wr > 0:
+        m = Image.new("L", pill.size, 0); ImageDraw.Draw(m).rounded_rectangle([0, 0, wr - 1, BUG_H - 1], BUG_H // 2, fill=255)
+        sh = shadow.copy(); sh.putalpha(ImageChops.multiply(sh.getchannel("A"), m.resize(pill.size).crop((0, 0, pill.width, BUG_H)).resize(pill.size)).resize(pill.size)) if False else shadow
+        lay.alpha_composite(sh, (0, 0))
+        p = pill.copy(); p.putalpha(ImageChops.multiply(p.getchannel("A"), m))
+        # light sweep across the pill every few seconds and at each new step
+        for t0 in shine_times():
+            u = (f - t0) / 16
+            if 0 <= u <= 1:
+                band = Image.linear_gradient("L").rotate(90, expand=True).resize((120, BUG_H))
+                band = band.point(lambda v: int(255 * math.sin(math.pi * v / 255) ** 2 * 0.55))
+                sw = Image.new("L", pill.size, 0); sw.paste(band, (int(-120 + (pill.width + 120) * ease_io(u)), 0))
+                white = Image.new("RGBA", pill.size, (255, 255, 255, 0))
+                white.putalpha(ImageChops.multiply(sw, p.getchannel("A")))
+                p.alpha_composite(white)
+        lay.alpha_composite(p, (20, 20))
+        wx = 16 + mark.width + 14
+        wk = ease_out((f - 9) / 9)
+        if wk > 0:
+            wd = word.copy(); wd.putalpha(wd.getchannel("A").point(lambda v: int(v * wk)))
+            crop = Image.new("RGBA", pill.size, (0, 0, 0, 0)); crop.alpha_composite(wd, (int(wx - 18 * (1 - wk)), (BUG_H - word.height) // 2 + 1))
+            crop.putalpha(ImageChops.multiply(crop.getchannel("A"), m))
+            lay.alpha_composite(crop, (20, 20))
+    if f < LOGO_IN:     # the brain itself (it flies away on its own at the logo ending)
+        mk = mark.resize((max(1, int(mark.width * k_pop)), max(1, int(mark.height * k_pop))), Image.BICUBIC) if k_pop != 1 else mark
+        lay.alpha_composite(mk, (int(20 + 16 + (mark.width - mk.width) / 2), int(20 + (BUG_H - mk.height) / 2)))
+    if out < 1:
+        lay.putalpha(lay.getchannel("A").point(lambda v: int(v * out)))
+    canvas.alpha_composite(lay, (BUG_X - 20, BUG_Y - 20))
+
+
+# --------------------------------------------------------------------------- #
+# Labels: dark glass cards with a colour key, wiped open from the side the leader line arrives on, a leader line that
+# draws itself out of a rippling anchor dot
 @lru_cache(64)
 def pill(title, sub, colour):
     c = COL[colour]
-    ft, fs_ = inter("ExtraBold", 42), inter("SemiBold", 26)
-    tw = max(ft.getlength(title), fs_.getlength(sub.upper()) + 1.5 * len(sub) if sub else 0)
-    w, h = int(tw) + 64, 112 if sub else 80
+    ft, fs_ = inter("ExtraBold", 40), inter("Bold", 24)
+    tw = max(ft.getlength(title) + 34, (fs_.getlength(sub.upper()) + 2.2 * len(sub)) if sub else 0)
+    w, h = int(tw) + 60, 110 if sub else 78
     img = Image.new("RGBA", (w, h), (0, 0, 0, 0)); d = ImageDraw.Draw(img)
-    d.rounded_rectangle([0, 0, w - 1, h - 1], 22, fill=(10, 12, 20, 205), outline=c + (255,), width=3)
-    d.rounded_rectangle([0, 0, 12, h - 1], 6, fill=c + (255,))
-    d.text((34, 40), title, font=ft, fill=WHITE, anchor="lm")
+    d.rounded_rectangle([0, 0, w - 1, h - 1], 18, fill=(10, 12, 20, 218), outline=c + (150,), width=2)
+    d.rounded_rectangle([0, 0, w - 1, 7], 4, fill=c + (255,))                       # colour key along the top
+    d.rounded_rectangle([3, 0, w - 4, 4], 2, fill=c + (255,))
+    d.ellipse([28, 39 - 8, 44, 39 + 8], fill=c + (255,))
+    d.text((56, 40), title, font=ft, fill=WHITE, anchor="lm")
     if sub:
-        d.text((36, 84), sub.upper(), font=fs_, fill=c, anchor="lm")
+        d.text((30, 84), " ".join(sub.upper().split()), font=fs_, fill=c, anchor="lm")
+    # tiny brand tick in the corner
+    if sub:
+        mk = brand.fit(brand.part("mark", BR_L), 22)
+        img.alpha_composite(mk, (w - mk.width - 12, h - mk.height - 10))
     return img
 
 
@@ -169,26 +245,78 @@ def draw_label(canvas, f, lab, anchors):
         return
     p = pill(hi, en, colour)
     px = min(max(ax + dx - p.width / 2, SAFE_L), SAFE_R - p.width)
-    py = min(max(ay + dy - p.height / 2, SAFE_TOP + 200), SAFE_BOTTOM - p.height)   # below the step tracker
-    t_in, t_out = (f - a) / 6, (b - f) / 4
-    k = min(1.0, t_in, t_out)
-    if k <= 0:
+    py = min(max(ay + dy - p.height / 2, SAFE_TOP + 210), SAFE_BOTTOM - p.height)   # below the step tracker
+    t_in, t_out = (f - a), (b - f)
+    k_line = ease_out(t_in / 7) * min(1.0, t_out / 5)
+    if k_line <= 0:
         return
     c = COL[colour]
     lay = Image.new("RGBA", (W, H), (0, 0, 0, 0)); d = ImageDraw.Draw(lay)
-    # leader line from the anchor dot to the nearest pill edge
-    ex = min(max(ax, px + 20), px + p.width - 20); ey = py + p.height if ay > py + p.height else (py if ay < py else ay)
-    lt = ease_out(t_in * 1.4)
-    lx, ly = ax + (ex - ax) * lt, ay + (ey - ay) * lt
-    alpha = int(255 * min(1.0, k))
-    d.line([(ax, ay), (lx, ly)], fill=c + (alpha,), width=4)
+    ex = min(max(ax, px + 24), px + p.width - 24)
+    ey = py + p.height if ay > py + p.height else (py if ay < py else ay)
+    lx, ly = ax + (ex - ax) * k_line, ay + (ey - ay) * k_line
+    al = int(255 * min(1.0, t_out / 4, (t_in + 1) / 3))
+    d.line([(ax, ay), (lx, ly)], fill=c + (al,), width=4)
+    # anchor: solid dot + two ripples
+    for j in range(2):
+        u = ((f - a) / 24 + j * 0.5) % 1.0
+        r = 10 + 30 * u
+        d.ellipse([ax - r, ay - r, ax + r, ay + r], outline=c + (int(al * (1 - u) * 0.8),), width=3)
     r = 9
-    d.ellipse([ax - r, ay - r, ax + r, ay + r], fill=c + (alpha,), outline=(255, 255, 255, alpha), width=3)
+    d.ellipse([ax - r, ay - r, ax + r, ay + r], fill=c + (al,), outline=(255, 255, 255, al), width=3)
+    if k_line > 0.95:
+        d.ellipse([ex - 6, ey - 6, ex + 6, ey + 6], fill=c + (al,))
     canvas.alpha_composite(lay)
-    pk = ease_out((f - a - 3) / 6)
-    if pk > 0:
-        img = p.copy(); img.putalpha(img.getchannel("A").point(lambda v: int(v * min(pk, t_out))))
-        canvas.alpha_composite(img, (int(px), int(py + (1 - pk) * 18)))
+    # card: wipes open from the side nearest the anchor, closes the same way
+    k_card = min(ease_out((t_in - 4) / 7), ease_out(t_out / 5))
+    if k_card <= 0:
+        return
+    wv = max(1, int(p.width * k_card))
+    from_right = ax > px + p.width / 2
+    crop = p.crop((p.width - wv, 0, p.width, p.height)) if from_right else p.crop((0, 0, wv, p.height))
+    canvas.alpha_composite(crop, (int(px + (p.width - wv if from_right else 0)), int(py)))
+
+
+# --------------------------------------------------------------------------- #
+# Lower-third step title: red number tab + step name + Hinglish line, wiped in from the left
+STEP_Y = 1238
+
+
+@lru_cache(None)
+def step_card(i, name):
+    sub = STEP_SUB.get(name, "")
+    fn, fs_ = inter("ExtraBold", 58), inter("SemiBold", 32)
+    tw = max(fn.getlength(name.upper()), fs_.getlength(sub))
+    w, h = int(tw) + 190, 128
+    img = Image.new("RGBA", (w, h), (0, 0, 0, 0)); d = ImageDraw.Draw(img)
+    d.rounded_rectangle([0, 0, w - 1, h - 1], 24, fill=(10, 12, 20, 225))
+    d.rounded_rectangle([0, 0, 128, h - 1], 24, fill=BR + (255,))
+    d.rectangle([100, 0, 128, h - 1], fill=BR + (255,))
+    d.text((64, h / 2), f"0{i + 1}", font=inter("ExtraBold", 56), fill=WHITE, anchor="mm")
+    d.text((156, 48), name.upper(), font=fn, fill=WHITE, anchor="lm")
+    d.text((158, 98), sub, font=fs_, fill=(225, 228, 238), anchor="lm")
+    return img
+
+
+def draw_step_card(canvas, f):
+    for i, (s0, s1, name) in enumerate(STEPS):
+        if s0 <= f < s0 + 48:
+            break
+    else:
+        return
+    img = step_card(i, name)
+    t = f - s0
+    k_in, k_out = ease_out(t / 9), ease_io((s0 + 48 - f) / 8)
+    x = (W - img.width) / 2
+    # a red streak runs ahead of the card
+    lay = Image.new("RGBA", (W, H), (0, 0, 0, 0)); d = ImageDraw.Draw(lay)
+    sx = -200 + (W + 400) * ease_io(t / 12)
+    if t < 13:
+        d.rounded_rectangle([sx - 220, STEP_Y + img.height / 2 - 4, sx, STEP_Y + img.height / 2 + 4], 4, fill=BR_L + (200,))
+        canvas.alpha_composite(lay)
+    wv = int(img.width * min(k_in, k_out))
+    if wv > 1:
+        canvas.alpha_composite(img.crop((0, 0, wv, img.height)), (int(x + 24 * (1 - k_in)), STEP_Y))
 
 
 def draw_steps(canvas, f):
@@ -198,22 +326,22 @@ def draw_steps(canvas, f):
         return
     cur = max(i for i, s in enumerate(STEPS) if f >= s[0])
     lay = Image.new("RGBA", (W, H), (0, 0, 0, 0)); d = ImageDraw.Draw(lay)
-    y, x0, x1 = 338, 190, 890
+    y, x0, x1 = 384, 190, 890
     xs = [x0 + (x1 - x0) * i / (len(STEPS) - 1) for i in range(len(STEPS))]
     al = int(255 * k)
     d.rounded_rectangle([x0 - 110, y - 46, x1 + 110, y + 78], 30, fill=(8, 10, 18, int(150 * k)))
     d.line([(xs[0], y), (xs[-1], y)], fill=(255, 255, 255, int(90 * k)), width=4)
-    d.line([(xs[0], y), (xs[cur], y)], fill=VIOLET + (al,), width=6)
+    d.line([(xs[0], y), (xs[cur], y)], fill=BR + (al,), width=6)
     fnt = inter("Bold", 28)
     for i, (x, (s0, s1, name)) in enumerate(zip(xs, STEPS)):
         if i < cur:
-            d.ellipse([x - 16, y - 16, x + 16, y + 16], fill=VIOLET + (al,))
+            d.ellipse([x - 16, y - 16, x + 16, y + 16], fill=BR + (al,))
             d.text((x, y), "✓", font=inter("Bold", 22), fill=(255, 255, 255, al), anchor="mm")
         elif i == cur:
             pulse = 1 + 0.12 * math.sin((f - s0) / FPS * 2 * math.pi * 1.2)
             r = 24 * pulse
-            d.ellipse([x - r - 8, y - r - 8, x + r + 8, y + r + 8], fill=VIOLET + (int(70 * k),))
-            d.ellipse([x - r, y - r, x + r, y + r], fill=VIOLET + (al,), outline=(255, 255, 255, al), width=3)
+            d.ellipse([x - r - 8, y - r - 8, x + r + 8, y + r + 8], fill=BR + (int(70 * k),))
+            d.ellipse([x - r, y - r, x + r, y + r], fill=BR + (al,), outline=(255, 255, 255, al), width=3)
             d.text((x, y), str(i + 1), font=inter("ExtraBold", 26), fill=(255, 255, 255, al), anchor="mm")
         else:
             d.ellipse([x - 16, y - 16, x + 16, y + 16], fill=(20, 22, 32, al), outline=(255, 255, 255, int(150 * k)), width=3)
@@ -280,25 +408,128 @@ def draw_subs(canvas, f, phrases):
             return
 
 
+# --------------------------------------------------------------------------- #
+# Red brand wipe that carries the cut from the cold open into the story
+WIPE_A, WIPE_B = CUT["S1"] - 8, CUT["S1"] + 8
+
+
+def draw_wipe(canvas, f):
+    if not (WIPE_A <= f <= WIPE_B):
+        return
+    u = ease_io((f - WIPE_A) / (WIPE_B - WIPE_A))
+    slant = 520
+    band = W * 1.9
+    x = -band - slant + (W + band + 2 * slant) * u           # left edge of the band
+    lay = Image.new("RGBA", (W, H), (0, 0, 0, 0)); d = ImageDraw.Draw(lay)
+    d.polygon([(x + slant, 0), (x + band + slant, 0), (x + band, H), (x, H)], fill=BR + (255,))
+    d.polygon([(x + band + slant, 0), (x + band + slant + 70, 0), (x + band + 70, H), (x + band, H)], fill=BR_L + (255,))
+    d.polygon([(x + slant - 40, 0), (x + slant, 0), (x, H), (x - 40, H)], fill=brand.RED_DARK + (255,))
+    # the brain rides through the middle of the band
+    mk = brand.fit(brand.part("mark"), 260)
+    cx = x + band / 2 + slant / 2
+    if -mk.width < cx < W + mk.width:
+        lay.alpha_composite(mk, (int(cx - mk.width / 2), int(H * 0.42 - mk.height / 2)))
+    canvas.alpha_composite(lay)
+
+
+# --------------------------------------------------------------------------- #
+# Logo ending: the corner brain flies to the centre while a red iris opens out of it and fills the frame, the
+# wordmark wipes in under it, a ring pulses out, and the follow line rises in. The last frame matches the logo.
+END_MARK_H, END_MARK_Y, END_WORD_Y = 300, 820, 1062
+IRIS = 16                     # frames for the iris to fill the frame
+
+
 @lru_cache(None)
-def end_card():
-    img = Image.new("RGBA", (W, 700), (0, 0, 0, 0)); d = ImageDraw.Draw(img)
-    cx = W / 2
-    d.rounded_rectangle([cx - 70, 40, cx + 70, 180], 34, fill=VIOLET + (255,))
-    d.text((cx, 112), "M", font=inter("ExtraBold", 96), fill=WHITE, anchor="mm")
-    d.text((cx, 270), "Mindset Mode", font=inter("ExtraBold", 100), fill=WHITE, anchor="mm")
-    sub = "E X P L A I N E R S"
-    d.text((cx, 360), sub, font=inter("SemiBold", 40), fill=VIOLET_L, anchor="mm")
-    d.line([(cx - 260, 420), (cx + 260, 420)], fill=(255, 255, 255, 80), width=2)
-    d.text((cx, 490), END_CTA[0], font=inter("Bold", 46), fill=WHITE, anchor="mm")
-    d.text((cx, 556), END_CTA[1], font=inter("ExtraBold", 50), fill=HIL, anchor="mm")
+def end_bg():
+    """Brand red with a soft lighter centre."""
+    g = Image.radial_gradient("L").resize((W * 2, H * 2)).crop((W // 2, H // 2 - 300, W // 2 + W, H // 2 - 300 + H))
+    base = Image.new("RGB", (W, H), BR)
+    lite = Image.new("RGB", (W, H), (214, 22, 34))
+    return Image.composite(base, lite, g.point(lambda v: min(255, int(v * 1.25)))).convert("RGBA")
+
+
+@lru_cache(None)
+def end_word():
+    return brand.fit(brand.part("word"), 96)
+
+
+@lru_cache(None)
+def end_cta():
+    img = Image.new("RGBA", (W, 200), (0, 0, 0, 0)); d = ImageDraw.Draw(img)
+    d.text((W / 2, 40), END_CTA[0], font=inter("SemiBold", 44), fill=(255, 232, 232), anchor="mm")
+    f2 = inter("ExtraBold", 50); tw = f2.getlength(END_CTA[1].upper())
+    d.rounded_rectangle([W / 2 - tw / 2 - 44, 92, W / 2 + tw / 2 + 44, 170], 39, fill=WHITE)
+    d.text((W / 2, 132), END_CTA[1].upper(), font=f2, fill=BR, anchor="mm")
     return img
+
+
+def particles(f):
+    """Slow white specks drifting up over the red."""
+    lay = Image.new("RGBA", (W, H), (0, 0, 0, 0)); d = ImageDraw.Draw(lay)
+    for i in range(46):
+        h1 = (i * 7919) % 1000 / 1000; h2 = (i * 104729) % 1000 / 1000; h3 = (i * 1299709) % 1000 / 1000
+        x = h1 * W + 18 * math.sin(f / 30 + i)
+        y = (h2 * H - (f - LOGO_IN) * (1.2 + 2.2 * h3)) % H
+        r = 2 + 4 * h3
+        d.ellipse([x - r, y - r, x + r, y + r], fill=(255, 255, 255, int(40 + 70 * h3)))
+    return lay
+
+
+def draw_logo_end(canvas, f):
+    if f < LOGO_IN:
+        return canvas
+    t = f - LOGO_IN
+    mx0, my0 = bug_mark_centre()
+    u = ease_io(t / IRIS)
+    # iris: a red circle grows from the corner brain and fills the frame
+    if t < IRIS + 1:
+        r = 30 + (math.hypot(W, H) + 40) * ease_io(t / IRIS) ** 1.15
+        m = Image.new("L", (W, H), 0); ImageDraw.Draw(m).ellipse([mx0 - r, my0 - r, mx0 + r, my0 + r], fill=255)
+        canvas.paste(end_bg(), (0, 0), m)
+        ring = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+        ImageDraw.Draw(ring).ellipse([mx0 - r, my0 - r, mx0 + r, my0 + r], outline=BR_L + (220,), width=14)
+        canvas.alpha_composite(ring)
+    else:
+        canvas = end_bg().copy()
+        canvas.alpha_composite(particles(f))
+    # the brain flies from the corner to the centre and grows, with a little overshoot
+    cx = mx0 + (W / 2 - mx0) * u
+    cy = my0 + (END_MARK_Y - my0) * u
+    hmark = BUG_MARK + (END_MARK_H - BUG_MARK) * ease_back(t / (IRIS + 4), 1.2)
+    hmark *= 1 + 0.015 * math.sin(max(0, t - IRIS) / FPS * 2 * math.pi * 0.8)        # breathing
+    mk = brand.fit(brand.part("mark"), max(4, int(hmark)))
+    canvas.alpha_composite(mk, (int(cx - mk.width / 2), int(cy - mk.height / 2)))
+    # wordmark: wipes in left to right while rising a little
+    tw = f - (LOGO_HIT - 8)
+    if tw > 0:
+        wd = end_word(); k = ease_out(tw / 10)
+        wv = max(1, int(wd.width * k))
+        canvas.alpha_composite(wd.crop((0, 0, wv, wd.height)), (int(W / 2 - wd.width / 2), int(END_WORD_Y + 20 * (1 - k))))
+    # ring pulse when the wordmark lands
+    tp = f - LOGO_HIT
+    if 0 <= tp < 22:
+        k = ease_out(tp / 22)
+        r = 170 + 420 * k
+        ring = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+        ImageDraw.Draw(ring).ellipse([W / 2 - r, END_MARK_Y - r, W / 2 + r, END_MARK_Y + r], outline=(255, 255, 255, int(150 * (1 - k))), width=6)
+        canvas.alpha_composite(ring)
+    # follow line
+    tc = f - (LOGO_HIT + 10)
+    if tc > 0:
+        k = ease_out(tc / 10)
+        c = end_cta().copy(); c.putalpha(c.getchannel("A").point(lambda v: int(v * k)))
+        canvas.alpha_composite(c, (0, int(1250 + 30 * (1 - k))))
+    return canvas
 
 
 # --------------------------------------------------------------------------- #
 def compose(job):
     f, frames_dir, phrases, anchors = job
-    src = os.path.join(frames_dir, f"f_{f:04d}.png")
+    src = os.path.join(frames_dir, f"f_{min(f, END - 1):04d}.png")     # the logo ending runs past the 3D
+    if f >= LOGO_IN + IRIS + 1:
+        canvas = Image.new("RGBA", (W, H))
+        canvas = draw_logo_end(canvas, f)
+        return f, canvas.convert("RGB").tobytes()
     im = Image.open(src).convert("RGB").resize((W, H), Image.LANCZOS)
     im = im.filter(ImageFilter.UnsharpMask(radius=1.4, percent=35, threshold=2))
     # gentle vignette
@@ -317,17 +548,11 @@ def compose(job):
             draw_label(canvas, f, lab, anchors)
     if STEPS[0][0] <= f < STEPS[-1][1]:
         draw_steps(canvas, f)
+    draw_step_card(canvas, f)
     draw_meter(canvas, f)
-    if CUT["S1"] <= f < END_CARD + 6:
-        a = min(1.0, (f - CUT["S1"]) / 8, (END_CARD + 6 - f) / 6)
-        b = brand_bug().copy(); b.putalpha(b.getchannel("A").point(lambda v: int(v * 0.92 * a)))
-        canvas.alpha_composite(b, (44, 236))
-    if f >= END_CARD:
-        k = ease_out((f - END_CARD) / 10)
-        dim = Image.new("RGBA", (W, H), (6, 6, 14, int(175 * k)))
-        canvas.alpha_composite(dim)
-        ec = end_card()
-        paste_center(canvas, ec, W / 2, 900, k, 0.94 + 0.06 * k)
+    draw_wipe(canvas, f)
+    draw_bug(canvas, f)
+    canvas = draw_logo_end(canvas, f)
     return f, canvas.convert("RGB").tobytes()
 
 
@@ -344,7 +569,7 @@ def main():
     args = ap.parse_args()
     tl = json.load(open(args.timeline))
     anchors = json.load(open(args.anchors))
-    frames = [int(x) for x in args.only.split(",")] if args.only else list(range(END))
+    frames = [int(x) for x in args.only.split(",")] if args.only else list(range(OUT_END))
     jobs = [(f, args.frames, tl["phrases"], anchors) for f in frames]
     if args.png:
         os.makedirs(args.png, exist_ok=True)

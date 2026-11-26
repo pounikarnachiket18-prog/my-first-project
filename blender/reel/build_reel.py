@@ -1,5 +1,5 @@
 """
-Mindset Mode | Explainers: "How a walk-through metal detector works", the Instagram Reel cut (Blender 5.x).
+Just KnowIt: "How a walk-through metal detector works", the Instagram Reel cut (Blender 5.x).
 
 An upgrade of ../build_scene.py (the first 3D remake), which is left untouched. This version:
   * follows the reel edit (cold-open hook, then the narration at 1.2x; 30 fps, 1417 frames, cut list in CUT),
@@ -20,8 +20,8 @@ from mathutils import Vector, Euler
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from cuts import FPS, END, CUT, PULSE, ALARM, BLINK, WALKS
-BRAND = "Mindset Mode"
-BRAND_SUB = "Explainers"
+import brand
+BRAND = brand.NAME
 ap = argparse.ArgumentParser()
 ap.add_argument("--out", default="reel.blend")
 ap.add_argument("--assets", default=os.path.join(os.path.dirname(os.path.abspath(__file__)), "build", "assets"))
@@ -218,10 +218,10 @@ def noise_bump(m, scale=40.0, strength=0.15, col_var=None):
     return m
 
 
-# Palette: dusk airport (slate, warm practicals), brand violet, physics colours with meaning:
+# Palette: dusk airport (slate, warm practicals), Just KnowIt brand red, physics colours with meaning:
 #   cyan = magnetic field from the transmitter, amber = induced (eddy) current,
 #   rose = the metal's own opposing field, red = alarm only.
-VIOLET = (0.36, 0.2, 1.0)
+BRAND_COL = tuple((c / 255) ** 2.2 for c in brand.RED)   # brand red in linear
 CYAN = (0.08, 0.7, 1.0)
 AMBER = (1.0, 0.5, 0.06)
 ROSE = (1.0, 0.18, 0.45)
@@ -238,7 +238,8 @@ M["screen"] = mat("Screen", (0.004, 0.008, 0.01), 0.12, emit=(0.0, 0.12, 0.1), e
 M["trace"], TRACE_STR, _ = emit_mat("Trace", (0.2, 1.0, 0.65), 6.0)
 M["white"] = mat("PlateWhite", (0.88, 0.89, 0.9), 0.25, coat=0.4)
 M["ink"] = mat("Ink", (0.04, 0.045, 0.06), 0.4)
-M["brand"] = mat("Brand", VIOLET, 0.3, emit=VIOLET, estr=1.2)
+M["brand"] = mat("Brand", BRAND_COL, 0.3, emit=BRAND_COL, estr=1.2)
+M["brandplate"] = mat("BrandPlate", BRAND_COL, 0.35, coat=0.4)
 M["redbtn"] = mat("RedButton", (0.5, 0.01, 0.01), 0.15, emit=(1.0, 0.03, 0.02), estr=0.3, coat=1.0)
 M["chrome"] = mat("Chrome", (0.8, 0.81, 0.83), 0.12, 1.0)
 M["strap"] = mat("QueueStrap", (0.1, 0.06, 0.35), 0.6)
@@ -395,27 +396,21 @@ def pil_font(path, s):
         return ImageFont.load_default()
 
 
-# Chest print: size and centre height in the torso mesh (its vertices keep standing height, z 1.02-1.48)
-PRINT_W, PRINT_H, PRINT_Z = 0.25, 0.25 * 760 / 1200, 1.285
+# Chest print: width and centre height in the torso mesh (its vertices keep standing height, z 1.02-1.48);
+# the height follows the artwork's aspect ratio
+PRINT_W, PRINT_Z = 0.26, 1.29
+PRINT_H = PRINT_W * 0.5
 
 
 def make_shirt_print(path):
-    from PIL import Image, ImageDraw
-    W, H = 1200, 760
-    im = Image.new("RGBA", (W, H), (0, 0, 0, 0)); d = ImageDraw.Draw(im)
-    f = lambda n, s: pil_font(os.path.join(FONT_DIR, n), s)
-    cx = W // 2
-    d.rounded_rectangle([cx - 105, 20, cx + 105, 230], 48, fill=(92, 52, 255, 255))
-    d.text((cx, 128), "M", font=f("Inter-ExtraBold.otf", 150), fill=(255, 255, 255, 255), anchor="mm")
-    d.text((cx, 380), BRAND.upper(), font=f("Inter-ExtraBold.otf", 152), fill=(246, 246, 250, 255), anchor="mm")
-    sub = " ".join(BRAND_SUB.upper())
-    fs = f("Inter-SemiBold.otf", 74)
-    tw = d.textlength(sub, font=fs)
-    d.text((cx, 560), sub, font=fs, fill=(176, 160, 255, 255), anchor="mm")
-    for sgn in (-1, 1):   # the "|" divider becomes rules either side of EXPLAINERS
-        x0 = cx + sgn * (tw / 2 + 40); x1 = cx + sgn * (tw / 2 + 150)
-        d.line([(min(x0, x1), 560), (max(x0, x1), 560)], fill=(176, 160, 255, 255), width=8)
+    """The Just KnowIt logo (brain over wordmark) in white, as a transparent print."""
+    global PRINT_H
+    from PIL import Image
+    img = brand.lockup(520, gap=0.2, stacked=True)
+    pad = 24
+    im = Image.new("RGBA", (img.width + 2 * pad, img.height + 2 * pad), (0, 0, 0, 0)); im.alpha_composite(img, (pad, pad))
     im.save(path)
+    PRINT_H = PRINT_W * im.height / im.width
 
 
 def make_id_card(path):
@@ -423,25 +418,22 @@ def make_id_card(path):
     W, H = 1080, 1720
     im = Image.new("RGB", (W, H), (250, 250, 252)); d = ImageDraw.Draw(im)
     f = lambda n, s: pil_font(os.path.join(FONT_DIR, n), s)
-    d.polygon([(0, 0), (W, 0), (W, 360), (0, 620)], fill=(92, 52, 255))
-    d.polygon([(0, 0), (W * 0.55, 0), (0, 420)], fill=(132, 98, 255))
-    d.polygon([(W * 0.6, 0), (W, 0), (W, 220)], fill=(60, 30, 200))
-    d.polygon([(W, 1350), (W, H), (W * 0.35, H)], fill=(92, 52, 255))
-    d.polygon([(W, 1530), (W, H), (W * 0.7, H)], fill=(60, 30, 200))
-    d.rounded_rectangle([60, 55, 160, 155], 22, fill=(255, 255, 255))
-    d.text((110, 105), "M", font=f("Inter-ExtraBold.otf", 72), fill=(92, 52, 255), anchor="mm")
-    d.text((190, 80), BRAND.upper(), font=f("Inter-ExtraBold.otf", 50), fill=(255, 255, 255))
-    d.text((192, 136), BRAND_SUB.upper(), font=f("Inter-Medium.otf", 30), fill=(225, 220, 255))
+    d.polygon([(0, 0), (W, 0), (W, 360), (0, 620)], fill=brand.RED)
+    d.polygon([(0, 0), (W * 0.55, 0), (0, 420)], fill=(222, 34, 46))
+    d.polygon([(W * 0.6, 0), (W, 0), (W, 220)], fill=brand.RED_DARK)
+    d.polygon([(W, 1350), (W, H), (W * 0.35, H)], fill=brand.RED)
+    d.polygon([(W, 1530), (W, H), (W * 0.7, H)], fill=brand.RED_DARK)
+    im.paste(brand.lockup(110, gap=0.22), (60, 50), brand.lockup(110, gap=0.22))
     cx, cy, r = W // 2, 520, 220
     d.ellipse([cx - r - 14, cy - r - 14, cx + r + 14, cy + r + 14], fill=(255, 255, 255))
     d.ellipse([cx - r, cy - r, cx + r, cy + r], fill=(222, 226, 240))
     d.ellipse([cx - 95, cy - 150, cx + 95, cy + 60], fill=(170, 112, 82))
     d.chord([cx - 105, cy - 175, cx + 105, cy + 10], 180, 360, fill=(28, 20, 16))
     d.pieslice([cx - 190, cy + 70, cx + 190, cy + 420], 180, 360, fill=(14, 24, 56))
-    d.text((cx, 840), "Gareeb Kumar", font=f("Inter-ExtraBold.otf", 92), fill=(20, 22, 30), anchor="mm")
-    d.text((cx, 950), "AKA Poor", font=f("Inter-ExtraBold.otf", 80), fill=(20, 22, 30), anchor="mm")
+    d.text((cx, 840), "Bauni Natkaht", font=f("Inter-ExtraBold.otf", 92), fill=(20, 22, 30), anchor="mm")
+    d.text((cx, 950), "AKA Cheater", font=f("Inter-ExtraBold.otf", 80), fill=(20, 22, 30), anchor="mm")
     d.text((cx, 1035), "Graphic Designer", font=f("Inter-Medium.otf", 50), fill=(120, 120, 128), anchor="mm")
-    rows = [("ID NO", "MM-7741-028"), ("EMAIL", "gareeb@mail.com"), ("PHONE", "98XXX 12345"), ("DATE", "01.08.2026")]
+    rows = [("ID NO", "JK-7741-028"), ("EMAIL", "bauni@mail.com"), ("PHONE", "98XXX 12345"), ("DATE", "01.08.2026")]
     for i, (k, v) in enumerate(rows):
         y = 1140 + i * 82
         d.text((170, y), k, font=f("Inter-Bold.otf", 44), fill=(20, 22, 30))
@@ -462,6 +454,20 @@ def make_sign(path):
 CARD_PNG = os.path.join(args.assets, "id_card.png"); make_id_card(CARD_PNG)
 SIGN_PNG = os.path.join(args.assets, "sign.png"); make_sign(SIGN_PNG)
 PRINT_PNG = os.path.join(args.assets, "shirt_print.png"); make_shirt_print(PRINT_PNG)
+PLATE_PNG = os.path.join(args.assets, "plate_logo.png")
+_pl = brand.lockup(200, gap=0.26); _pl.save(PLATE_PNG); PLATE_ASPECT = _pl.height / _pl.width
+
+
+def decal_mat(name, png, emit=0.0):
+    """White artwork with alpha, for a decal plane in front of a surface."""
+    m = mat(name, (1, 1, 1), 0.4)
+    nt = m.node_tree; b = nt.nodes["Principled BSDF"]
+    t = nt.nodes.new("ShaderNodeTexImage"); t.image = bpy.data.images.load(png); t.interpolation = "Cubic"
+    nt.links.new(t.outputs["Color"], b.inputs["Base Color"]); nt.links.new(t.outputs["Alpha"], b.inputs["Alpha"])
+    if emit:
+        nt.links.new(t.outputs["Color"], b.inputs["Emission Color"]); b.inputs["Emission Strength"].default_value = emit
+    return m
+M["plateart"] = decal_mat("PlateArt", PLATE_PNG, emit=0.6)
 M["shirtprint"] = shirt_mat("ShirtPrint", PRINT_PNG)
 
 
@@ -632,11 +638,10 @@ for i in range(10):
 cyl("ButtonRing", 0.042, 0.02, (0.355, -0.2, 2.36), M["silver"], rot=(math.pi / 2, 0, 0), parent=gate)
 red = sphere("RedButton", 0.034, (0.355, -0.212, 2.36), M["redbtn"], scale=(1, 0.55, 1), parent=gate)
 # brand plate
-box("LogoPlate", (0.4, 0.025, 0.11), (-0.33, -0.22, 2.335), M["white"], 0.008, gate)
-box("LogoMark", (0.065, 0.012, 0.065), (-0.485, -0.236, 2.335), M["brand"], 0.008, gate)
-text("LogoMarkTxt", "M", 0.05, (-0.485, -0.243, 2.333), M["white"], font=F_BOLD, parent=gate)
-text("LogoText", BRAND, 0.036, (-0.44, -0.236, 2.348), M["ink"], font=F_BOLD, align="LEFT", parent=gate)
-text("LogoSub", BRAND_SUB.upper(), 0.019, (-0.44, -0.236, 2.31), M["brand"], font=F_SEMI, align="LEFT", parent=gate)
+box("LogoPlate", (0.4, 0.025, 0.11), (-0.33, -0.22, 2.335), M["brandplate"], 0.008, gate)
+bpy.ops.mesh.primitive_plane_add(size=1, location=(-0.33, -0.2335, 2.335), rotation=(math.pi / 2, 0, 0))
+lp = bpy.context.object; lp.name = "LogoArt"
+lp.scale = (0.34, 0.34 * PLATE_ASPECT, 1); lp.data.materials.append(M["plateart"]); setp(lp, gate)
 
 # --------------------------------------------------------------------------- #
 # Character (stylised, built from primitives). Faces -Y; his right is -X.

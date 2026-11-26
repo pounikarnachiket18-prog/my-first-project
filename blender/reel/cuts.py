@@ -74,6 +74,13 @@ METER = [(1287, 1300, "Coin", 3), (1300, 1312, "Belt", 5), (1312, 1352, "Bada me
 # Cold-open typography (frames)
 HOOK_TEXT = [(4, 57, ["Airport ki ek machine", "kapdon mein chhupa", "*metal* bhi", "pakad leti hai"]),
              (57, 90, ["Lekin aakhir", "*KAISE?*"])]
-END_CARD = 1388
+# Just KnowIt logo ending: the corner logo flies to the centre while a red iris fills the frame; the reel runs past
+# the last 3D frame (END) on the logo alone
+LOGO_IN = 1392                # first frame of the logo transition (just after the last word)
+LOGO_HIT = LOGO_IN + 20       # wordmark lands
+OUT_END = END + 66            # total frames in the finished reel
+# Lower-third step titles (Hinglish), shown as each of the five steps begins
+STEP_SUB = {"Field": "field banta hai", "Metal": "metal andar aata hai", "Current": "current paida hota hai",
+            "Sensor": "sensor badlaav pakadta hai", "Alarm": "alarm bajta hai"}
 CAPTIONS = None         # subtitles off; "hinglish" (Roman Hindi) or "english" turns them back on
-END_CTA = ("Aise aur explainers ke liye", "follow karo")   # English: ("Follow for more", "explainers like this")
+END_CTA = ("Aise aur explainers ke liye", "follow karo")   # English: ("More explainers like this", "follow")
