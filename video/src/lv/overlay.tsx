@@ -167,11 +167,11 @@ export const EndCard: React.FC<{ from: number; origin?: { x: number; y: number }
   const reveal = ip(t, [0, 14], [0, 2300], Easing.in(Easing.cubic));
   const pat = ip(t, [6, 20], [0, 1]);
   const brain = spring({ frame: t - 6, fps, config: { damping: 10, stiffness: 170 } });
-  const wipe = ip(t, [14, 30], [0, 1], Easing.out(Easing.cubic));
-  const bar = ip(t, [26, 38], [0, 1], Easing.inOut(Easing.cubic));
-  const btn = spring({ frame: t - 34, fps, config: { damping: 11, stiffness: 190 } });
-  const tap = 1 - 0.08 * Math.sin(Math.PI * ip(t, [48, 56], [0, 1]));
-  const tapped = t > 52;
+  const wipe = ip(t, [20, 34], [0, 1], Easing.out(Easing.cubic));
+  const bar = ip(t, [30, 40], [0, 1], Easing.inOut(Easing.cubic));
+  const btn = spring({ frame: t - 37, fps, config: { damping: 11, stiffness: 190 } });
+  const tap = 1 - 0.08 * Math.sin(Math.PI * ip(t, [50, 58], [0, 1]));
+  const tapped = t > 54;
   const B = { x: 540, y: 820 }; // brain centre
   return (
     <AbsoluteFill style={{ clipPath: `circle(${reveal}px at ${origin.x}px ${origin.y}px)`, background: LOGO.red }}>
@@ -191,11 +191,11 @@ export const EndCard: React.FC<{ from: number; origin?: { x: number; y: number }
       {/* pulse rings + sparks behind the brain */}
       <svg width={1080} height={1920} style={{ position: "absolute", inset: 0 }}>
         {[0, 9].map((d) => {
-          const p = ip(t, [10 + d, 34 + d], [0, 1], Easing.out(Easing.cubic));
+          const p = ip(t, [21 + d, 45 + d], [0, 1], Easing.out(Easing.cubic));
           return p > 0 && p < 1 ? <circle key={d} cx={B.x} cy={B.y} r={120 + p * 260} fill="none" stroke="#fff" strokeWidth={6} opacity={(1 - p) * 0.6} /> : null;
         })}
         {Array.from({ length: 10 }).map((_, i) => {
-          const p = ip(t, [12, 28], [0, 1], Easing.out(Easing.cubic));
+          const p = ip(t, [21, 37], [0, 1], Easing.out(Easing.cubic));
           if (p <= 0 || p >= 1) return null;
           const ang = (i / 10) * Math.PI * 2 + 0.3;
           const r0 = 170 + p * 120;
@@ -215,10 +215,7 @@ export const EndCard: React.FC<{ from: number; origin?: { x: number; y: number }
           );
         })}
       </svg>
-      <Img
-        src={staticFile(LOGO.brain)}
-        style={{ position: "absolute", left: B.x - 135, top: B.y - 150, height: 300, transform: `scale(${brain}) rotate(${(1 - Math.min(1, brain)) * -20}deg)` }}
-      />
+      {/* brain: supplied by <LogoBug/>, which flies from the corner and lands here */}
       <div style={{ position: "absolute", left: 90, top: 1060, width: 900, clipPath: `inset(0 ${(1 - wipe) * 100}% 0 0)` }}>
         <Img src={staticFile(LOGO.text)} style={{ width: 900, transform: `translateY(${(1 - wipe) * 30}px)` }} />
       </div>
@@ -352,28 +349,96 @@ export const Callout: React.FC<{
   );
 };
 
-/** Corner logo bug shown on every frame (top-left, clear of titles and Shorts UI) */
-export const LogoBug: React.FC = () => (
-  <div
-    style={{
-      position: "absolute",
-      left: 34,
-      top: 28,
-      width: 152,
-      height: 128,
-      borderRadius: 26,
-      background: LOGO.red,
-      boxShadow: "0 8px 24px rgba(0,0,0,0.28)",
-      border: "3px solid rgba(255,255,255,0.9)",
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      justifyContent: "center",
-      gap: 8,
-      opacity: 0.95,
-    }}
-  >
-    <Img src={staticFile(LOGO.brain)} style={{ height: 60 }} />
-    <Img src={staticFile(LOGO.text)} style={{ width: 124 }} />
-  </div>
-);
+/**
+ * Corner logo bug (every frame): brain in a red circle with a heartbeat pulse, a yellow progress ring
+ * that fills over the video, a "Just KnowIt" name tab that slides out at the start and mid-video,
+ * and at the end card the brain flies to centre and becomes the big logo brain.
+ */
+const BUG = { x: 92, y: 94, r: 52 };
+const FLY = [1141, 1158]; // global frames: corner -> centre
+const TABS: [number, number][] = [
+  [10, 105],
+  [585, 665],
+];
+export const LogoBug: React.FC = () => {
+  const f = useCurrentFrame();
+  const { durationInFrames } = useVideoConfig();
+  const fly = ip(f, FLY as [number, number], [0, 1], Easing.inOut(Easing.cubic));
+  const chrome = 1 - ip(f, [FLY[0], FLY[0] + 8], [0, 1]);
+  const ph = f % 66;
+  const beat = ph < 6 ? Math.sin((ph / 6) * Math.PI) : ph >= 10 && ph < 16 ? 0.6 * Math.sin(((ph - 10) / 6) * Math.PI) : 0;
+  const tab = Math.max(
+    ...TABS.map(([a, b]) => ip(f, [a, a + 14], [0, 1], Easing.out(Easing.back(1.4))) * ip(f, [b - 12, b], [1, 0], Easing.in(Easing.cubic))),
+  );
+  const prog = Math.min(1, f / (FLY[0] - 1));
+  const C = 2 * Math.PI * (BUG.r + 9);
+  // flying brain: corner (h 58) -> end card centre (540, 820, h 300)
+  const bh = 58 + (300 - 58) * fly;
+  const bx = BUG.x + (540 - BUG.x) * fly;
+  const by = BUG.y + (820 - BUG.y) * fly - Math.sin(fly * Math.PI) * 120;
+  const bw = (176 / 197) * bh;
+  const tabW = 250 * tab;
+  return (
+    <AbsoluteFill style={{ pointerEvents: "none" }}>
+      {chrome > 0 && (
+        <>
+          {/* name tab sliding out of the circle */}
+          {tabW > 1 && (
+            <div
+              style={{
+                position: "absolute",
+                left: BUG.x,
+                top: BUG.y - 34,
+                width: BUG.r + tabW,
+                height: 68,
+                borderRadius: 34,
+                background: LOGO.red,
+                border: "3px solid #fff",
+                boxShadow: "0 8px 24px rgba(0,0,0,0.25)",
+                overflow: "hidden",
+                opacity: chrome,
+              }}
+            >
+              <Img
+                src={staticFile(LOGO.text)}
+                style={{ position: "absolute", left: BUG.r + 14, top: 20, width: 210, opacity: ip(tab, [0.5, 1], [0, 1]) }}
+              />
+            </div>
+          )}
+          <svg width={240} height={240} style={{ position: "absolute", left: 0, top: 0, opacity: chrome }}>
+            {/* heartbeat glow */}
+            <circle cx={BUG.x} cy={BUG.y} r={BUG.r + 6 + beat * 14} fill="none" stroke="#fff" strokeWidth={4} opacity={beat * 0.45} />
+            {/* progress track + fill */}
+            <circle cx={BUG.x} cy={BUG.y} r={BUG.r + 9} fill="none" stroke="rgba(255,255,255,0.35)" strokeWidth={6} />
+            <circle
+              cx={BUG.x}
+              cy={BUG.y}
+              r={BUG.r + 9}
+              fill="none"
+              stroke={UI.yellow}
+              strokeWidth={6}
+              strokeLinecap="round"
+              strokeDasharray={C}
+              strokeDashoffset={C * (1 - prog)}
+              transform={`rotate(-90 ${BUG.x} ${BUG.y})`}
+            />
+            <circle cx={BUG.x} cy={BUG.y} r={BUG.r} fill={LOGO.red} stroke="#fff" strokeWidth={3} />
+          </svg>
+        </>
+      )}
+      {f < durationInFrames && (
+        <Img
+          src={staticFile(LOGO.brain)}
+          style={{
+            position: "absolute",
+            left: bx - bw / 2,
+            top: by - bh / 2 - 4 * (1 - fly),
+            height: bh,
+            transform: `scale(${1 + beat * 0.08 * (1 - fly)}) rotate(${Math.sin(fly * Math.PI) * -12}deg)`,
+            filter: fly > 0 && fly < 1 ? "drop-shadow(0 10px 20px rgba(0,0,0,0.35))" : undefined,
+          }}
+        />
+      )}
+    </AbsoluteFill>
+  );
+};
