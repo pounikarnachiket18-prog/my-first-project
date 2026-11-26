@@ -226,7 +226,7 @@ for a, b in ALARM:
         if a == 137: g = -21
         if a == C["S20"]: g = -16 if f < C["S21"] else -26
         if a == C["S28"]: g = -26 - 6 * (f - a) / (b - a)
-        if a == 36 and f >= 84: g = -24
+        if a == 36: g = -24 if f >= 84 else -21      # under the spoken hook
         place("sfx", reverb(beep(1850 if i % 2 == 0 else 1450), 1.0, 0.25), fs(f), g, 0.1)
 
 # --------------------------------------------------------------------------- #

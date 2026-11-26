@@ -26,7 +26,9 @@ MAX_TEMPO = 1.25
 # (start in the reel in seconds, line). Hindi in Devanagari, English terms transliterated so they are pronounced the
 # way they are said in Hindi.
 LINES = [
-    (3.0, "मेट्रो का मेटल डिटेक्टर, जेब का छोटा सा सिक्का भी पकड़ लेता है। कैसे?"),
+    (0.1, "एक छोटा सा सिक्का... और बीप!"),           # spoken hook, the alarm goes off under "beep"
+    (1.9, "आख़िर कैसे?"),                          # as "KAISE?" hits the screen
+    (3.0, "मेट्रो का मेटल डिटेक्टर, जेब का छोटा सा सिक्का भी पकड़ लेता है।"),
     (8.0, "जवाब है, इलेक्ट्रोमैग्नेटिक इंडक्शन।"),
     (10.5, "गेट में दो कॉइल्स होती हैं, ट्रांसमीटर और रिसीवर।"),
     (13.3, "दोनों मिलकर मेटल को पाँच स्टेप्स में पकड़ती हैं।"),

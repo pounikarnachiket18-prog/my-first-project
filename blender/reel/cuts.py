@@ -72,7 +72,7 @@ STEPS = [(611, 701, "Field"), (701, 873, "Metal"), (873, 995, "Current"), (995, 
 METER = [(1287, 1300, "Coin", 3), (1300, 1312, "Belt", 5), (1312, 1352, "Bada metal object", 9)]
 
 # Cold-open typography (frames)
-HOOK_TEXT = [(4, 57, ["Metro ki ek machine", "kapdon mein chhupa", "*metal* bhi", "pakad leti hai"]),
+HOOK_TEXT = [(0, 57, ["Metro ki ek machine", "kapdon mein chhupa", "*metal* bhi", "pakad leti hai"]),
              (57, 90, ["Lekin aakhir", "*KAISE?*"])]
 # Just KnowIt logo ending: the corner logo flies to the centre while a red iris fills the frame; the reel runs past
 # the last 3D frame (END) on the logo alone

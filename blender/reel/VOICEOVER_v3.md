@@ -1,6 +1,6 @@
 # Voiceover v3: the metro metal detector, straight to the point (Just KnowIt)
 
-A direct explainer with no story: the question, the answer in five steps (the same five step titles that appear in
+A direct explainer with no story: a spoken hook over the opening title, the question, the answer in five steps (the same five step titles that appear in
 the video), a one-line close and a call to follow the channel, Just KnowIt, over the logo ending. The opening title ("Metro
 ki ek machine… Lekin aakhir KAISE?") matches it.
 
@@ -12,8 +12,9 @@ plain script below and swap it in; the times in the table are where each line st
 
 | Time | On screen | Hinglish voiceover | Meaning (English) |
 |---|---|---|---|
-| 0:00 | Opening title, "KAISE?" | *(no voice: title and sound)* | |
-| 0:03 | The gate, the man in line | Metro ka metal detector, jeb ka chhota sa sikka bhi pakad leta hai. Kaise? | The metro's metal detector catches even a tiny coin in your pocket. How? |
+| 0:00 | Hook text on screen from the first frame, the alarm goes off | Ek chhota sa sikka… aur BEEP! | One tiny coin… and BEEP! |
+| 0:02 | "Lekin aakhir KAISE?" | Aakhir kaise? | But how? |
+| 0:03 | The gate, the man in line | Metro ka metal detector, jeb ka chhota sa sikka bhi pakad leta hai. | The metro's metal detector catches even a tiny coin in your pocket. |
 | 0:08 | Quick cuts | Jawab hai, electromagnetic induction. | The answer: electromagnetic induction. |
 | 0:10.5 | Control unit, screen | Gate mein do coils hoti hain, transmitter aur receiver. | The gate has two coils: a transmitter and a receiver. |
 | 0:13.3 | Coin and card, signal | Dono milkar metal ko paanch steps mein pakadti hain. | Together they catch metal in five steps. |
@@ -29,7 +30,9 @@ plain script below and swap it in; the times in the table are where each line st
 
 ## Plain script (for reading aloud)
 
-> Metro ka metal detector, jeb ka chhota sa sikka bhi pakad leta hai. Kaise?
+> Ek chhota sa sikka… aur BEEP! Aakhir kaise?
+>
+> Metro ka metal detector, jeb ka chhota sa sikka bhi pakad leta hai.
 >
 > Jawab hai, electromagnetic induction. Gate mein do coils hoti hain, transmitter aur receiver. Dono milkar metal ko
 > paanch steps mein pakadti hain.

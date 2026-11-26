@@ -366,7 +366,7 @@ def draw_hook(canvas, f):
             paste_center(canvas, img2, W / 2, 880, k * out, 1.0 + 0.35 * (1 - ease_back((f - a) / 7)))
         else:
             for i, ln in enumerate(lines):
-                t = (f - a - i * 8) / 7
+                t = (f - a - i * 5 + 3) / 5        # the first line is already on frame 0
                 if t <= 0:
                     continue
                 k = ease_out(t)
