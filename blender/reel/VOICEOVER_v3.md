@@ -1,7 +1,7 @@
 # Voiceover v3: the metro metal detector, straight to the point (Just KnowIt)
 
 A direct explainer with no story: the question, the answer in five steps (the same five step titles that appear
-in the video) and a one-line close. Each line starts where its shot starts, so it can be recorded straight over the
+in the video) a one-line close and a "follow for more" call to action over the logo ending. Each line starts where its shot starts, so it can be recorded straight over the
 existing reel. The opening title ("Metro ki ek machine… Lekin aakhir KAISE?") matches it.
 
 ## Timed script
@@ -23,7 +23,7 @@ existing reel. The opening title ("Metro ki ek machine… Lekin aakhir KAISE?") 
 | 0:39.2 | Coin size | Signal jitna strong, metal utna bada. | The stronger the signal, the bigger the metal. |
 | 0:42 | Signal meter | Isliye sikka, belt aur bade metal ka response alag hota hai. | That's why a coin, a belt and a big metal object give different responses. |
 | 0:45 | Final shot at the gate | Bas, itna sa science. | That's all the science there is. |
-| 0:46.4 | Logo ending | *(no voice)* | |
+| 0:47.3 | Logo ending: "FOLLOW FOR MORE" button appears | Aise hi aur explainers ke liye… follow for more! | For more explainers like this… follow for more! |
 
 ## Plain script (for reading aloud)
 
@@ -42,6 +42,8 @@ existing reel. The opening title ("Metro ki ek machine… Lekin aakhir KAISE?") 
 > response alag hota hai.
 >
 > Bas, itna sa science.
+>
+> *(over the logo)* Aise hi aur explainers ke liye… follow for more!
 
 ## Recording notes
 
@@ -49,4 +51,5 @@ existing reel. The opening title ("Metro ki ek machine… Lekin aakhir KAISE?") 
 - **Pace:** about 2.8 words a second, the same pace as the reel's current narration.
 - **Emphasis:** stress the key words that also appear on screen: *transmitter*, *receiver*, *magnetic field*,
   *eddy currents*, *alarm*.
-- **Timing:** "alarm baj jaata hai" should land on the alarm hit (about 0:35–0:37).
+- **Timing:** "alarm baj jaata hai" should land on the alarm hit (about 0:35–0:37), and "follow for more!" on the
+  white "FOLLOW FOR MORE" button in the logo ending (about 0:47.5).

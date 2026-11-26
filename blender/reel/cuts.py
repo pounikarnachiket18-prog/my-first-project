@@ -83,4 +83,4 @@ OUT_END = END + 66            # total frames in the finished reel
 STEP_SUB = {"Field": "field banta hai", "Metal": "metal andar aata hai", "Current": "current paida hota hai",
             "Sensor": "sensor badlaav pakadta hai", "Alarm": "alarm bajta hai"}
 CAPTIONS = None         # subtitles off; "hinglish" (Roman Hindi) or "english" turns them back on
-END_CTA = ("Aise aur explainers ke liye", "follow karo")   # English: ("More explainers like this", "follow")
+END_CTA = ("Aise hi aur explainers ke liye", "follow for more")
