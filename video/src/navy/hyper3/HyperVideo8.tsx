@@ -4,7 +4,7 @@ import React from "react";
 import { AbsoluteFill, Sequence, Audio, OffthreadVideo, staticFile, useCurrentFrame, interpolate } from "remotion";
 import { HyperVideo8Body, HYPER8B_FRAMES } from "./HyperVideo8Body";
 import { SCENES_H5 } from "./scenes_h5";
-import { H6Strike, HOOK, CLIP, DAY_FOR_NIGHT } from "./HyperVideo6";
+import { H6Strike, HOOK, CLIP } from "./HyperVideo6";
 import { H7Time } from "./scenes_h7";
 import { Illus } from "./scenes_h3";
 import { RealismCtx, NightCtx } from "./Sprite";
@@ -15,13 +15,12 @@ const SCENES_H8: Record<string, React.FC> = { ...SCENES_H5, strike: H6Strike, ti
 
 const Hook8: React.FC = () => {
   const f = useCurrentFrame();
-  const night = React.useContext(NightCtx);
   const flash = interpolate(f, [HOOK - 4, HOOK], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
   const wm = interpolate(f, [6, 16], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
   return (
     <AbsoluteFill style={{ background: "#000" }}>
-      <OffthreadVideo src={staticFile(CLIP)} muted style={{ width: 1080, height: 1920, objectFit: "cover", filter: night ? DAY_FOR_NIGHT : undefined }} />
-      {night && <AbsoluteFill style={{ background: "rgba(10,30,70,0.35)", mixBlendMode: "multiply" }} />}
+      {/* the opening dogfight stays in daylight in every version; the story after the flash is night in the night version */}
+      <OffthreadVideo src={staticFile(CLIP)} muted style={{ width: 1080, height: 1920, objectFit: "cover" }} />
       <div style={{ position: "absolute", right: 40, top: 150, opacity: wm }}><BrandBadge /></div>
       <Illus />
       <AbsoluteFill style={{ background: "#fff", opacity: flash }} />
