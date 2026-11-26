@@ -43,7 +43,7 @@ const LogoReveal: React.FC<{ g: number }> = ({ g }) => {
   );
 };
 
-export const JetEndCard: React.FC<{ t0: number }> = ({ t0 }) => {
+export const JetEndCard: React.FC<{ t0: number; compact?: boolean }> = ({ t0, compact = false }) => {
   const f = useCurrentFrame();
   const night = React.useContext(NightCtx);
   // flight path: low and fast from behind-left, then a climbing pull-up away from the camera
@@ -74,10 +74,10 @@ export const JetEndCard: React.FC<{ t0: number }> = ({ t0 }) => {
     jet: { pos: p, dir: [dir[0] / n, dir[1] / n, dir[2] / n], scale: 1 },
   };
   // motion graphic
-  const a = interpolate(f, [44, 60], [0, 1], { ...cl, easing: ease });
-  const b = interpolate(f, [54, 72], [0, 1], { ...cl, easing: ease });
-  const line = interpolate(f, [50, 74], [0, 1], { ...cl, easing: ease });
-  const sweep = interpolate(f, [66, 96], [-0.3, 1.3], cl);
+  const a = interpolate(f, compact ? [18, 32] : [44, 60], [0, 1], { ...cl, easing: ease });
+  const b = interpolate(f, compact ? [26, 40] : [54, 72], [0, 1], { ...cl, easing: ease });
+  const line = interpolate(f, compact ? [22, 42] : [50, 74], [0, 1], { ...cl, easing: ease });
+  const sweep = interpolate(f, compact ? [34, 56] : [66, 96], [-0.3, 1.3], cl);
   const shadow = "0 3px 0 rgba(0,0,0,0.3), 0 4px 22px rgba(0,0,0,0.55)";
   return (
     <AbsoluteFill>
@@ -98,7 +98,7 @@ export const JetEndCard: React.FC<{ t0: number }> = ({ t0 }) => {
           <span style={{ textAlign: "left" }}><BrandWord size={70} sub="EXPLAINERS · FOLLOW FOR MORE" /></span>
         </div>
       </div>
-      {f >= LOGO_START && <LogoReveal g={f - LOGO_START} />}
+      {f >= (compact ? 62 : LOGO_START) && <LogoReveal g={f - (compact ? 62 : LOGO_START)} />}
     </AbsoluteFill>
   );
 };
