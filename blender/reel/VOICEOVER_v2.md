@@ -6,7 +6,7 @@ same as before (transmitter coil, magnetic field, eddy currents, the coin's own 
 lights, signal strength), but it is told as a story with a payoff.
 
 Each line starts where its shot starts, so it can be recorded straight over the existing video. Speech runs from
-0:03 to about 0:46 (about 115 words), then the logo ending plays.
+0:03 to about 0:46 (about 134 words), then the logo ending plays.
 
 ## Timed script
 
@@ -15,18 +15,18 @@ Each line starts where its shot starts, so it can be recorded straight over the 
 | 0:00 | Hook: man at the gate, "KAISE?" | *(optional, over the hook)* Bauni ne socha tha, machine ko chakma de dega… | Bauni thought he'd fool the machine… |
 | 0:03 | Wide: the gate, Bauni in line | Yeh hain Bauni Natkaht. AKA… Cheater. | Meet Bauni Natkaht. AKA… Cheater. |
 | 0:05.5 | Close-up on Bauni | Plan simple tha: jeb mein sikke, chehre pe confidence. | The plan was simple: coins in the pocket, confidence on the face. |
-| 0:08 | Quick cuts: belt, pocket, items | Itna chhota sa sikka… machine ko kya hi pata chalega? | Such a tiny coin… how would the machine ever know? |
-| 0:10.5 | Whoosh, the control unit's screen | Galat. Yeh gate sirf ek darwaza nahi hai. | Wrong. This gate isn't just a doorway. |
-| 0:13.3 | Coin and ID card close-up, signal | Yeh ek invisible jaal hai, jiska nishaana hai… metal. | It's an invisible trap, and its target is… metal. |
-| 0:17 | The gate goes see-through, transmitter coil | Ek panel mein chhupi transmitter coil har second sainkdon pulse bhejti hai. | A transmitter coil hidden in one panel sends out hundreds of pulses every second. |
-| 0:20.4 | **01 Field**: field lines fill the gate | Har pulse ke saath, gate ke beech ek magnetic field ban jaata hai. | With every pulse, a magnetic field forms across the gate. |
+| 0:08 | Quick cuts: belt, pocket, items | Chhota sa sikka… machine ko kya pata? | A tiny coin… how would the machine know? |
+| 0:10.5 | Whoosh, the control unit's screen | Galat. Yeh gate sirf darwaza nahi hai. | Wrong. This gate isn't just a doorway. |
+| 0:13.3 | Coin and ID card close-up, signal | Yeh ek invisible jaal hai… metal ke liye. | It's an invisible trap… set for metal. |
+| 0:17 | The gate goes see-through, transmitter coil | Ek panel ki transmitter coil har second sainkdon pulse bhejti hai. | The transmitter coil in one panel sends out hundreds of pulses every second. |
+| 0:20.4 | **01 Field**: field lines fill the gate | Har pulse se gate mein magnetic field ban jaata hai. | Every pulse fills the gate with a magnetic field. |
 | 0:23.4 | **02 Metal**: Bauni walks in | Ab Bauni andar aate hain. | Now Bauni walks in. |
-| 0:25.4 | Field lines bend at his pocket | Shareer ka field pe na ke barabar asar. Par jeb ke sikke? Wahan field bigad jaata hai. | His body barely affects the field. But the coins in his pocket? There, the field gets disturbed. |
-| 0:29 | **03 Current**: dive into the coin, eddy currents | Sikke ke andar chhote-chhote current ghoomne lagte hain… eddy currents. | Tiny currents start swirling inside the coin… eddy currents. |
+| 0:25.4 | Field lines bend at his pocket | Shareer se farak nahi padta. Par jeb ke sikke? Field wahin bigadta hai. | His body makes no real difference. But the coins in his pocket? That's where the field gets disturbed. |
+| 0:29 | **03 Current**: dive into the coin, eddy currents | Sikke mein chhote current ghoomne lagte hain… eddy currents. | Tiny currents start swirling inside the coin… eddy currents. |
 | 0:33.2 | **04 Sensor**: the coin's own field (rose) | Yeh currents apna ulta field banaate hain… | These currents create their own, opposing field… |
-| 0:34.8 | **05 Alarm**: receiver coil, red light, alarm | …jise receiver coil turant pakad leti hai. Bauni… pakde gaye! | …which the receiver coil picks up instantly. Bauni… caught! |
-| 0:37.6 | Zone lights | Zone lights bata deti hain: metal kamar ke paas hai. | The zone lights even show where: the metal is at the hip. |
-| 0:39.2 | Coin size gauge | Aur signal ki taakat batati hai ki metal kitna bada hai. | And the signal's strength tells how big the metal is. |
+| 0:34.8 | **05 Alarm**: receiver coil, red light, alarm | …jo receiver coil turant pakad leti hai. Bauni… pakde gaye! | …which the receiver coil picks up instantly. Bauni… caught! |
+| 0:37.6 | Zone lights | Zone lights: metal kamar ke paas. | Zone lights: the metal is at the hip. |
+| 0:39.2 | Coin size gauge | Signal ki taakat batati hai, metal kitna bada hai. | The signal's strength tells how big the metal is. |
 | 0:42 | Signal meter: coin, belt, bigger object | Sikka, belt, ya koi bada metal… sabka signal alag. | A coin, a belt or something bigger… each gives a different signal. |
 | 0:44.8 | Bauni back at the gate | Toh Bauni bhai… agli baar, sikke tray mein! | So, Bauni bhai… next time, coins go in the tray! |
 | 0:46.4 | Logo ending | *(no voice: logo and sting)* | |
@@ -35,20 +35,20 @@ Each line starts where its shot starts, so it can be recorded straight over the 
 
 > *(optional)* Bauni ne socha tha, machine ko chakma de dega…
 >
-> Yeh hain Bauni Natkaht. AKA… Cheater. Plan simple tha: jeb mein sikke, chehre pe confidence. Itna chhota sa sikka…
-> machine ko kya hi pata chalega?
+> Yeh hain Bauni Natkaht. AKA… Cheater. Plan simple tha: jeb mein sikke, chehre pe confidence. Chhota sa sikka…
+> machine ko kya pata?
 >
-> Galat. Yeh gate sirf ek darwaza nahi hai. Yeh ek invisible jaal hai, jiska nishaana hai… metal.
+> Galat. Yeh gate sirf darwaza nahi hai. Yeh ek invisible jaal hai… metal ke liye.
 >
-> Ek panel mein chhupi transmitter coil har second sainkdon pulse bhejti hai. Har pulse ke saath, gate ke beech ek
-> magnetic field ban jaata hai.
+> Ek panel ki transmitter coil har second sainkdon pulse bhejti hai. Har pulse se gate mein magnetic field ban jaata
+> hai.
 >
-> Ab Bauni andar aate hain. Shareer ka field pe na ke barabar asar. Par jeb ke sikke? Wahan field bigad jaata hai.
-> Sikke ke andar chhote-chhote current ghoomne lagte hain… eddy currents. Yeh currents apna ulta field banaate hain…
-> jise receiver coil turant pakad leti hai. Bauni… pakde gaye!
+> Ab Bauni andar aate hain. Shareer se farak nahi padta. Par jeb ke sikke? Field wahin bigadta hai. Sikke mein chhote
+> current ghoomne lagte hain… eddy currents. Yeh currents apna ulta field banaate hain… jo receiver coil turant pakad
+> leti hai. Bauni… pakde gaye!
 >
-> Zone lights bata deti hain: metal kamar ke paas hai. Aur signal ki taakat batati hai ki metal kitna bada hai. Sikka,
-> belt, ya koi bada metal… sabka signal alag.
+> Zone lights: metal kamar ke paas. Signal ki taakat batati hai, metal kitna bada hai. Sikka, belt, ya koi bada metal…
+> sabka signal alag.
 >
 > Toh Bauni bhai… agli baar, sikke tray mein!
 
@@ -56,7 +56,7 @@ Each line starts where its shot starts, so it can be recorded straight over the 
 
 - **Tone:** playful storyteller for Bauni's lines (setup and payoff), clear and confident for the science in the
   middle.
-- **Pace:** fairly brisk, about 2.7 words a second. The pauses marked "…" are the comic beats; keep them short.
+- **Pace:** brisk, about 3 words a second (the same pace as the reel's current narration). The pauses marked "…" are the comic beats; keep them short.
 - **Timing:** "pakde gaye!" should land just after the alarm hits (0:35–0:36). The last line runs into the start of
   the logo transition, which is fine.
 - **On-screen hook:** it still reads "Airport ki ek machine… Lekin aakhir KAISE?". To match the new story it could
