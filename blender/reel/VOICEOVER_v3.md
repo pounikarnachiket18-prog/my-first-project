@@ -1,15 +1,15 @@
-# Voiceover v3: straight to the point (Just KnowIt)
+# Voiceover v3: the metro metal detector, straight to the point (Just KnowIt)
 
 A direct explainer with no story: the question, the answer in five steps (the same five step titles that appear
 in the video) and a one-line close. Each line starts where its shot starts, so it can be recorded straight over the
-existing reel. The opening title ("Airport ki ek machine… Lekin aakhir KAISE?") already matches it.
+existing reel. The opening title ("Metro ki ek machine… Lekin aakhir KAISE?") matches it.
 
 ## Timed script
 
 | Time | On screen | Hinglish voiceover | Meaning (English) |
 |---|---|---|---|
 | 0:00 | Opening title, "KAISE?" | *(no voice: title and sound)* | |
-| 0:03 | The gate, the man in line | Airport ka metal detector jeb ka chhota sa sikka bhi pakad leta hai. Kaise? | An airport metal detector catches even a tiny coin in your pocket. How? |
+| 0:03 | The gate, the man in line | Metro ka metal detector jeb ka chhota sa sikka bhi pakad leta hai. Kaise? | The metro's metal detector catches even a tiny coin in your pocket. How? |
 | 0:08 | Quick cuts | Jawab hai: electromagnetic induction. | The answer: electromagnetic induction. |
 | 0:10.5 | Control unit, screen | Gate mein do coils hoti hain: transmitter aur receiver. | The gate has two coils: a transmitter and a receiver. |
 | 0:13.3 | Coin and card, signal | Dono milkar metal ko paanch steps mein pakadti hain. | Together they catch metal in five steps. |
@@ -27,7 +27,7 @@ existing reel. The opening title ("Airport ki ek machine… Lekin aakhir KAISE?"
 
 ## Plain script (for reading aloud)
 
-> Airport ka metal detector jeb ka chhota sa sikka bhi pakad leta hai. Kaise?
+> Metro ka metal detector jeb ka chhota sa sikka bhi pakad leta hai. Kaise?
 >
 > Jawab hai: electromagnetic induction. Gate mein do coils hoti hain: transmitter aur receiver. Dono milkar metal ko
 > paanch steps mein pakadti hain.

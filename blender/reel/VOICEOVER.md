@@ -5,7 +5,7 @@ finished reel (49.4 s). The first 3 s are an on-screen hook with sound only, and
 
 | Time | Hinglish (as spoken) | हिंदी | English |
 |---|---|---|---|
-| 0:00 | *(no voice; on-screen text)* Airport ki ek machine kapdon mein chhupa metal bhi pakad leti hai. Lekin aakhir KAISE? | | *(on-screen)* A machine at the airport catches even metal hidden in your clothes. But how? |
+| 0:00 | *(no voice; on-screen text)* Metro ki ek machine kapdon mein chhupa metal bhi pakad leti hai. Lekin aakhir KAISE? | | *(on-screen)* A machine at the metro catches even metal hidden in your clothes. But how? |
 | 0:03 | Yeh gate toh lagbhag har insaan par BEEP karta hai. | यह गेट तो लगभग हर इंसान पर बीप करता है। | This gate beeps for almost everyone. |
 | 0:05 | Phir security guards ko kaise pata chalta hai ki kisi ke paas sikka hai, bandook hai, bomb hai, ya belt? | फिर सिक्योरिटी गार्ड्स को कैसे पता चलता है कि किसी के पास सिक्का है, बंदूक है, बम है, या बेल्ट? | So how do security guards know whether someone has a coin, a gun, a bomb or a belt? |
 | 0:10 | Chaliye samajhte hain. | चलिए समझते हैं। | Let's find out. |
