@@ -6,11 +6,12 @@ import numpy as np, soundfile as sf
 from scipy.signal import butter, sosfilt
 
 HERE = os.path.dirname(__file__); PUB = os.path.join(HERE, "..", "public", "navy")
-tl = json.load(open(os.path.join(HERE, "..", "src", "navy", "hyper10", "timeline.json")))
+tl = json.load(open(os.environ.get("TL") or os.path.join(HERE, "..", "src", "navy", "hyper10", "timeline.json")))
+END = int(os.environ.get("END", "108")); LOGO_OFF = int(os.environ.get("LOGO_OFF", "62"))
 SR, FPS = 44100, 30
 HOOK = 81 / FPS
 LOGO_AT = (round(tl["lines"][-1]["t0"] * FPS) - 3)
-TOTAL = (81 + max(tl["frames"], LOGO_AT + 108)) / FPS
+TOTAL = (81 + max(tl["frames"], LOGO_AT + END)) / FPS
 N = int(TOTAL * SR)
 rng = np.random.default_rng(11)
 
@@ -34,7 +35,7 @@ SC = {s["id"]: s for s in tl["scenes"]}
 S0 = lambda s: HOOK + SC[s]["start"]
 Ls = lambda i: HOOK + tl["lines"][i]["t0"]; Le = lambda i: HOOK + tl["lines"][i]["t1"]
 W = lambda i, j: HOOK + tl["lines"][i]["words"][min(j, len(tl["lines"][i]["words"]) - 1)]["t0"]
-hyper_hit = Le(10) - 10 / FPS; super_hit = W(11, 1); logo = HOOK + (LOGO_AT + 62) / FPS
+hyper_hit = Le(10) - 10 / FPS; super_hit = W(11, 1); logo = HOOK + (LOGO_AT + LOGO_OFF) / FPS
 
 # ---------- instruments
 def kick(g=1.0):
@@ -172,7 +173,7 @@ put(sfx, whoosh(0.6, 300, 2500, 0.5), logo - 0.2)
 
 # ---------- voice, hook clip audio
 voice = np.zeros(N)
-v, vsr = sf.read(os.path.join(PUB, "voice_final.wav"), dtype="float64")
+v, vsr = sf.read(os.path.join(PUB, os.environ.get("VOICE", "voice_final.wav")), dtype="float64")
 if v.ndim > 1: v = v.mean(1)
 put(voice, v, HOOK)
 raw = subprocess.check_output(["ffmpeg", "-v", "error", "-ss", f"{(152 - 81) / FPS:.4f}", "-t", f"{HOOK + 0.15:.4f}", "-i", os.path.join(PUB, "dogfight.mp4"), "-ac", "1", "-ar", str(SR), "-f", "f32le", "-"])
@@ -190,5 +191,5 @@ mix[: len(clip)] += clip * 0.75
 fade = np.ones(N); nf = int(0.8 * SR); fade[-nf:] = np.linspace(1, 0, nf)
 mix = np.tanh(mix * fade * 1.05) / np.tanh(1.05)
 st = np.stack([mix, mix], 1); st = st / np.abs(st).max() * 0.95
-sf.write(os.path.join(PUB, "mix_final.wav"), st.astype(np.float32), SR)
+sf.write(os.path.join(PUB, os.environ.get("OUT", "mix_final.wav")), st.astype(np.float32), SR)
 print("mix_final", round(N / SR, 2), "s; hyperHit", round(hyper_hit, 2), "superHit", round(super_hit, 2), "logo", round(logo, 2))

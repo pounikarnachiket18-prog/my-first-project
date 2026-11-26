@@ -3,6 +3,7 @@
 import React from "react";
 import { AbsoluteFill, Sequence, Audio, OffthreadVideo, staticFile, useCurrentFrame, interpolate } from "remotion";
 import { HyperVideo10Body, HYPER10B_FRAMES } from "./HyperVideo10Body";
+import { HyperVideo11Body, HYPER11B_FRAMES } from "./HyperVideo11Body";
 import { SCENES_H5 } from "./scenes_h5";
 import { H6Strike, CLIP } from "./HyperVideo6";
 import { H7Time } from "./scenes_h7";
@@ -34,6 +35,18 @@ export const HyperVideoFinal: React.FC = () => (
       <Sequence durationInFrames={HOOK_F + 2} name="hook"><HookFinal /></Sequence>
       <Sequence from={HOOK_F} name="story"><HyperVideo10Body scenes={SCENES_FINAL} audio={false} /></Sequence>
       <Audio src={staticFile("navy/mix_final.wav")} />
+    </AbsoluteFill>
+  </RealismCtx.Provider>
+);
+
+/** FINAL 60 s: same reel, voice at ~1.1x (natural pace), full end card */
+export const FINAL60_FRAMES = HOOK_F + HYPER11B_FRAMES;
+export const HyperVideoFinal60: React.FC = () => (
+  <RealismCtx.Provider value={true}>
+    <AbsoluteFill style={{ background: "#000" }}>
+      <Sequence durationInFrames={HOOK_F + 2} name="hook"><HookFinal /></Sequence>
+      <Sequence from={HOOK_F} name="story"><HyperVideo11Body scenes={SCENES_FINAL} audio={false} /></Sequence>
+      <Audio src={staticFile("navy/mix_final60.wav")} />
     </AbsoluteFill>
   </RealismCtx.Provider>
 );

@@ -43,7 +43,7 @@ const LogoReveal: React.FC<{ g: number }> = ({ g }) => {
   );
 };
 
-export const JetEndCard: React.FC<{ t0: number; compact?: boolean }> = ({ t0, compact = false }) => {
+export const JetEndCard: React.FC<{ t0: number; compact?: boolean; logoAt?: number }> = ({ t0, compact = false, logoAt }) => {
   const f = useCurrentFrame();
   const night = React.useContext(NightCtx);
   // flight path: low and fast from behind-left, then a climbing pull-up away from the camera
@@ -98,7 +98,7 @@ export const JetEndCard: React.FC<{ t0: number; compact?: boolean }> = ({ t0, co
           <span style={{ textAlign: "left" }}><BrandWord size={70} sub="EXPLAINERS · FOLLOW FOR MORE" /></span>
         </div>
       </div>
-      {f >= (compact ? 62 : LOGO_START) && <LogoReveal g={f - (compact ? 62 : LOGO_START)} />}
+      {f >= (logoAt ?? (compact ? 62 : LOGO_START)) && <LogoReveal g={f - (logoAt ?? (compact ? 62 : LOGO_START))} />}
     </AbsoluteFill>
   );
 };
