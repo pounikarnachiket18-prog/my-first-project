@@ -203,8 +203,9 @@ if os.environ.get("ROGER") == "1":
     R = R / (np.abs(R).max() + 1e-9) * 0.85
     weapon_away = 4.17 - (152 - 81) / FPS          # HUD "WEAPON AWAY" in the clip -> reel time
     put(voice, R, weapon_away - 0.05)
-    put(voice, R, Le(13) + 0.25)
-    print("roger at", round(weapon_away - 0.05, 2), "and", round(Le(13) + 0.25, 2))
+    end_t = min(Le(13) + 0.25, TOTAL - len(R) / SR - 0.15)
+    put(voice, R, end_t)
+    print("roger at", round(weapon_away - 0.05, 2), "and", round(end_t, 2))
 
 # ---------- mix
 venv = np.sqrt(np.maximum(lp(voice ** 2, 6), 0)); vk = np.clip(venv / (venv.max() * 0.2 + 1e-9), 0, 1)
