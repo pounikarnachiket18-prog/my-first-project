@@ -1,0 +1,10 @@
+renders/frames/
+renders/segments/
+renders/preview/
+renders/tests/
+renders/*.txt
+__pycache__/
+*.blend1
+assets/audio/narration.wav
+assets/audio/music.wav
+assets/audio/sfx.wav
