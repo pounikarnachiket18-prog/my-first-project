@@ -35,7 +35,10 @@ The Just KnowIt logo (`assets/justknowit_logo.png`) is keyed out of its red back
   the frame. The wordmark then wipes in, a ring pulses out and the follow line rises in. The last frame matches the
   logo, with a whoosh, a soft hit and an A-major shimmer under it.
 
-The narration script, with timings, Hinglish, Hindi and English, is in [VOICEOVER.md](VOICEOVER.md).
+The reel's voice is the metro script in [VOICEOVER_v3.md](VOICEOVER_v3.md), synthesised offline by
+`tts_voiceover.py` with Kokoro (male Hindi voice `hm_omega`) and laid line by line on the shots
+(`build/narration_metro.wav`, which `sound.py` takes as `--narration`). The original Hindi narration and its script are
+still in `prep_audio.py` and [VOICEOVER.md](VOICEOVER.md).
 
 ## Pipeline
 
