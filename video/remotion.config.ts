@@ -3,7 +3,9 @@ import { Config } from "@remotion/cli/config";
 
 Config.setVideoImageFormat("jpeg");
 Config.setOverwriteOutput(true);
-Config.setConcurrency(4);
+Config.setConcurrency(3);
+// Procedural geometry/textures are built on first mount of each scene; allow time.
+Config.setDelayRenderTimeoutInMilliseconds(300000);
 // Headless WebGL without a GPU: ANGLE (SwiftShader fallback).
 Config.setChromiumOpenGlRenderer("angle");
 // Use a locally installed headless Chromium when present (offline/cloud boxes).
