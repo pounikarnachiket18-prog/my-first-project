@@ -5,7 +5,7 @@ Takes the Cycles frames (720x1280), upscales them to 1080x1920 and draws:
   * the cold-open typography (hook), Hinglish (or English, see cuts.CAPTIONS) subtitles with highlighted key words,
   * science labels that track their 3D anchors (anchors.json), a five-step explanation tracker,
   * the "signal strength" meter for coin / belt / bigger object, the alarm edge pulse,
-  * Just KnowIt branding: the logo in the corner of every frame (with a light sweep), a red brand wipe from the
+  * Just KnowIt branding: the logo in the corner of every frame (white, slightly see-through), a red brand wipe from the
     hook into the story, lower-third step titles, and the logo ending (iris transition into the full logo).
 Everything stays inside the Instagram Reels safe area (top ~230 px, bottom ~420 px, right ~120 px kept clear).
 
@@ -33,6 +33,7 @@ BR = brand.RED                       # Just KnowIt red
 BR_L = brand.RED_LIGHT
 COL = {"white": (235, 240, 250), "cyan": (70, 205, 255), "amber": (255, 165, 50), "rose": (255, 95, 155)}
 SUB_Y = 1312                         # subtitle centre line
+SHOW_TRACKER = False                 # the five-step tracker along the top (off; the lower-third step titles remain)
 SAFE_TOP, SAFE_BOTTOM, SAFE_L, SAFE_R = 250, 1180, 50, 960
 
 
@@ -141,74 +142,52 @@ def red_edge():
 
 
 # --------------------------------------------------------------------------- #
-# Just KnowIt corner logo, on every frame until it flies into the logo ending
-BUG_X, BUG_Y, BUG_H = 40, 222, 76
-BUG_MARK = 52
+# Just KnowIt corner logo, on every frame until it flies into the logo ending: the white logo, slightly see-through,
+# with a soft shadow so it reads on light and dark shots without a solid badge behind it
+BUG_X, BUG_Y, BUG_H = 44, 232, 56
+BUG_MARK = 50
+BUG_ALPHA = 0.78
 
 
 @lru_cache(None)
 def bug_parts():
     mark = brand.fit(brand.part("mark"), BUG_MARK)
-    word = brand.fit(brand.part("word"), 26)
-    w = 16 + mark.width + 14 + word.width + 26
-    pill = Image.new("RGBA", (w, BUG_H), (0, 0, 0, 0)); d = ImageDraw.Draw(pill)
-    d.rounded_rectangle([0, 0, w - 1, BUG_H - 1], BUG_H // 2, fill=BR + (238,))
-    shadow = Image.new("RGBA", (w + 40, BUG_H + 40), (0, 0, 0, 0))
-    shadow.putalpha(Image.new("L", (w + 40, BUG_H + 40), 0))
-    sd = ImageDraw.Draw(shadow); sd.rounded_rectangle([20, 26, w + 19, BUG_H + 25], BUG_H // 2, fill=(0, 0, 0, 110))
-    shadow = shadow.filter(ImageFilter.GaussianBlur(9))
-    return pill, mark, word, shadow
+    word = brand.fit(brand.part("word"), 25)
+    w = mark.width + 12 + word.width
+    art = Image.new("RGBA", (w, BUG_H), (0, 0, 0, 0))
+    art.alpha_composite(word, (mark.width + 12, (BUG_H - word.height) // 2 + 1))
+    def shadow_of(img):
+        pad = 16
+        sh = Image.new("RGBA", (img.width + 2 * pad, img.height + 2 * pad), (0, 0, 0, 0))
+        a = Image.new("L", sh.size, 0); a.paste(img.getchannel("A"), (pad, pad + 2))
+        sh.putalpha(a.filter(ImageFilter.GaussianBlur(5)).point(lambda v: int(v * 0.45)))
+        return sh
+    full = art.copy(); full.alpha_composite(mark, (0, (BUG_H - mark.height) // 2))
+    return art, mark, shadow_of(full)
 
 
 def bug_mark_centre():
-    pill, mark, word, _ = bug_parts()
-    return BUG_X + 16 + mark.width / 2, BUG_Y + BUG_H / 2
-
-
-def shine_times():
-    ts = [s0 for s0, _, _ in STEPS] + list(range(150, LOGO_IN - 40, 150))
-    return sorted(t for t in ts if t > 20)
+    art, mark, _ = bug_parts()
+    return BUG_X + mark.width / 2, BUG_Y + BUG_H / 2
 
 
 def draw_bug(canvas, f):
-    pill, mark, word, shadow = bug_parts()
+    art, mark, shadow = bug_parts()
     if f >= LOGO_IN + 6:
         return
-    # intro: the brain pops, then the red pill unrolls to the right and the wordmark slides out of it
-    k_pop = ease_back(f / 8, 2.2)
-    k_roll = ease_out((f - 5) / 10)
-    out = 1.0 - ease_out((f - LOGO_IN) / 5)         # the pill hands over to the flying mark at the logo ending
-    lay = Image.new("RGBA", (pill.width + 40, BUG_H + 40), (0, 0, 0, 0))
-    wr = int(BUG_H + (pill.width - BUG_H) * k_roll)
-    if wr > 0:
-        m = Image.new("L", pill.size, 0); ImageDraw.Draw(m).rounded_rectangle([0, 0, wr - 1, BUG_H - 1], BUG_H // 2, fill=255)
-        sh = shadow.copy(); sh.putalpha(ImageChops.multiply(sh.getchannel("A"), m.resize(pill.size).crop((0, 0, pill.width, BUG_H)).resize(pill.size)).resize(pill.size)) if False else shadow
-        lay.alpha_composite(sh, (0, 0))
-        p = pill.copy(); p.putalpha(ImageChops.multiply(p.getchannel("A"), m))
-        # light sweep across the pill every few seconds and at each new step
-        for t0 in shine_times():
-            u = (f - t0) / 16
-            if 0 <= u <= 1:
-                band = Image.linear_gradient("L").rotate(90, expand=True).resize((120, BUG_H))
-                band = band.point(lambda v: int(255 * math.sin(math.pi * v / 255) ** 2 * 0.55))
-                sw = Image.new("L", pill.size, 0); sw.paste(band, (int(-120 + (pill.width + 120) * ease_io(u)), 0))
-                white = Image.new("RGBA", pill.size, (255, 255, 255, 0))
-                white.putalpha(ImageChops.multiply(sw, p.getchannel("A")))
-                p.alpha_composite(white)
-        lay.alpha_composite(p, (20, 20))
-        wx = 16 + mark.width + 14
-        wk = ease_out((f - 9) / 9)
-        if wk > 0:
-            wd = word.copy(); wd.putalpha(wd.getchannel("A").point(lambda v: int(v * wk)))
-            crop = Image.new("RGBA", pill.size, (0, 0, 0, 0)); crop.alpha_composite(wd, (int(wx - 18 * (1 - wk)), (BUG_H - word.height) // 2 + 1))
-            crop.putalpha(ImageChops.multiply(crop.getchannel("A"), m))
-            lay.alpha_composite(crop, (20, 20))
-    if f < LOGO_IN:     # the brain itself (it flies away on its own at the logo ending)
-        mk = mark.resize((max(1, int(mark.width * k_pop)), max(1, int(mark.height * k_pop))), Image.BICUBIC) if k_pop != 1 else mark
-        lay.alpha_composite(mk, (int(20 + 16 + (mark.width - mk.width) / 2), int(20 + (BUG_H - mk.height) / 2)))
-    if out < 1:
-        lay.putalpha(lay.getchannel("A").point(lambda v: int(v * out)))
-    canvas.alpha_composite(lay, (BUG_X - 20, BUG_Y - 20))
+    k_in = ease_out(f / 12)                         # fades and slides in over the first 0.4 s
+    out = 1.0 - ease_out((f - LOGO_IN) / 5)         # hands over to the flying brain at the logo ending
+    a = BUG_ALPHA * k_in * out
+    if a <= 0:
+        return
+    dx = int(-14 * (1 - k_in))
+    sh = shadow.copy(); sh.putalpha(sh.getchannel("A").point(lambda v: int(v * k_in * out)))
+    canvas.alpha_composite(sh, (BUG_X - 16 + dx, BUG_Y - 16))
+    lay = Image.new("RGBA", art.size, (0, 0, 0, 0)); lay.alpha_composite(art)
+    if f < LOGO_IN:     # the brain flies away on its own at the logo ending
+        lay.alpha_composite(mark, (0, (BUG_H - mark.height) // 2))
+    lay.putalpha(lay.getchannel("A").point(lambda v: int(v * a)))
+    canvas.alpha_composite(lay, (BUG_X + dx, BUG_Y))
 
 
 # --------------------------------------------------------------------------- #
@@ -245,7 +224,7 @@ def draw_label(canvas, f, lab, anchors):
         return
     p = pill(hi, en, colour)
     px = min(max(ax + dx - p.width / 2, SAFE_L), SAFE_R - p.width)
-    py = min(max(ay + dy - p.height / 2, SAFE_TOP + 210), SAFE_BOTTOM - p.height)   # below the step tracker
+    py = min(max(ay + dy - p.height / 2, SAFE_TOP + (210 if SHOW_TRACKER else 90)), SAFE_BOTTOM - p.height)   # below the logo (and tracker)
     t_in, t_out = (f - a), (b - f)
     k_line = ease_out(t_in / 7) * min(1.0, t_out / 5)
     if k_line <= 0:
@@ -546,7 +525,7 @@ def compose(job):
     for lab in LABELS:
         if lab[0] <= f < lab[1]:
             draw_label(canvas, f, lab, anchors)
-    if STEPS[0][0] <= f < STEPS[-1][1]:
+    if SHOW_TRACKER and STEPS[0][0] <= f < STEPS[-1][1]:
         draw_steps(canvas, f)
     draw_step_card(canvas, f)
     draw_meter(canvas, f)

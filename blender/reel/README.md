@@ -28,13 +28,14 @@ The Just KnowIt logo (`assets/justknowit_logo.png`) is keyed out of its red back
 
 - In 3D: the T-shirt print, the ID card (red header, "Bauni Natkaht, AKA Cheater"), the detector's red logo plate
   and the scanner stripe.
-- On screen: the logo sits top left in every frame. It pops in at the start and a light sweep crosses it every 5 s
-  and at each new step. The labels are dark cards with a colour key that wipe open as their leader line draws out of a
-  rippling anchor dot. Each step gets a lower-third title ("01 FIELD, field banta hai"), the step tracker is in brand
-  red, and a red brand wipe carries the cut from the cold open into the story.
+- On screen: the white logo sits top left in every frame, slightly see-through with a soft shadow. The labels are dark cards with a colour key that wipe open as their leader line draws out of a
+  rippling anchor dot. Each step gets a lower-third title ("01 FIELD, field banta hai"); the step tracker along the
+  top is off (`SHOW_TRACKER` in `post.py`). A red brand wipe carries the cut from the cold open into the story.
 - The ending: after the last word the corner brain flies to the centre while a red iris opens out of it and fills
   the frame. The wordmark then wipes in, a ring pulses out and the follow line rises in. The last frame matches the
   logo, with a whoosh, a soft hit and an A-major shimmer under it.
+
+The narration script, with timings, Hinglish, Hindi and English, is in [VOICEOVER.md](VOICEOVER.md).
 
 ## Pipeline
 
