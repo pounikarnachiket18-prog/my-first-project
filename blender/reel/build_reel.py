@@ -430,10 +430,10 @@ def make_id_card(path):
     d.ellipse([cx - 95, cy - 150, cx + 95, cy + 60], fill=(170, 112, 82))
     d.chord([cx - 105, cy - 175, cx + 105, cy + 10], 180, 360, fill=(28, 20, 16))
     d.pieslice([cx - 190, cy + 70, cx + 190, cy + 420], 180, 360, fill=(14, 24, 56))
-    d.text((cx, 840), "Bauni Natkaht", font=f("Inter-ExtraBold.otf", 92), fill=(20, 22, 30), anchor="mm")
-    d.text((cx, 950), "AKA Cheater", font=f("Inter-ExtraBold.otf", 80), fill=(20, 22, 30), anchor="mm")
+    d.text((cx, 840), "Tinku Tension", font=f("Inter-ExtraBold.otf", 92), fill=(20, 22, 30), anchor="mm")
+    d.text((cx, 950), "AKA Shortcut King", font=f("Inter-ExtraBold.otf", 72), fill=(20, 22, 30), anchor="mm")
     d.text((cx, 1035), "Graphic Designer", font=f("Inter-Medium.otf", 50), fill=(120, 120, 128), anchor="mm")
-    rows = [("ID NO", "JK-7741-028"), ("EMAIL", "bauni@mail.com"), ("PHONE", "98XXX 12345"), ("DATE", "01.08.2026")]
+    rows = [("ID NO", "JK-7741-028"), ("EMAIL", "tinku@mail.com"), ("PHONE", "98XXX 12345"), ("DATE", "01.08.2026")]
     for i, (k, v) in enumerate(rows):
         y = 1140 + i * 82
         d.text((170, y), k, font=f("Inter-Bold.otf", 44), fill=(20, 22, 30))

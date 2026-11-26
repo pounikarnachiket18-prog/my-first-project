@@ -26,7 +26,7 @@ and red is the alarm. All on-screen text is in Latin script: the Hinglish hook a
 The Just KnowIt logo (`assets/justknowit_logo.png`) is keyed out of its red background by `brand.py`, which both the
 3D scene and the graphics pass use.
 
-- In 3D: the T-shirt print, the ID card (red header, "Bauni Natkaht, AKA Cheater"), the detector's red logo plate
+- In 3D: the T-shirt print, the ID card (red header, "Tinku Tension, AKA Shortcut King"), the detector's red logo plate
   and the scanner stripe.
 - On screen: the white logo sits top left in every frame, slightly see-through with a soft shadow. The labels are dark cards with a colour key that wipe open as their leader line draws out of a
   rippling anchor dot. Each step gets a lower-third title ("01 FIELD, field banta hai"); the step tracker along the
