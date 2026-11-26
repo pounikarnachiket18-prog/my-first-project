@@ -171,6 +171,22 @@ put(sfx, rumble(2.0, 0.5), S0("strike")); put(sfx, explosion(0.9), hyper_hit); p
 put(sfx, rumble(TOTAL - (HOOK + LOGO_AT / FPS), 0.5), HOOK + LOGO_AT / FPS)   # afterburner
 put(sfx, whoosh(0.6, 300, 2500, 0.5), logo - 0.2)
 
+# ---------- real jet flyovers (Freesound community "Red Arrows jet flyovers", Pixabay licence: free use)
+JET = os.environ.get("JET") == "1"
+jets = np.zeros(N)
+if JET:
+    rawj = subprocess.check_output(["ffmpeg", "-v", "error", "-i", os.path.join(PUB, "sfx_jet_flyovers.mp3"), "-ac", "1", "-ar", str(SR), "-f", "f32le", "-"])
+    J = np.frombuffer(rawj, np.float32).astype(np.float64)
+    def jet_pass(peak_src, pre, post, peak_at, g, fade_in=0.4, fade_out=0.8):
+        seg = J[int((peak_src - pre) * SR):int((peak_src + post) * SR)].copy()
+        seg *= env(len(seg), fade_in, fade_out)
+        put(jets, seg, peak_at - pre, g)
+    jet_pass(47.4, 1.4, 2.6, 1.1, 1.0, fade_in=0.05)                 # dogfight opening: jets crossing
+    jet_pass(86.6, 3.2, 3.0, HOOK + 1.3, 0.9)                        # Tejas sweeps past the camera, then fires
+    jet_pass(12.3, 2.0, 2.2, S0("supersonic") + 1.25, 0.55)          # supersonic fly-by past the camera
+    end0 = HOOK + LOGO_AT / FPS
+    jet_pass(120.5, 1.2, 6.0, end0 + 1.0, 0.9, fade_out=2.2)         # Tejas pulls up on afterburner into the logo
+
 # ---------- voice, hook clip audio
 voice = np.zeros(N)
 v, vsr = sf.read(os.path.join(PUB, os.environ.get("VOICE", "voice_final.wav")), dtype="float64")
@@ -186,7 +202,7 @@ duck_m = lp(1 - 0.62 * vk, 4); duck_s = lp(1 - 0.3 * vk, 6)
 nm = lambda x, p: x / (np.abs(x).max() + 1e-9) * p
 music = nm(drums, 0.5) + nm(bass, 0.28) + nm(strings, 0.16) + nm(fx, 0.45)
 music = nm(music, 0.42)
-mix = voice * 0.95 + music * duck_m + nm(sfx, 0.38) * duck_s
+mix = voice * 0.95 + music * duck_m + nm(sfx, 0.38) * duck_s + (nm(jets, 0.55) * lp(1 - 0.55 * vk, 6) if JET else 0)
 mix[: len(clip)] += clip * 0.75
 fade = np.ones(N); nf = int(0.8 * SR); fade[-nf:] = np.linspace(1, 0, nf)
 mix = np.tanh(mix * fade * 1.05) / np.tanh(1.05)
