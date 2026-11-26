@@ -14,7 +14,7 @@ import { FastLabels } from "../world";
 import { SCENES_H5 } from "./scenes_h5";
 import { MarkingsCtx, RealismCtx } from "./Sprite";
 import { JetEndCard } from "./endcard";
-import { BrandMark, BrandWord } from "./brand";
+import { BrandBadge } from "./brand";
 
 const FPS = tl.fps;
 const CREAM = "#f1ede3"; // background of the channel logo animation
@@ -40,7 +40,7 @@ const LOGO_AT = Math.round(tl.lines[tl.lines.length - 1].t0 * FPS) - 3;
 const LOGO_IN = 12; // iris-in frames
 const LOGO_TRIM = 3; // skip the thumbnail frame at the head of the logo clip
 const LOGO_VID = 124; // frames of the logo animation used (4.34 s source @30 fps, minus trim, safe margin)
-export const HYPER8B_FRAMES = Math.max(tl.frames, LOGO_AT + LOGO_IN + LOGO_VID + 36);
+export const HYPER8B_FRAMES = Math.max(tl.frames, LOGO_AT + LOGO_IN + LOGO_VID + 66);
 
 const ease = (q: number) => (q < 0.5 ? 4 * q * q * q : 1 - Math.pow(-2 * q + 2, 3) / 2);
 const cl = (q: number) => Math.min(1, Math.max(0, q));
@@ -149,10 +149,7 @@ const SeriesTitle: React.FC = () => {
   if (op <= 0) return null;
   return (
     <div style={{ position: "absolute", right: 40, top: 150, whiteSpace: "nowrap", opacity: op, fontFamily: "Inter", textShadow: "0 3px 0 rgba(0,0,0,0.35), 0 2px 4px rgba(0,0,0,0.6), 0 4px 22px rgba(0,0,0,0.5)" }}>
-      <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 10, padding: "5px 16px 5px 5px", borderRadius: 28, background: "rgba(6,12,20,0.35)" }}>
-        <BrandMark size={44} />
-        <BrandWord size={24} />
-      </div>
+      <BrandBadge />
     </div>
   );
 };

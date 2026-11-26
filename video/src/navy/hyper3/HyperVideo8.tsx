@@ -8,7 +8,7 @@ import { H6Strike, HOOK, CLIP, DAY_FOR_NIGHT } from "./HyperVideo6";
 import { H7Time } from "./scenes_h7";
 import { Illus } from "./scenes_h3";
 import { RealismCtx, NightCtx } from "./Sprite";
-import { BrandMark, BrandWord } from "./brand";
+import { BrandBadge } from "./brand";
 
 export const HYPER8_FRAMES = HOOK + HYPER8B_FRAMES;
 const SCENES_H8: Record<string, React.FC> = { ...SCENES_H5, strike: H6Strike, time: H7Time };
@@ -22,9 +22,7 @@ const Hook8: React.FC = () => {
     <AbsoluteFill style={{ background: "#000" }}>
       <OffthreadVideo src={staticFile(CLIP)} muted style={{ width: 1080, height: 1920, objectFit: "cover", filter: night ? DAY_FOR_NIGHT : undefined }} />
       {night && <AbsoluteFill style={{ background: "rgba(10,30,70,0.35)", mixBlendMode: "multiply" }} />}
-      <div style={{ position: "absolute", right: 40, top: 150, opacity: wm, display: "flex", alignItems: "center", gap: 10, padding: "5px 16px 5px 5px", borderRadius: 28, background: "rgba(6,12,20,0.35)", whiteSpace: "nowrap" }}>
-        <BrandMark size={44} /><BrandWord size={24} />
-      </div>
+      <div style={{ position: "absolute", right: 40, top: 150, opacity: wm }}><BrandBadge /></div>
       <Illus />
       <AbsoluteFill style={{ background: "#fff", opacity: flash }} />
     </AbsoluteFill>

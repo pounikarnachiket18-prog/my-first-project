@@ -5,11 +5,43 @@ import { GLView, GLState, Vec3 } from "./GLView";
 import { Sprite, NightCtx } from "./Sprite";
 import { MOON } from "./GLView";
 import { SUN } from "./scenes_h3";
-import { BrandMark, BrandWord } from "./brand";
+import { BrandMark, BrandWord, JK_RED } from "./brand";
 
 const FPS = 30;
 const cl = { extrapolateLeft: "clamp", extrapolateRight: "clamp" } as const;
 const ease = Easing.bezier(0.2, 0.8, 0.2, 1);
+
+/** red iris wipe into the Just KnowIt logo card (user's logo: brain + wordmark) */
+const LOGO_START = 108;
+const LogoReveal: React.FC<{ g: number }> = ({ g }) => {
+  const iris = interpolate(g, [0, 12], [0, 1], { ...cl, easing: Easing.in(Easing.cubic) });
+  const ring = interpolate(g, [0, 14], [1, 0], cl);
+  const pop = interpolate(g, [8, 15, 21], [0.25, 1.12, 1], { ...cl, easing: Easing.out(Easing.cubic) });
+  const popO = interpolate(g, [8, 12], [0, 1], cl);
+  const wipe = interpolate(g, [15, 30], [0, 1], { ...cl, easing: ease });
+  const sweep = interpolate(g, [40, 64], [-0.2, 1.2], cl);
+  const sub = interpolate(g, [28, 38], [0, 1], cl);
+  const breathe = 1 + 0.015 * Math.sin(g * 0.12);
+  const R = iris * 120;
+  const BW = 210, WW = 780, WH = WW * 97 / 783;
+  return (
+    <AbsoluteFill>
+      <AbsoluteFill style={{ background: `radial-gradient(circle at 50% 46%, #d8101f 0%, ${JK_RED} 55%, #8e0010 100%)`, clipPath: `circle(${R}% at 50% 46%)` }} />
+      <div style={{ position: "absolute", left: 540, top: 883, width: 0, height: 0 }}>
+        <div style={{ position: "absolute", left: -R * 22, top: -R * 22, width: R * 44, height: R * 44, borderRadius: "50%", border: `${6 * ring}px solid rgba(255,255,255,${0.9 * ring})` }} />
+      </div>
+      <AbsoluteFill style={{ transform: `scale(${breathe})` }}>
+        <Img src={staticFile("navy/jk_brain.png")} style={{ position: "absolute", left: 540 - BW * 184 / 203 / 2, top: 560, height: BW, width: BW * 184 / 203, opacity: popO, transform: `scale(${pop})`, transformOrigin: "50% 60%" }} />
+        <div style={{ position: "absolute", left: 540 - WW / 2, top: 830, width: WW, height: WH, clipPath: `inset(0 ${100 - wipe * 100}% 0 0)` }}>
+          <Img src={staticFile("navy/jk_word.png")} style={{ width: WW, height: WH }} />
+          <div style={{ position: "absolute", inset: 0, WebkitMaskImage: `url(${staticFile("navy/jk_word.png")})`, WebkitMaskSize: "100% 100%", maskImage: `url(${staticFile("navy/jk_word.png")})`, maskSize: "100% 100%",
+            background: `linear-gradient(100deg, transparent ${sweep * 100 - 10}%, rgba(255,215,215,0.95) ${sweep * 100}%, transparent ${sweep * 100 + 10}%)` }} />
+        </div>
+        <div style={{ position: "absolute", left: 0, width: 1080, top: 990, textAlign: "center", opacity: sub, transform: `translateY(${(1 - sub) * 14}px)`, fontFamily: "Inter", fontWeight: 800, fontSize: 30, letterSpacing: 10, color: "#fff" }}>FOLLOW FOR MORE</div>
+      </AbsoluteFill>
+    </AbsoluteFill>
+  );
+};
 
 export const JetEndCard: React.FC<{ t0: number }> = ({ t0 }) => {
   const f = useCurrentFrame();
@@ -62,10 +94,11 @@ export const JetEndCard: React.FC<{ t0: number }> = ({ t0 }) => {
         </div>
         <div style={{ margin: "14px auto 0", width: 700 * line, height: 6, borderRadius: 3, background: "linear-gradient(90deg, #ff9933, #ffffff, #138808)" }} />
         <div style={{ marginTop: 26, display: "flex", justifyContent: "center", alignItems: "center", gap: 18, opacity: b, transform: `translateY(${(1 - b) * 30}px)` }}>
-          <span style={{ display: "inline-flex", transform: `scale(${0.6 + 0.4 * b}) rotate(${(1 - b) * -90}deg)` }}><BrandMark size={110} /></span>
-          <span style={{ textAlign: "left" }}><BrandWord size={74} sub="EXPLAINERS · FOLLOW FOR MORE" /></span>
+          <span style={{ display: "inline-flex", transform: `scale(${0.6 + 0.4 * b}) rotate(${(1 - b) * -90}deg)` }}><BrandMark size={104} /></span>
+          <span style={{ textAlign: "left" }}><BrandWord size={70} sub="EXPLAINERS · FOLLOW FOR MORE" /></span>
         </div>
       </div>
+      {f >= LOGO_START && <LogoReveal g={f - LOGO_START} />}
     </AbsoluteFill>
   );
 };
