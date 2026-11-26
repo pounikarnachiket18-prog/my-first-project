@@ -1,7 +1,7 @@
 # Voiceover v3: the metro metal detector, straight to the point (Just KnowIt)
 
 A direct explainer with no story: the question, the answer in five steps (the same five step titles that appear in
-the video), a one-line close and a "follow for more" call to action over the logo ending. The opening title ("Metro
+the video), a one-line close and a call to follow the channel, Just KnowIt, over the logo ending. The opening title ("Metro
 ki ek machine… Lekin aakhir KAISE?") matches it.
 
 **This is the voice in the reel now.** It is synthesised offline by `tts_voiceover.py` with Kokoro (open-source TTS,
@@ -25,7 +25,7 @@ plain script below and swap it in; the times in the table are where each line st
 | 0:37.6 | Zone lights, coin size | Zone lights batati hain metal kahan hai. Signal jitna strong, metal utna bada. | The zone lights show where the metal is. The stronger the signal, the bigger the metal. |
 | 0:42 | Signal meter | Isliye sikka, belt, bada metal, sabka response alag. | That's why a coin, a belt and a big piece of metal each respond differently. |
 | 0:44.8 | Final shot at the gate | Bas, itna sa science. | That's all the science there is. |
-| 0:46.4 | Logo ending, "FOLLOW FOR MORE" button | Aur explainers ke liye, follow for more! | For more explainers, follow for more! |
+| 0:46.4 | Logo ending, "FOLLOW FOR MORE" button | Aur explainers ke liye, follow karo, Just KnowIt! | For more explainers, follow Just KnowIt! |
 
 ## Plain script (for reading aloud)
 
@@ -44,7 +44,7 @@ plain script below and swap it in; the times in the table are where each line st
 >
 > Bas, itna sa science.
 >
-> *(over the logo)* Aur explainers ke liye, follow for more!
+> *(over the logo)* Aur explainers ke liye, follow karo, Just KnowIt!
 
 ## Recording notes (for a human re-record)
 
@@ -52,5 +52,5 @@ plain script below and swap it in; the times in the table are where each line st
 - **Pace:** about 3 words a second.
 - **Emphasis:** stress the key words that also appear on screen: *transmitter*, *receiver*, *magnetic field*,
   *eddy currents*, *alarm*.
-- **Timing:** "alarm baj jaata hai" lands around the alarm (0:35–0:37), and "follow for more!" on the white
+- **Timing:** "alarm baj jaata hai" lands around the alarm (0:35–0:37), and "follow karo, Just KnowIt!" on the white
   "FOLLOW FOR MORE" button in the logo ending (about 0:47.5).
