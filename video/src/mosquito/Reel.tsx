@@ -75,6 +75,14 @@ const SplitTags: React.FC = () => {
   );
 };
 
+/** Warm light-flash that bridges the breath chase into the macro skin world. */
+const Flash: React.FC<{ at: number; color?: string }> = ({ at, color = "#fff1e0" }) => {
+  const t = useCurrentFrame() / FPS;
+  const a = smoothstep(at - 0.22, at, t) * (1 - smoothstep(at, at + 0.38, t));
+  if (a <= 0.001) return null;
+  return <AbsoluteFill style={{ background: color, opacity: a, mixBlendMode: "screen" }} />;
+};
+
 const Tagline: React.FC = () => {
   const t = useCurrentFrame() / FPS;
   if (t < 33.6) return null;
@@ -117,6 +125,8 @@ export const Reel: React.FC<ReelProps> = ({ captions = false, audio = true }) =>
       <Seq from={SC.brand.from} to={TL.durationInFrames} fadeIn={5}>
         <BrandScene />
       </Seq>
+
+      <Flash at={SC.signals.from / FPS} />
 
       {/* ---------------- Typography (reel time) ---------------- */}
       <Headline at={CUE.whyYou} until={4.35} lines={["WHY", "*YOU?"]} y={430} size={190} accent="#ffcf7a" tracking={-6} />

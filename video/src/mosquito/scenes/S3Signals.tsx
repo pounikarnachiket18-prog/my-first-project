@@ -54,7 +54,7 @@ export const signalsShot = (t: number): Shot => {
   const bloom = { strength: 0.45 + flashIn, radius: 0.6, threshold: 0.75 - flashIn * 0.4 };
   if (t < 17.6) {
     const pos = track<number[]>(t, [
-      [T0, [1.4, 1.9, 9.2]],
+      [T0, [1.6, 1.15, 8.9]],
       [12.6, [3.0, 1.25, 7.6]],
       [14.4, [4.4, 1.05, 7.1]],
       [16.2, [5.0, 1.9, 8.1]],
