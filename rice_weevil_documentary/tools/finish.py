@@ -6,10 +6,14 @@ which upscales, grades, burns in typography and encodes.
 Edit (output frame k, 1..1500, 30 fps):
   1-60     cold open (S0_Hook, frames 2001-2060), real 3D motion blur + rack focus
   61-180   the sealed jar (S1 frames 22-180, speed-ramped ~1.3x with frame blending)
-  181-1500 sequences 2-7 1:1, so all narration timing is unchanged
+  181-1500 sequences 2-7 1:1, except the S6 emergence (1201-1345): ~1.16x chewing, true 3D
+           slow motion (0.44x sub-frame renders) through the break-through, then catch-up;
+           every scene starts and ends on its original frame, so narration timing holds
 Effects are keyed to story beats only: macro zoom transitions, rack-focus transition,
 X-ray scan wipe, particle transition, impact flash/shake, snap zooms on reveals, anticipation
 push-ins before each life-cycle stage, floating dust with parallax and soft light shafts.
+Blockbuster layer: per-scene filmic grade matched to the 3D palettes, highlight bloom with
+anamorphic streaks, radial chromatic aberration (spikes on impacts) and refractive shockwaves.
 Only numpy + scipy (already used by the audio tools) and ffmpeg.
 """
 import json
@@ -18,10 +22,14 @@ import os
 import subprocess
 from functools import lru_cache
 
+import sys
+
 import numpy as np
 from scipy import ndimage
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, ROOT)
+from lib import edit  # noqa: E402  (shared edit decision list, pure Python)
 FRAMES = os.path.join(ROOT, "renders", "frames")
 W, H = 540, 960          # render resolution (50 % of 1080x1920)
 N_OUT = 1500
@@ -52,16 +60,8 @@ def pwl(x, pts):
 
 
 # --------------------------------------------------------------------------- edit
-JAR = [(61, 22.0), (110, 84.0), (180, 180.0)]  # output frame -> S1 source frame
-
-
-def source(k):
-    """Output frame -> (fractional) source frame number."""
-    if k <= 60:
-        return 2000.0 + k
-    if k <= 180:
-        return pwl(k, JAR)
-    return float(k)
+JAR = edit.JAR
+source = edit.source   # output frame -> (fractional) source frame number
 
 
 SCENE_OF = [(1, 60, "S0"), (61, 180, "S1"), (181, 390, "S2"), (391, 630, "S3"),
@@ -156,7 +156,7 @@ def flash(k):
     """(amount, rgb) exposure flash, synced to impacts in the soundtrack."""
     pulses = [(60, 0.28, 3, 6, (1.0, 0.9, 0.75)), (83, 0.08, 1, 5, (1.0, 0.95, 0.85)),
               (998, 0.16, 2, 10, (0.8, 0.92, 1.0)), (1104, 0.2, 2, 12, (0.85, 0.95, 1.0)),
-              (1290, 0.22, 1, 9, (1.0, 0.9, 0.75)), (1411, 0.9, 1, 12, (1.0, 1.0, 1.0))]
+              (1290, 0.22, 1, 9, (1.0, 0.9, 0.75)), (1411, 0.55, 1, 14, (1.0, 0.95, 0.88))]
     for f, amt, up, down, col in pulses:
         if f - up <= k <= f + down:
             if k < f:
@@ -180,20 +180,123 @@ def defocus(k):
 
 DUST = {"S0": 0.9, "S1": 0.45, "S2": 0.55, "S3": 0.45, "S4": 0.3, "S5": 0.6, "S6": 0.7,
         "S7": 0.25}
-BEAMS = {"S0": 0.10, "S3": 0.06, "S5": 0.10, "S6": 0.07}
+BEAMS = {}  # light shafts are now real volumetrics in the Cycles renders (lib/cinema.py)
+
+# per-scene grade, matched to the 3D lighting palettes: shadow / highlight split tone,
+# saturation, filmic contrast, bloom tint, anamorphic streak tint + strength
+LOOK = {
+    "S0": dict(sh=(-0.012, 0.004, 0.028), hi=(0.030, 0.010, -0.025), sat=1.10, con=0.30,
+               streak=(1.0, 0.55, 0.25), st=0.30),
+    "S1": dict(sh=(-0.010, 0.002, 0.022), hi=(0.025, 0.012, -0.018), sat=1.05, con=0.20,
+               streak=(1.0, 0.75, 0.5), st=0.18),
+    "S2": dict(sh=(-0.016, 0.006, 0.030), hi=(0.035, 0.012, -0.030), sat=1.12, con=0.32,
+               streak=(1.0, 0.6, 0.28), st=0.32),
+    "S3": dict(sh=(-0.010, 0.004, 0.024), hi=(0.030, 0.012, -0.020), sat=1.06, con=0.28,
+               streak=(1.0, 0.7, 0.4), st=0.22),
+    "S4": dict(sh=(0.012, -0.004, -0.012), hi=(0.040, 0.010, -0.030), sat=1.10, con=0.26,
+               streak=(1.0, 0.5, 0.2), st=0.22),
+    "S5": dict(sh=(0.006, -0.008, 0.035), hi=(-0.010, 0.020, 0.035), sat=1.12, con=0.28,
+               streak=(0.45, 0.8, 1.0), st=0.34),
+    "S6": dict(sh=(-0.018, 0.004, 0.032), hi=(0.040, 0.016, -0.030), sat=1.12, con=0.32,
+               streak=(1.0, 0.62, 0.3), st=0.30),
+    "S7": dict(sh=(-0.010, 0.000, 0.020), hi=(0.035, 0.020, -0.020), sat=1.06, con=0.30,
+               streak=(1.0, 0.8, 0.5), st=0.36),
+}
+LUMA = np.array([0.2126, 0.7152, 0.0722], np.float32)
+
+
+def grade(img, sc, k):
+    lk = LOOK[sc]
+    L = img @ LUMA
+    # filmic S-curve (blend toward smoothstep), keeps blacks deep and highlights controlled
+    img = img + lk["con"] * (img * img * (3 - 2 * img) - img)
+    # saturation around luma
+    img = L[..., None] + (img - L[..., None]) * lk["sat"]
+    # split tone: cool shadows / warm highlights (scene specific)
+    ws = ((1 - L) ** 2)[..., None]
+    wh = (L ** 2)[..., None]
+    img = img + ws * np.array(lk["sh"], np.float32) + wh * np.array(lk["hi"], np.float32)
+    return np.clip(img, 0, 1)
+
+
+def bloom(img, sc, boost=0.0):
+    """Highlight bloom + horizontal anamorphic streaks from the brightest points."""
+    lk = LOOK[sc]
+    L = img @ LUMA
+    m = np.clip((L - 0.82) / 0.18, 0, 1) ** 2
+    hl = img * m[..., None]
+    small = hl[::2, ::2]
+    glow = ndimage.gaussian_filter(small, (6, 6, 0)) * 0.55 + \
+        ndimage.gaussian_filter(small, (18, 18, 0)) * 0.35
+    streak = ndimage.gaussian_filter1d(ndimage.gaussian_filter1d(small, 1.2, axis=0), 55, axis=1)
+    sL = streak @ LUMA
+    streak = sL[..., None] * np.array(lk["streak"], np.float32) * (lk["st"] + boost) * 9.0
+    add = np.clip(glow * 0.5 + streak, 0, 1)
+    add = ndimage.zoom(add, (2, 2, 1), order=1)[:H, :W]
+    return 1 - (1 - img) * (1 - add)
+
+
+def aberration(img, amt):
+    """Radial chromatic aberration (red out, blue in), strongest at the frame edges."""
+    if amt < 1e-4:
+        return img
+    cx, cy = W / 2, H / 2
+    out = img.copy()
+    for c, sgn in ((0, 1.0), (2, -1.0)):
+        z = 1 + sgn * amt
+        out[..., c] = ndimage.map_coordinates(img[..., c], [cy + (YY - cy) / z, cx + (XX - cx) / z],
+                                              order=1, mode="nearest")
+    return out
+
+
+# shockwaves: (output frame, track name or fixed point, speed px/frame, amplitude px, tint)
+SHOCKS = [(3, "hook", 34.0, 9.0, (1.0, 0.75, 0.45)), (1290, "exit", 30.0, 8.0, (1.0, 0.8, 0.5)),
+          (1411, (W * 0.5, H * 0.21), 40.0, 7.0, (1.0, 0.92, 0.78))]
+
+
+def shockwave(img, k):
+    """Refractive pressure ring expanding from an impact: real UV displacement, not an overlay."""
+    for k0, where, speed, amp, tint in SHOCKS:
+        if k0 <= k <= k0 + 16:
+            c = track_k(where, k0) if isinstance(where, str) else where
+            R = speed * (k - k0 + 1)
+            w = 10.0 + 1.2 * (k - k0)
+            a = amp * (1 - (k - k0) / 17.0) ** 1.5
+            dx, dy = XX - c[0], YY - c[1]
+            r = np.sqrt(dx * dx + dy * dy) + 1e-3
+            u = (r - R) / w
+            d = a * u * np.exp(-u * u)                     # lens-like refraction profile
+            ys, xs = YY - d * dy / r, XX - d * dx / r
+            img = np.stack([ndimage.map_coordinates(img[..., ch], [ys, xs], order=1,
+                                                    mode="nearest") for ch in range(3)], -1)
+            front = np.exp(-u * u)[..., None] * (a / amp) * 0.10
+            img = 1 - (1 - img) * (1 - front * np.array(tint, np.float32))
+    return img
+
+
+def ca_amount(k):
+    base = 0.0018
+    for f, a in ((1, 0.006), (60, 0.005), (181, 0.004), (1290, 0.007), (1411, 0.006)):
+        if f <= k <= f + 10:
+            return base + a * (1 - (k - f) / 11.0) ** 2
+    return base
 
 
 # --------------------------------------------------------------------------- image ops
 @lru_cache(maxsize=24)
-def load(n):
-    path = os.path.join(FRAMES, f"frame_{n:04d}.png")
+def load(n, prefix="frame"):
+    path = os.path.join(FRAMES, f"{prefix}_{n:04d}.png")
     raw = subprocess.run(["ffmpeg", "-v", "error", "-i", path, "-f", "rawvideo", "-pix_fmt",
                           "rgb24", "-"], check=True, capture_output=True).stdout
     return np.frombuffer(raw, np.uint8).reshape(H, W, 3).astype(np.float32) / 255.0
 
 
-def frame_at(s):
-    """Fractional source frame: blend neighbours (reads as motion blur on speed ramps)."""
+def frame_at(s, k=None):
+    """Fractional source frame: blend neighbours (reads as motion blur on speed ramps).
+    Inside the slow-motion window real sub-frame renders are used instead."""
+    if k is not None and edit.SLOWMO[0] <= k <= edit.SLOWMO[1] and \
+            os.path.exists(os.path.join(FRAMES, f"slow_{k:04d}.png")):
+        return load(k, "slow")
     a = int(math.floor(s))
     t = s - a
     if t < 1e-3:
@@ -290,7 +393,7 @@ def beams(k):
 def compose(k):
     sc = scene(k)
     s = source(k)
-    img = frame_at(s)
+    img = frame_at(s, k)
     # X-ray scan wipe S4 -> S5: the scan line reveals the translucent grain
     if 924 <= k <= 938:
         a, b = load(min(930, k)), load(max(931, k))
@@ -311,6 +414,7 @@ def compose(k):
     if dx or dy:
         z = max(z, 1.03)
     img = zoom_blur(img, z, p, zb) if zb > 0.005 else warp(img, z, p, dx, dy)
+    img = shockwave(img, k)
     sg = defocus(k)
     if sg > 0.2:
         img = ndimage.gaussian_filter(img, (sg, sg, 0))
@@ -323,7 +427,11 @@ def compose(k):
     if ba:
         col = np.array([0.75, 0.88, 1.0] if sc == "S5" else [1.0, 0.86, 0.62], np.float32)
         img = 1 - (1 - img) * (1 - (beams(k) * ba)[..., None] * col)
+    # blockbuster look: grade, bloom + anamorphic streaks, lens aberration
+    img = grade(np.clip(img, 0, 1), sc, k)
     f, col = flash(k)
+    img = bloom(img, sc, boost=0.6 * f)
+    img = aberration(img, ca_amount(k))
     if f > 0:
         img = 1 - (1 - img) * (1 - f * np.array(col, np.float32))
     return (np.clip(img, 0, 1) * 255 + 0.5).astype(np.uint8)

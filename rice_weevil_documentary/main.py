@@ -4,6 +4,7 @@
   python main.py preview S3_SecretEgg 400,480,620 [pct] [samples]
   python main.py render  S3_SecretEgg [pct] [samples]    # resumable PNG sequence
   python main.py render  ALL [pct] [samples]
+  python main.py slowmo  [pct] [samples]                 # S6 break-through as true sub-frames
   python main.py render  S1_Mystery 50 16 --force --frames=22-180   # re-render part of a scene
   python main.py render  S2_Invader,S3_SecretEgg 50 16 --force --since=renders/stamp
                                          # re-render, resumable: skips frames newer than stamp
@@ -109,6 +110,26 @@ def render(name, pct=50, samples=16, force=False, frames=None, since=None):
         print(f"DONE {n} in {time.time() - t:.0f}s", flush=True)
 
 
+def slowmo(pct=50, samples=16):
+    """True slow motion: render the S6 break-through at fractional (sub-)frames."""
+    from lib import edit
+    load()
+    scn = bpy.data.scenes["S6_FinalReveal"]
+    configure(scn, pct, samples)
+    os.makedirs(FRAMES, exist_ok=True)
+    for k in range(edit.SLOWMO[0], edit.SLOWMO[1] + 1):
+        out = os.path.join(FRAMES, f"slow_{k:04d}.png")
+        if os.path.exists(out) and os.path.getsize(out) > 0:
+            continue
+        s = edit.source(k)
+        scn.frame_set(int(s), subframe=s - int(s))
+        scn.render.filepath = out
+        t0 = time.time()
+        bpy.ops.render.render(write_still=True, scene=scn.name)
+        print(f"SLOW {k} src {s:.2f} {time.time() - t0:.1f}s", flush=True)
+    print("DONE slowmo", flush=True)
+
+
 if __name__ == "__main__":
     a = args()
     cmd = a[0] if a else "build"
@@ -117,6 +138,8 @@ if __name__ == "__main__":
     elif cmd == "preview":
         preview(a[1], [int(x) for x in a[2].split(",")], int(a[3]) if len(a) > 3 else 25,
                 int(a[4]) if len(a) > 4 else 8, a[5] if len(a) > 5 else "latest")
+    elif cmd == "slowmo":
+        slowmo(int(a[1]) if len(a) > 1 else 50, int(a[2]) if len(a) > 2 else 16)
     elif cmd == "render":
         render(a[1], int(a[2]) if len(a) > 2 else 50, int(a[3]) if len(a) > 3 else 16,
                force="--force" in a,

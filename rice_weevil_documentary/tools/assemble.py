@@ -138,6 +138,112 @@ def callout(ev, trk, k0, k1, anchor, title, hindi, align=7):
               f"\\pos({ax + off},{ay + 22})\\fad(220,220)}}{hindi}")
 
 
+# --------------------------------------------------------------------------- holographic HUD
+HOLO = r"&HFFE07A&"     # cyan (BGR)
+_PPM = None
+
+
+def ppm(trk, k):
+    """True screen pixels per millimetre at a tracked subject (after the finishing zoom)."""
+    global _PPM
+    import finish
+    if _PPM is None:
+        d = json.load(open(os.path.join(ROOT, "assets", "tracking.json")))
+        _PPM = {n: (sorted(int(f) for f in v), [v[str(f)][2] for f in sorted(int(f) for f in v)])
+                for n, v in d.items()}
+    fs, vs = _PPM[trk]
+    z, _p, _ = finish.zoom_plan(k)
+    return _interp(finish.source(k), list(zip(fs, vs))) * z
+
+
+def holo(ev, k, shape, layer=6, alpha=0, glow=True):
+    """Draw an absolute-coordinate vector shape in hologram cyan with a soft glow pass."""
+    t0, t1 = t_ass(fr(k)), t_ass(fr(k + 1))
+    a = f"&H{alpha:02X}&"
+    if glow:
+        ag = f"&H{min(255, alpha + 120):02X}&"
+        ev.append(f"Dialogue: {layer},{t0},{t1},Draw,,0,0,0,,{{\an7\pos(0,0)\p1\bord4\blur7"
+                  f"\shad0\c{HOLO}\3c{HOLO}\alpha{ag}}}{shape}{{\p0}}")
+    ev.append(f"Dialogue: {layer + 1},{t0},{t1},Draw,,0,0,0,,{{\an7\pos(0,0)\p1\bord0"
+              f"\shad0\c&HFFF6E6&\alpha{a}}}{shape}{{\p0}}")
+
+
+def holo_text(ev, k0, k1, x, y, text, an=7, size=28, fad=(120, 180), sp=6, layer=8):
+    ev.append(f"Dialogue: {layer},{t_ass(fr(k0))},{t_ass(fr(k1))},Small,,0,0,0,,"
+              f"{{\an{an}\pos({x:.0f},{y:.0f})\fs{size}\fsp{sp}\b1\c{HOLO}\3c&H3A2A10&"
+              f"\bord1.4\blur0.6\fad({fad[0]},{fad[1]})}}{text}")
+
+
+def brackets(cx, cy, hw, hh, arm, t=4.0):
+    out = []
+    for sx, sy in ((-1, -1), (1, -1), (1, 1), (-1, 1)):
+        x0, y0 = cx + sx * hw, cy + sy * hh
+        ax, ay = -sx * arm, -sy * arm
+        tx, ty = -sx * t, -sy * t
+        pts = [(x0, y0), (x0 + ax, y0), (x0 + ax, y0 + ty), (x0 + tx, y0 + ty), (x0 + tx, y0 + ay),
+               (x0, y0 + ay)]
+        out.append("m " + " l ".join(f"{px:.1f} {py:.1f}" for px, py in pts))
+    return " ".join(out)
+
+
+def rect(x, y, w, h):
+    return f"m {x:.1f} {y:.1f} l {x + w:.1f} {y:.1f} l {x + w:.1f} {y + h:.1f} l {x:.1f} {y + h:.1f}"
+
+
+def hud_lock(ev, trk, k0, k1, label, half_mm=(0.85, 0.55)):
+    """Lock-on reticle: brackets fly in from wide, overshoot and settle on the tracked subject,
+    a centre crosshair blinks and the label types on."""
+    for k in range(k0, k1 + 1):
+        cx, cy = screen_pos(trk, k)
+        q = ppm(trk, k)
+        u = min(1.0, (k - k0) / 10.0)
+        settle = 1 + 1.4 * (1 - u) ** 3 - 0.08 * math.sin(min(1.0, (k - k0) / 16.0) * math.pi)
+        hw = min(300.0, half_mm[0] * q) * settle
+        hh = min(220.0, half_mm[1] * q) * settle
+        fade = min(1.0, (k1 - k) / 8.0)
+        alpha = int(255 * (1 - min(1.0, u * 2) * fade))
+        holo(ev, k, brackets(cx, cy, hw, hh, 34), alpha=alpha)
+        if (k - k0) % 6 < 4 and k - k0 > 8:
+            cross = (rect(cx - 16, cy - 1.5, 10, 3) + " " + rect(cx + 6, cy - 1.5, 10, 3) + " "
+                     + rect(cx - 1.5, cy - 16, 3, 10) + " " + rect(cx - 1.5, cy + 6, 3, 10))
+            holo(ev, k, cross, alpha=alpha, glow=False)
+        n = int(len(label) * min(1.0, max(0.0, (k - k0 - 6) / 12.0)))
+        if n:
+            ev.append(f"Dialogue: 8,{t_ass(fr(k))},{t_ass(fr(k + 1))},Small,,0,0,0,,"
+                      f"{{\an1\pos({cx - hw:.0f},{cy - hh - 12:.0f})\fs26\fsp6\b1\c{HOLO}"
+                      f"\bord1.4\3c&H3A2A10&\alpha&H{alpha:02X}&}}{label[:n]}")
+
+
+def hud_scale(ev, trk, k0, k1, x=90, y=1212, units=((1.0, "1 mm"),), max_px=420):
+    """True-to-scale bar: its length is exactly 1 (or 5) mm at the subject's depth, measured
+    from the Blender camera, so the viewer can read the real size of what they see."""
+    for k in range(k0, k1 + 1):
+        q = ppm(trk, k)
+        mm, txt = next(((m, t) for m, t in units if m * q <= max_px), units[-1])
+        L = mm * q * min(1.0, (k - k0) / 8.0)
+        fade = min(1.0, (k1 - k) / 8.0, (k - k0 + 1) / 4.0)
+        alpha = int(255 * (1 - fade))
+        bar = (rect(x, y, L, 4) + " " + rect(x, y - 12, 3, 16) + " " + rect(x + L - 3, y - 12, 3, 16))
+        holo(ev, k, bar, alpha=alpha)
+        ev.append(f"Dialogue: 8,{t_ass(fr(k))},{t_ass(fr(k + 1))},Small,,0,0,0,,"
+                  f"{{\an1\pos({x:.0f},{y - 18:.0f})\fs26\fsp5\b1\c{HOLO}\bord1.4"
+                  f"\3c&H3A2A10&\alpha&H{alpha:02X}&}}SCALE  {txt}")
+
+
+def hud_scan(ev, k0, k1, x=90, y=1212, w=330):
+    """X-ray scan readout with a filling progress bar (bottom-left, clear of the subtitles)."""
+    for k in range(k0, k1 + 1):
+        p = min(1.0, max(0.0, (k - k0 - 4) / (k1 - k0 - 18)))
+        fade = min(1.0, (k1 - k) / 8.0, (k - k0 + 1) / 5.0)
+        alpha = int(255 * (1 - fade))
+        holo(ev, k, rect(x, y, w, 2), alpha=min(255, alpha + 90), glow=False)
+        holo(ev, k, rect(x, y - 3, w * p, 8), alpha=alpha)
+        label = "X-RAY SCAN  " + ("COMPLETE" if p >= 1 else f"{int(p * 100):3d}%")
+        ev.append(f"Dialogue: 8,{t_ass(fr(k))},{t_ass(fr(k + 1))},Small,,0,0,0,,"
+                  f"{{\an1\pos({x:.0f},{y - 14:.0f})\fs26\fsp5\b1\c{HOLO}\bord1.4"
+                  f"\3c&H3A2A10&\alpha&H{alpha:02X}&}}{label}")
+
+
 def build_ass(path, classic=False):
     subs = json.load(open(os.path.join(AUDIO, "subtitles.json"), encoding="utf-8"))
     head = f"""[Script Info]
@@ -226,11 +332,19 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
                 "धीरे-धीरे सख्त और गहरा होता है", align=9)
         callout(ev, "exit", 1292, 1345, (840, 800), "EXIT HOLE  •  ~1 mm", "बाहर निकलने का छेद",
                 align=9)
-    # title + takeaway
-    ev.append(f"Dialogue: 3,{t_ass(fr(1413))},{t_ass(50.0)},Title,,0,0,0,,"
-              r"{\fad(400,0)\blur6\fsp30\t(0,500,\blur0.8\fsp8)}THE INVISIBLE\NINVADER")
+    if not classic:  # holographic HUD: four restrained moments, never alongside a callout
+        hud_lock(ev, "body2", 194, 236, "SPECIMEN DETECTED")
+        hud_scale(ev, "body2", 238, 330)
+        hud_scan(ev, 936, 996)
+        hud_scale(ev, "exit", 1350, 1404, units=((1.0, "1 mm"), (5.0, "5 mm")))
+    # title + takeaway (cinematic: the title itself is 3D metal rendered in Cycles, scene S7)
+    if classic:
+        ev.append(f"Dialogue: 3,{t_ass(fr(1413))},{t_ass(50.0)},Title,,0,0,0,,"
+                  r"{\fad(400,0)\blur6\fsp30\t(0,500,\blur0.8\fsp8)}THE INVISIBLE\NINVADER")
     ev.append(f"Dialogue: 3,{t_ass(fr(1425))},{t_ass(50.0)},Small,,0,0,0,,"
-              r"{\fad(500,0)\an8\pos(540,560)}HOW A TINY WEEVIL DESTROYS YOUR RICE")
+              + (r"{\fad(500,0)\an8\pos(540,560)}" if classic else
+                 r"{\fad(500,0)\an8\pos(540,512)\fsp9\t(0,700,\fsp2)}")
+              + "HOW A TINY WEEVIL DESTROYS YOUR RICE")
     ev.append(f"Dialogue: 3,{t_ass(fr(1440))},{t_ass(50.0)},Card,,0,0,0,,"
               r"{\fad(300,0)\fscx90\fscy90\t(0,200,\fscx100\fscy100)}STORE GRAINS DRY.\N"
               r"{\c" + AMBER + r"}INSPECT REGULARLY.")

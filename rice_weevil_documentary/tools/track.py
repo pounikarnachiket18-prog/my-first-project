@@ -58,6 +58,12 @@ def main():
          lambda: O["S1Hero_body"].matrix_world.translation),
         ("hook", "S0_Hook", (2001, 2060),
          lambda: O["S0W_head"].matrix_world.translation),
+        ("body2", "S2_Invader", (181, 390),
+         lambda: O["S2W_body"].matrix_world.translation),
+        ("body6", "S6_FinalReveal", (1201, 1410),
+         lambda: O["S6W_body"].matrix_world.translation),
+        ("grain5", "S5_Transformation", (931, 1200),
+         lambda: O["S5_Grain"].matrix_world.translation),
     ]
     out = {}
     for name, sc, (a, b), fn in jobs:

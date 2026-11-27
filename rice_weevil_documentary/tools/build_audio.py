@@ -412,6 +412,91 @@ def snap(t0, g=0.16):
                                                                        / SR * 300) * g * 0.6, 0))]
 
 
+# --------------------------------------------------------------------------- blockbuster layer
+def stereo(s, p):
+    """Equal-power pan with a per-sample position array p in [-1, 1]."""
+    return np.stack([s * np.cos((p + 1) * np.pi / 4), s * np.sin((p + 1) * np.pi / 4)], 1)
+
+
+def braam(t0, g=0.3, sec=3.4, root=36):
+    """Low brass-like cluster swelling open: detuned saws through an opening low-pass."""
+    n = int(sec * SR)
+    x = np.arange(n) / SR
+    s = sum(saw(NOTE(m) * (1 + d), x, harmonics=18) for m, d in
+            ((root, 0.0), (root, 0.004), (root + 12, -0.003), (root + 19, 0.002), (root + 7, 0.0)))
+    out = np.zeros(n)
+    for a in range(0, n, 960):  # filter sweeps 150 Hz -> 1.6 kHz -> 300 Hz
+        u = a / n
+        fc = 150 + 1450 * np.sin(np.pi * min(1.0, u * 1.6)) ** 1.5 + 150 * u
+        bb, aa = signal.butter(2, fc / (SR / 2), 'low')
+        out[a:a + 960] = signal.lfilter(bb, aa, s[a:a + 960])
+    out *= (1 - np.exp(-x * 9)) * np.exp(-x * 0.9)
+    out += np.sin(2 * np.pi * NOTE(root - 12) * x) * np.exp(-x * 1.2) * (1 - np.exp(-x * 30)) * 1.2
+    return t0, pan(np.tanh(out * 0.7) * g, 0)
+
+
+def sub_drop(t0, g=0.4, sec=1.4, f0=62, f1=24):
+    n = int(sec * SR)
+    x = np.arange(n) / SR
+    fr = f1 + (f0 - f1) * np.exp(-x * 3.0)
+    s = np.sin(2 * np.pi * np.cumsum(fr) / SR) * np.exp(-x * 2.0) * (1 - np.exp(-x * 200))
+    return t0, pan(s * g, 0)
+
+
+def shock(t0, g=0.3, sec=0.9):
+    """Shockwave: pressure thump, then an air ripple that spreads wide in the stereo field."""
+    n = int(sec * SR)
+    x = np.arange(n) / SR
+    thump = lp(noise(sec), 160) * np.exp(-x * 14) * 2.5
+    ripple = bp(noise(sec), 300, 3000) * np.exp(-x * 5) * (1 - np.exp(-x * 60))
+    l = thump + ripple * 0.5
+    r = thump + np.roll(ripple, int(0.011 * SR)) * 0.5  # Haas offset widens it
+    return t0, np.stack([l, r], 1) * g
+
+
+def orbit_air(t0, t1, ang_deg, g=0.06):
+    """Air rush that circles with the camera: pan follows the orbit angle (deg per second)."""
+    sec = t1 - t0
+    n = int(sec * SR)
+    x = np.arange(n) / SR
+    a = np.radians(np.interp(x, *ang_deg))
+    s = bp(noise(sec), 400, 2400) * (0.55 + 0.45 * np.abs(np.cos(a))) * env_adsr(n, 0.6, 0.8)
+    return t0, stereo(s * g, np.sin(a) * 0.8)
+
+
+def ring_hum(t0, t1, g=0.05):
+    """Scan rings: three slowly beating partials, each auto-panned at its ring's speed."""
+    sec = t1 - t0
+    n = int(sec * SR)
+    x = np.arange(n) / SR
+    env = np.interp(x, [0, 0.5, sec - 0.7, sec], [0, 1, 1, 0])
+    out = np.zeros((n, 2))
+    for f, rate, ph in ((NOTE(57), 0.07, 0.0), (NOTE(64) * 1.003, -0.055, 2.0),
+                        (NOTE(76), 0.045, 4.0)):
+        tone = np.sin(2 * np.pi * f * x) * (0.7 + 0.3 * np.sin(2 * np.pi * 0.31 * x + ph))
+        out += stereo(tone * env, np.sin(2 * np.pi * rate * x + ph) * 0.7)
+    return t0, out * g
+
+
+def time_stretch(t_hit, sec=1.3, g=0.22):
+    """Slow-motion entry: a falling, smeared whoosh that bottoms out on the impact."""
+    n = int(sec * SR)
+    x = np.arange(n) / SR
+    fr = 900 * (0.12 ** (x / sec))
+    tone = np.sin(2 * np.pi * np.cumsum(fr) / SR) * 0.25
+    s = (bp(noise(sec), 200, 1800) + tone) * (x / sec) ** 1.6
+    return t_hit - sec, pan(s * g, 0)
+
+
+def sweep_shine(t0, sec, g=0.05):
+    """Metallic glint riding the title light sweep, travelling left to right."""
+    n = int(sec * SR)
+    x = np.arange(n) / SR
+    s = bp(noise(sec), 5000, 11000) * np.exp(-((x / sec - 0.5) / 0.22) ** 2)
+    s += sum(np.sin(2 * np.pi * f * x) for f in (3520, 5274)) * 0.05 * np.exp(-((x / sec - 0.5) / 0.15) ** 2)
+    return t0, stereo(s * g, np.linspace(-0.85, 0.85, n))
+
+
 def atmosphere():
     """Low room tone + air, a slow tension pulse under the life cycle, darker in the grain."""
     t = np.arange(N) / SR
@@ -478,6 +563,20 @@ def sfx():
     ev += [footsteps(F(1290), F(1410), rate=15, g=0.05)]
     ev += [riser(F(1411), 1.6, 0.18), boom(F(1411), 0.7, 60, 26, 3.2)]  # title hit
     ev += [whoosh(F(1411) + 0.15, 0.3)]
+    # ---- blockbuster layer: braams on the big reveals, sub drops under impacts, shockwaves,
+    # spatial movement that follows the camera, a slow-motion entry and the title sweep
+    ev += [sub_drop(0.0, 0.45), shock(0.02, 0.35)]                     # grain bursts open
+    ev += [sub_drop(F(61), 0.3, 1.0)]                                  # into the jar
+    ev += [braam(F(183), 0.30, 3.6, root=36)]                          # the invader revealed
+    ev += [orbit_air(F(181), F(330), ([0, (330 - 181) / 30], [-100, 260]), 0.07)]
+    ev += [sub_drop(F(631), 0.2, 0.9)]                                 # match cut inside
+    ev += [ring_hum(F(935), F(1118), 0.045)]                           # scan rings
+    ev += [time_stretch(F(1290), 1.3, 0.2)]                            # slow-motion entry
+    ev += [shock(F(1290), 0.45), sub_drop(F(1290), 0.42)]              # break-through
+    ev += [whoosh(F(1350) + 0.4, 0.22, sec=1.6, direction=-1)]         # pull back to the plain
+    ev += [braam(F(1352), 0.16, 2.6, root=31)]                         # scale reveal
+    ev += [braam(F(1411), 0.36, 3.0, root=33), sub_drop(F(1411), 0.5, 1.8, 58, 22)]  # title
+    ev += [sweep_shine(F(1421), 1.35, 0.06)]                           # light across the letters
     for t0, st in ev:
         place(out, st, t0)
     return reverb(out, seconds=1.4, mix=0.18, seed=9)
@@ -501,13 +600,18 @@ def main():
     v_env = np.clip(v_env / (v_env.max() + 1e-9) * 6, 0, 1)
     duck = 1.0 - 0.72 * v_env
     mus = mus * duck[:, None]
-    atm = atm * (1.0 - 0.45 * v_env)[:, None]
+    atm = atm * (1.0 - 0.6 * v_env)[:, None]
+    # slow motion (output frames ~1270-1306): the world goes muffled, then snaps back on time
+    tt = np.arange(N) / SR
+    m = np.interp(tt, [F(1268), F(1278), F(1300), F(1308)], [0, 1, 1, 0])[:, None]
+    mus = mus * (1 - m) + lp(mus, 450) * m
+    atm = atm * (1 - m) + lp(atm, 300) * m * 1.3
 
     def norm(x, peak):
         return x / (np.abs(x).max() + 1e-9) * peak
 
     vo, mus, fx, atm = norm(vo, 0.9), norm(mus, 0.32), norm(fx, 0.6), norm(atm, 0.12)
-    fx = fx * (1.0 - 0.3 * v_env)[:, None]
+    fx = fx * (1.0 - 0.55 * v_env)[:, None]
     mix = vo + mus + fx + atm
     mix = np.tanh(mix * 1.1) / np.tanh(1.1)  # gentle master saturation / limiting
     mix *= np.interp(np.arange(N) / SR, [0, 0.02, 49.88, 50.0], [0, 1, 1, 0])[:, None]
