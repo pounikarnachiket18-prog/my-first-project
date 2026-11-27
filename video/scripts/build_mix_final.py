@@ -187,6 +187,16 @@ if JET:
     end0 = HOOK + LOGO_AT / FPS
     jet_pass(120.5, 1.2, 6.0, end0 + 1.0, 0.9, fade_out=2.2)         # Tejas pulls up on afterburner into the logo
 
+# ---------- missile launch: user's "airstrike" SFX (Pixabay, dennish18) - its blast (7.8 s) on the missiles' ignition
+if os.environ.get("AIRSTRIKE") == "1":
+    rawa = subprocess.check_output(["ffmpeg", "-v", "error", "-i", os.path.join(PUB, "sfx_airstrike.mp3"), "-ac", "1", "-ar", str(SR), "-f", "f32le", "-"])
+    A = np.frombuffer(rawa, np.float32).astype(np.float64)
+    a0, a1, blast = 6.6, 11.2, 7.8
+    seg = A[int(a0 * SR):int(a1 * SR)].copy(); seg *= env(len(seg), 0.25, 1.6)
+    ignition = W(0, 5) + 0.4                     # coldWorld: missiles drop 0.4 s, then ignite
+    put(jets, seg, ignition - (blast - a0), 1.0)
+    print("airstrike blast at", round(ignition, 2))
+
 # ---------- voice, hook clip audio
 voice = np.zeros(N)
 v, vsr = sf.read(os.path.join(PUB, os.environ.get("VOICE", "voice_final.wav")), dtype="float64")
@@ -202,7 +212,24 @@ if os.environ.get("ROGER") == "1":
     R = np.frombuffer(rawr, np.float32).astype(np.float64)
     R = R / (np.abs(R).max() + 1e-9) * 0.85
     weapon_away = 4.17 - (152 - 81) / FPS          # HUD "WEAPON AWAY" in the clip -> reel time
-    put(voice, R, weapon_away - 0.05)
+    if os.environ.get("RADIO") == "1":
+        # opening radio exchange: control "Eagle One, you have permission to engage the target." -> pilot "Roger that."
+        def tempo(x, r):
+            p_in, p_out = "/tmp/_t_in.wav", "/tmp/_t_out.wav"
+            sf.write(p_in, x.astype(np.float32), SR)
+            subprocess.check_call(["ffmpeg", "-v", "error", "-y", "-i", p_in, "-af", f"atempo={r}", p_out])
+            y, _ = sf.read(p_out); os.remove(p_in); os.remove(p_out); return y
+        rawa2 = subprocess.check_output(["ffmpeg", "-v", "error", "-i", os.path.join(PUB, "sfx_airstrike.mp3"), "-ac", "1", "-ar", str(SR), "-f", "f32le", "-"])
+        A2 = np.frombuffer(rawa2, np.float32).astype(np.float64)
+        c1 = A2[int(0.29 * SR):int(0.82 * SR)]; c2 = A2[int(1.30 * SR):int(3.00 * SR)]
+        cmd = np.concatenate([c1 * env(len(c1), 0.005, 0.02), np.zeros(int(0.06 * SR)), c2 * env(len(c2), 0.01, 0.06)])
+        cmd = tempo(cmd, 1.12); cmd = cmd / (np.abs(cmd).max() + 1e-9) * 0.8
+        put(voice, cmd, 0.0)
+        rg = R[int(0.05 * SR):int(0.93 * SR)].copy(); rg *= env(len(rg), 0.005, 0.04); rg = tempo(rg, 1.08)
+        put(voice, rg, len(cmd) / SR + 0.03)
+        print("radio: command 0.00-%.2f, roger %.2f-%.2f" % (len(cmd) / SR, len(cmd) / SR + 0.03, len(cmd) / SR + 0.03 + len(rg) / SR))
+    else:
+        put(voice, R, weapon_away - 0.05)
     end_t = min(Le(13) + 0.25, TOTAL - len(R) / SR - 0.15)
     put(voice, R, end_t)
     print("roger at", round(weapon_away - 0.05, 2), "and", round(end_t, 2))
