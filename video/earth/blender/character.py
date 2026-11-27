@@ -23,6 +23,9 @@ OUTFITS = {
     "green": ((0.12, 0.32, 0.18), (0.22, 0.2, 0.19), (0.15, 0.12, 0.1)),
     "sky": ((0.45, 0.62, 0.82), (0.12, 0.14, 0.22), (0.2, 0.15, 0.1)),
     "khaki": ((0.55, 0.47, 0.3), (0.25, 0.22, 0.18), (0.2, 0.14, 0.09)),
+    # THE LAST FLIGHT
+    "pilot": ((0.16, 0.19, 0.12), (0.16, 0.19, 0.12), (0.03, 0.03, 0.03)),   # olive flight suit, black boots
+    "girl": ((0.62, 0.3, 0.36), (0.12, 0.12, 0.16), (0.55, 0.5, 0.45)),      # dusty rose kurta, dark leggings
 }
 
 
@@ -238,3 +241,95 @@ def look_up():
     p = stand()
     p.update({"Head": (0, 0.6, 1), "Spine2": (0, 0.15, 1)})
     return p
+
+
+# ---------------------------------------------------------------- THE LAST FLIGHT poses
+def run(phase):
+    s, c = math.sin(phase), math.cos(phase)
+    def leg(sign, ph):
+        sw = math.sin(ph)
+        knee = max(0.0, math.sin(ph + 1.4)) * 1.6
+        return (sign * 0.05, -0.85 * sw, -1), (sign * 0.03, -0.6 * sw + knee, -1), (sign * 0.02, -0.9, -0.2)
+    lu, ll, lf = leg(1, phase)
+    ru, rl, rf = leg(-1, phase + math.pi)
+    return {
+        "Spine": (0, -0.3, 1), "Spine1": (0, -0.2, 1), "Spine2": (0, -0.1, 1), "Head": (0, -0.2, 1),
+        "LeftUpLeg": lu, "LeftLeg": ll, "LeftFoot": lf, "RightUpLeg": ru, "RightLeg": rl, "RightFoot": rf,
+        "LeftArm": (0.2, 0.6 * s, -0.8), "LeftForeArm": (0.1, -0.8 + 0.4 * s, 0.4),
+        "RightArm": (-0.2, -0.6 * s, -0.8), "RightForeArm": (-0.1, -0.8 - 0.4 * s, 0.4),
+    }
+
+
+def brace(t, wind=1.0):
+    """Leaning into a gale from the west (+X wind pushes her east): crouched, arm shielding the face."""
+    j = math.sin(t * 17) * 0.05 * wind
+    return {
+        "Spine": (-0.25 * wind, -0.25, 1), "Spine1": (-0.15 * wind + j, -0.15, 1), "Spine2": (-0.1 * wind, -0.1, 1), "Head": (-0.15, -0.15, 1),
+        "LeftUpLeg": (0.3, -0.35, -1), "LeftLeg": (0.15, 0.4, -1), "LeftFoot": (0.1, -0.9, -0.3),
+        "RightUpLeg": (-0.2, 0.15, -1), "RightLeg": (-0.1, 0.45, -1), "RightFoot": (-0.05, -0.9, -0.3),
+        "LeftArm": (0.3, -0.6, 0.2), "LeftForeArm": (-0.6, -0.3, 0.75), "LeftHand": (-0.6, -0.2, 0.6),
+        "RightArm": (-0.4, -0.3, -0.8), "RightForeArm": (-0.2, -0.6, -0.5 + j),
+    }
+
+
+def reach_up(t, reach=1.0):
+    """Arm stretched up toward the harness, the other bracing."""
+    j = math.sin(t * 13) * 0.08
+    return {
+        "Spine": (0, 0.1, 1), "Spine1": (0, 0.15, 1), "Spine2": (0, 0.15, 1), "Head": (0, 0.55, 1),
+        "RightArm": (-0.15 + j, -0.15, 0.4 + 0.6 * reach), "RightForeArm": (-0.05 + j, -0.1, 1), "RightHand": (0, -0.1, 1),
+        "LeftArm": (0.45, -0.3, -0.6), "LeftForeArm": (0.3, -0.7, -0.2),
+        "LeftUpLeg": (0.12, -0.1, -1), "LeftLeg": (0.06, 0.1, -1), "LeftFoot": (0.05, -0.9, -0.4),
+        "RightUpLeg": (-0.12, 0.1, -1), "RightLeg": (-0.06, 0.12, -1), "RightFoot": (-0.05, -0.9, -0.4),
+    }
+
+
+def hanging(t):
+    """Held in the harness, legs dangling and swaying."""
+    sw = math.sin(t * 3.0) * 0.25
+    return {
+        "Spine": (0, 0.05, 1), "Head": (0, 0.3, 1),
+        "RightArm": (-0.1, 0.0, 1), "RightForeArm": (0.0, -0.05, 1), "LeftArm": (0.1, 0.0, 1), "LeftForeArm": (0.0, -0.05, 1),
+        "LeftUpLeg": (0.1, -0.2 + sw, -1), "LeftLeg": (0.05, 0.3, -1), "RightUpLeg": (-0.1, -0.1 - sw, -1), "RightLeg": (-0.05, 0.35, -1),
+    }
+
+
+def grip_fingers(person, side="Right", amount=1.0):
+    """Curl the fingers of one hand into a fist/grip (rotation about each phalanx's local X)."""
+    from mathutils import Quaternion as Q
+    for f in ("Index", "Middle", "Ring", "Pinky"):
+        for k in (1, 2, 3):
+            pb = person.arm.pose.bones.get(f"{side}Hand{f}{k}")
+            if pb:
+                pb.rotation_quaternion = Q((1, 0, 0), math.radians(70 * amount))
+    pb = person.arm.pose.bones.get(f"{side}HandThumb2")
+    if pb:
+        pb.rotation_quaternion = Q((0, 0, 1), math.radians(35 * amount))
+
+
+def make_girl(loc=(0, 0, 0), heading=0.0):
+    """THE LAST FLIGHT survivor: ~12-year-old girl (scaled avatar), long dark hair in a ponytail, dusty kurta."""
+    g = Person("girl", "wheat", beard=False, loc=loc, heading=heading, scale=0.78)
+    head = g.arm.data.bones["Head"]
+    bpy.context.view_layer.update()
+    hc = g.arm.matrix_world @ g.arm.pose.bones["Head"].head
+    hair = next(o for o in g.meshes if o.name.endswith("_hair"))
+    hair.scale = (1.06, 1.08, 1.0)
+    # ponytail: tapered cylinder hanging from the back of the head, bound to the head bone
+    bpy.ops.mesh.primitive_cone_add(vertices=12, radius1=0.045, radius2=0.015, depth=0.32,
+                                    location=hc + Vector((0, 0.09 * 0.78, 0.06)), rotation=(math.radians(-150), 0, 0))
+    pt = bpy.context.active_object; pt.name = g.root.name + "_ponytail"
+    pt.data.materials.append(bpy.data.materials["HairDark"])
+    for p in pt.data.polygons:
+        p.use_smooth = True
+    mw = pt.matrix_world.copy(); pt.parent = g.arm; pt.parent_type = "BONE"; pt.parent_bone = "Head"; pt.matrix_world = mw
+    g.ponytail = pt
+    g.meshes.append(pt)
+    # dust on clothes and skin
+    for o in g.meshes:
+        for s in o.material_slots:
+            b = next((n for n in s.material.node_tree.nodes if n.type == "BSDF_PRINCIPLED"), None)
+            if b and not b.inputs["Base Color"].links:
+                c = b.inputs["Base Color"].default_value
+                b.inputs["Base Color"].default_value = (c[0] * 0.85 + 0.06, c[1] * 0.85 + 0.05, c[2] * 0.85 + 0.04, 1)
+    return g
