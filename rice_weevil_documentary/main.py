@@ -4,6 +4,7 @@
   python main.py preview S3_SecretEgg 400,480,620 [pct] [samples]
   python main.py render  S3_SecretEgg [pct] [samples]    # resumable PNG sequence
   python main.py render  ALL [pct] [samples]
+  python main.py render  S1_Mystery 50 16 --force --frames=22-180   # re-render part of a scene
 
 Run with Blender's Python module (bpy 4.5) or `blender -b -P main.py -- <args>`.
 """
@@ -76,7 +77,7 @@ def preview(name, frames, pct=25, samples=8, tag="latest"):
         print(f"PREVIEW {name} f{f} {time.time() - t:.1f}s", flush=True)
 
 
-def render(name, pct=50, samples=16, force=False):
+def render(name, pct=50, samples=16, force=False, frames=None):
     load()
     names = [s.name for s in sorted(bpy.data.scenes, key=lambda s: s.frame_start)] \
         if name == "ALL" else [name]
@@ -88,7 +89,8 @@ def render(name, pct=50, samples=16, force=False):
         scn.render.use_overwrite = False  # resumable
         scn.render.use_placeholder = True
         t = time.time()
-        for f in range(scn.frame_start, scn.frame_end + 1):
+        lo, hi = frames or (scn.frame_start, scn.frame_end)
+        for f in range(max(lo, scn.frame_start), min(hi, scn.frame_end) + 1):
             out = os.path.join(FRAMES, f"frame_{f:04d}.png")
             if not force and os.path.exists(out) and os.path.getsize(out) > 0:
                 continue
@@ -110,4 +112,6 @@ if __name__ == "__main__":
                 int(a[4]) if len(a) > 4 else 8, a[5] if len(a) > 5 else "latest")
     elif cmd == "render":
         render(a[1], int(a[2]) if len(a) > 2 else 50, int(a[3]) if len(a) > 3 else 16,
-               force="--force" in a)
+               force="--force" in a,
+               frames=next((tuple(int(v) for v in x.split("=")[1].split("-"))
+                            for x in a if x.startswith("--frames=")), None))

@@ -154,6 +154,45 @@ def lid(coll):
     return obj
 
 
+def label(coll, image_path, z0=56.0, z1=81.0, phi=-math.pi / 2, segs=48):
+    """Printed paper label wrapped round the front of the jar (channel branding).
+    Its width follows the image aspect so the artwork is never stretched."""
+    img = bpy.data.images.load(image_path, check_existing=True)
+    img.pack()  # keep the artwork inside the .blend
+    w_px, h_px = img.size
+    r = JAR_RO + 0.12
+    span = (z1 - z0) * w_px / h_px / r           # arc angle covered by the label
+    bm = bmesh.new()
+    uv = bm.loops.layers.uv.new()
+    grid = []
+    for i in range(segs + 1):
+        a = phi - span / 2 + span * i / segs
+        grid.append([bm.verts.new((r * math.cos(a), r * math.sin(a), z)) for z in (z0, z1)])
+    for i in range(segs):
+        f = bm.faces.new((grid[i][0], grid[i + 1][0], grid[i + 1][1], grid[i][1]))
+        for lp, (u, v) in zip(f.loops, ((i / segs, 0), ((i + 1) / segs, 0), ((i + 1) / segs, 1),
+                                        (i / segs, 1))):
+            lp[uv].uv = (u, v)
+    obj = core._finish_mesh(bm, "JarLabel", subsurf=0)
+    mat = bpy.data.materials.new("JarLabelPrint")
+    nb = M.NB(mat)
+    p = M._bsdf(nb, **{"Roughness": 0.42, "Coat Weight": 0.25, "Coat Roughness": 0.12})
+    tex = nb.n("ShaderNodeTexImage")
+    tex.image = img
+    tex.interpolation = 'Cubic'
+    nb.l(tex.outputs["Color"], p.inputs["Base Color"])
+    # paper fibre: a whisper of bump so the print catches the key light like a real sticker
+    n = nb.n("ShaderNodeTexNoise", Scale=1.8, Detail=8.0)
+    nb.l(M._coords(nb), n.inputs["Vector"])
+    b = nb.n("ShaderNodeBump", Strength=0.06, Distance=0.05)
+    nb.l(n.outputs["Fac"], b.inputs["Height"])
+    nb.l(b.outputs["Normal"], p.inputs["Normal"])
+    nb.output(p.outputs[0])
+    obj.data.materials.append(mat)
+    core.link(obj, coll)
+    return obj
+
+
 def _tangent_rot(phi, tilt, roll):
     """Rotation that lays a grain's long axis along the jar wall (tangent plane at angle phi),
     tilted by `tilt` from horizontal, with its width axis pointing at the jar centre."""

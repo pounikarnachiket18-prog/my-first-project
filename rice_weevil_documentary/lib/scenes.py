@@ -1,6 +1,7 @@
 """The seven sequences of THE INVISIBLE INVADER. Each is its own Blender scene + collection,
 numbered on the global 1..1500 timeline so all renders land in one frame sequence."""
 import math
+import os
 
 import bpy
 from mathutils import Vector
@@ -19,6 +20,7 @@ TIMELINE = {  # name: (first frame, last frame)
     # 2-second cold-open shot; rendered off the 1..1500 timeline and placed by tools/assemble.py
     "S0_Hook": (2001, 2060),
 }
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 HX = 0.4  # x position of the oviposition hole on the hero grain (grain local space)
 HERO_SEED = 5
 
@@ -152,9 +154,11 @@ def build_s1():
     P.counter(coll)
     jar = P.jar(coll)
     lid = P.lid(coll)
+    # channel branding: the Just KnowIt label printed on the front of the jar
+    P.label(coll, os.path.join(ROOT, "assets", "textures", "justknowit_label.png"))
     rice = M.rice_material("S1_JarRice", aged=0.12)
     # weevils pressed against the glass deep in the rice: dark specks seen in the wide shot
-    glass_bugs = [(-math.pi / 2 + 0.42, 38.0, 0.010), (-math.pi / 2 - 0.30, 61.0, 0.014),
+    glass_bugs = [(-math.pi / 2 + 0.42, 38.0, 0.010), (-math.pi / 2 - 0.30, 47.0, 0.014),
                   (-math.pi / 2 + 0.05, 24.0, 0.008)]
     avoid = []
     for phi, z, _sp in glass_bugs:
