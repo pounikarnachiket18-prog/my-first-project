@@ -21,7 +21,7 @@ const Shots: React.FC = () => {
     <Shake amp={shakeAt(f)} rot={shakeAt(f) * 0.04} speed={0.5} seed="cam" zoom={1.02}>
       {SHOTS.map((s) => (
         <Sequence key={s.id} from={s.from} durationInFrames={s.to - s.from} name={s.id}>
-          <FrameSequence shot={s.id} frames={s.frames} offset={s.offset ?? 0} bloom={0.18} filter="contrast(1.06) saturate(1.08)" />
+          <FrameSequence shot={s.id} frames={s.frames} offset={s.offset ?? 0} bloom={0.18} filter={s.filter ?? "contrast(1.06) saturate(1.08)"} />
         </Sequence>
       ))}
     </Shake>
@@ -35,6 +35,12 @@ export const EarthStopped: React.FC<{ audio?: boolean }> = ({ audio = true }) =>
     {/* light compositing only where the reference also has it: wind debris, spray, heat shimmer, snow */}
     <Sequence from={400} durationInFrames={268}><Particles kind="streaks" count={40} seed="wind" speed={1.2} opacity={0.45} /></Sequence>
     <Sequence from={668} durationInFrames={100}><Particles kind="rain" count={120} seed="spray" speed={1.3} dir={1} opacity={0.55} /></Sequence>
+    <Sequence from={1215} durationInFrames={60}>
+      {/* scorching day side: burn the bleached sky and sand toward orange, hot glow around the sun */}
+      <AbsoluteFill style={{ background: "linear-gradient(180deg, rgba(255,110,20,0.75) 0%, rgba(255,150,60,0.55) 45%, rgba(210,90,20,0.6) 100%)", mixBlendMode: "multiply" }} />
+      <AbsoluteFill style={{ background: "radial-gradient(circle at 78% 12%, rgba(255,250,220,0.95) 0%, rgba(255,190,90,0.55) 14%, rgba(255,120,30,0) 40%)", mixBlendMode: "screen" }} />
+      <Particles kind="embers" count={70} seed="heat" speed={0.8} opacity={0.7} />
+    </Sequence>
     <Sequence from={1275} durationInFrames={48}><Particles kind="snow" count={110} seed="snow" speed={1} opacity={0.8} /></Sequence>
     <Flash at={BEATS.freeze} color="#dff0ff" peak={0.5} decay={5} />
     <Flash at={BEATS.groundStop} color="#ffffff" peak={0.6} decay={5} />

@@ -4,7 +4,7 @@
 export const FPS = 30;
 export const TOTAL = 1500;
 
-export type Shot = { id: string; from: number; to: number; frames: number; offset?: number };
+export type Shot = { id: string; from: number; to: number; frames: number; offset?: number; filter?: string };
 
 export const SHOTS: Shot[] = [
   { id: "A1", from: 0, to: 150, frames: 154 }, // Earth (India), spin freezes on "band" (f80)
@@ -20,9 +20,9 @@ export const SHOTS: Shot[] = [
   { id: "E1", from: 840, to: 930, frames: 94 }, // survivor sits up
   { id: "E2", from: 930, to: 1110, frames: 184 }, // orbit diagram: 1 din = 1 saal
   { id: "F1", from: 1110, to: 1215, frames: 109 }, // half day / half night
-  { id: "F2", from: 1215, to: 1275, frames: 64 }, // Thar: extreme heat
-  { id: "F3", from: 1275, to: 1323, frames: 52 }, // Ladakh: freezing darkness
-  { id: "G1", from: 1323, to: 1400, frames: 81 }, // sunrise on Marine Drive
+  { id: "F2", from: 1215, to: 1275, frames: 64, filter: "contrast(1.35) saturate(1.9) sepia(0.4) brightness(0.9) hue-rotate(-10deg)" }, // Thar: extreme heat
+  { id: "F3", from: 1275, to: 1323, frames: 52, filter: "contrast(1.18) saturate(1.25) brightness(0.95)" }, // Ladakh: freezing darkness
+  { id: "G1", from: 1323, to: 1400, frames: 81, filter: "contrast(1.12) saturate(1.35) sepia(0.18)" }, // sunrise on Marine Drive
   { id: "G2", from: 1400, to: 1500, frames: 104 }, // Earth spinning again, pull back
 ];
 
