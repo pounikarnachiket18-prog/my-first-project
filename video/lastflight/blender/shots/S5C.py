@@ -21,8 +21,8 @@ def build():
         sp["Head"] = (-0.55, -0.45, -0.7)   # looking down to his right, out of the door side
         sp["Spine2"] = (-0.15, -0.1, 1)
         h.pilot.key(f, sp)
-    cam = camera(lens=50, fstop=2.8, dof_obj=4.0)
-    key_cam_path(cam, frames, lambda f: F.world(s_of(f), (3.6, -3.4, 1.55)) + L.handheld(f, amp=0.04, seed=81)[0],
-                 lambda f: F.world(s_of(f), (1.4, -0.45, 1.78)), roll_fn=lambda f: math.radians(-6) + L.handheld(f, rot=1.0, seed=82)[1],
-                 focus_fn=lambda f: 4.0)
+    cam = camera(lens=42, fstop=2.8, dof_obj=2.5)
+    key_cam_path(cam, frames, lambda f: F.world(s_of(f), (2.75, -2.35, 1.6)) + L.handheld(f, amp=0.04, seed=81)[0],
+                 lambda f: F.world(s_of(f), (1.3, -0.4, 1.5)), roll_fn=lambda f: math.radians(-6) + L.handheld(f, rot=1.0, seed=82)[1],
+                 focus_fn=lambda f: 2.5)
     L.finish(cam, frames, rng, smoke=False)
