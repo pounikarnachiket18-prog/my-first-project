@@ -65,14 +65,14 @@ export const S4Destruction: React.FC = () => {
             </Grade>
           </Sequence>
           <Sequence from={D2} durationInFrames={D3 - D2 + 1} layout="none">
-            <Grade tint="#4a6a80" tintOpacity={0.3} shadows="#0a1a24" shadowOpacity={0.25} vignette={0.7} filter="contrast(1.25) saturate(0.9) brightness(1.05)">
+            <Grade tint="#4a6a80" tintOpacity={0.3} shadows="#0a1a24" shadowOpacity={0.25} vignette={0.7} filter="contrast(1.2) saturate(0.95) brightness(1.5)">
               <FrameSequence shot="D2" frames={66} offset={4} bloom={0.25} />
               <Particles kind="rain" count={170} seed="d2r" speed={1.2} dir={1} opacity={0.8} />
               <Lightning seed="d2" rate={0.06} strength={0.5} />
             </Grade>
           </Sequence>
           <Sequence from={D3} durationInFrames={D4 - D3 + 2} layout="none">
-            <Grade tint="#4a6a80" tintOpacity={0.28} shadows="#0a1a24" shadowOpacity={0.25} vignette={0.7} filter="contrast(1.25) saturate(0.95) brightness(1.08)">
+            <Grade tint="#4a6a80" tintOpacity={0.28} shadows="#0a1a24" shadowOpacity={0.25} vignette={0.7} filter="contrast(1.2) saturate(1.0) brightness(1.4)">
               <FrameSequence shot="D3" frames={50} bloom={0.3} />
               <Particles kind="rain" count={190} seed="d3r" speed={1.3} dir={1} opacity={0.85} />
               <Particles kind="streaks" count={40} seed="d3s" speed={1.2} color="#dfe8ee" opacity={interpolate(f, [D3 + 20, HIT], [0, 0.8], cl)} />

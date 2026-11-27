@@ -55,9 +55,9 @@ export const S3Inertia: React.FC = () => {
             </Sequence>
             {/* C3 — buildings shear, atmosphere keeps going */}
             <Sequence from={C3} durationInFrames={240 - C3} layout="none">
-              <Grade tint="#d9a070" tintOpacity={0.25} shadows="#2a2230" shadowOpacity={0.22} vignette={0.6} filter="contrast(1.12) saturate(0.95)">
-                <FrameSequence shot="C3" frames={94} bloom={0.4} />
-                <Particles kind="dust" count={26} seed="c3dust" speed={0.9} opacity={interpolate(f, [C3, C3 + 40], [0.4, 1], cl)} color="#a58564" />
+              <Grade tint="#d9a070" tintOpacity={0.2} shadows="#2a2230" shadowOpacity={0.3} vignette={0.6} filter="contrast(1.32) saturate(1.05) brightness(0.95)">
+                <FrameSequence shot="C3" frames={94} bloom={0.2} />
+                <Particles kind="dust" count={18} seed="c3dust" speed={0.9} opacity={interpolate(f, [C3, C3 + 60], [0.2, 0.5], cl)} color="#a58564" />
                 <Particles kind="streaks" count={90} seed="c3s" speed={0.5} opacity={0.75} />
               </Grade>
             </Sequence>
