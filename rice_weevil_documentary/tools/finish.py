@@ -432,6 +432,14 @@ def compose(k):
     f, col = flash(k)
     img = bloom(img, sc, boost=0.6 * f)
     img = aberration(img, ca_amount(k))
+    # readability scrim: a soft dark gradient behind the top graphics (species card, stage
+    # tracker, day counter), only as strong as the frame is bright behind them
+    if 232 <= k <= 330 or 590 <= k <= 1345:
+        band = float((img[100:200] @ LUMA).mean())
+        amt = min(0.6, max(0.0, (band - 0.28) * 1.7))
+        if amt > 0.01:
+            ramp = np.clip(1 - (YY[:, :1] - 60) / 260.0, 0, 1) ** 1.6
+            img = img * (1 - amt * ramp[..., None])
     if f > 0:
         img = 1 - (1 - img) * (1 - f * np.array(col, np.float32))
     return (np.clip(img, 0, 1) * 255 + 0.5).astype(np.uint8)
