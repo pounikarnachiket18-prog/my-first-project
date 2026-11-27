@@ -115,7 +115,7 @@ export const SideLabels: React.FC<{ dayAt: number; nightAt: number; out: number 
   return (
     <AbsoluteFill style={{ pointerEvents: "none" }}>
       {one(dayAt, "6 MAHINE\nDIN".split("\n").join(" "), "#ffd21f", { top: 250, right: 40, width: 480 })}
-      {one(nightAt, "6 MAHINE RAAT", "#8fd8ff", { top: 1500, left: 40, width: 480 })}
+      {one(nightAt, "6 MAHINE RAAT", "#8fd8ff", { top: 470, left: 40, width: 440 })}
     </AbsoluteFill>
   );
 };

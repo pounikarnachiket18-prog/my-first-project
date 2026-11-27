@@ -44,7 +44,7 @@ export const EarthStopped: React.FC<{ audio?: boolean }> = ({ audio = true }) =>
     <SpeedCounter at={290} from={300} to={328} out={356} />
     <Sequence from={930} durationInFrames={180}><OrbitLabelsSeq /></Sequence>
     <StrikeLine at={940} strike={BEATS.strike} out={1002} />
-    <Headline at={BEATS.oneYear} out={1104} y={0.1} lines={[{ t: "1 DIN =", size: 120 }, { t: "1 SAAL", size: 150, c: "#ffd21f" }]} />
+    <Headline at={BEATS.oneYear} out={1104} y={0.8} lines={[{ t: "1 DIN = 1 SAAL", size: 120, c: "#ffd21f" }]} />
     <SideLabels dayAt={BEATS.sixDay} nightAt={BEATS.sixNight} out={1212} />
     <Fade from={BEATS.black - 12} to={BEATS.black} />
     <Sequence from={0} durationInFrames={TOTAL - 14} name="Captions"><Captions /></Sequence>
