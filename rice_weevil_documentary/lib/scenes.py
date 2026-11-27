@@ -5,7 +5,7 @@ import math
 import bpy
 from mathutils import Vector
 
-from . import core, creatures, grains, rigs
+from . import core, creatures, grains, props, rigs
 from . import materials as M
 
 TIMELINE = {  # name: (first frame, last frame)
@@ -142,88 +142,102 @@ def ellipse_r(theta, half_w=1.0, half_t=0.8):
 
 # --------------------------------------------------------------------------- S1
 def build_s1():
+    """The sealed jar: a closed glass jar of rice on a dark counter looks perfectly clean.
+    The lid twists off, the camera rises to the rim and weevils climb up the glass and out."""
     scn, coll, f0, f1 = setup("S1_Mystery")
-    rice = M.rice_material("S1_Rice")
-    rice_bg = M.rice_material("S1_RiceBG")
-    hero = grains.grain("S1_Hero", rice, seed=3, coll=coll)
-    # hero floats & slowly rotates
-    for f, rz, rx, z in ((f0, -0.55, 0.12, -0.15), (f1, -0.12, 0.0, 0.1)):
-        hero.rotation_euler = (rx, 0, rz)
-        hero.location = (0, 0, z)
-        hero.keyframe_insert("rotation_euler", frame=f)
-        hero.keyframe_insert("location", frame=f)
-    # hundreds of grains materialise in the darkness behind
-    r = core.rng(11)
-    bg = []
-    for i in range(230):
-        while True:
-            p = Vector((r.uniform(-40, 40), r.uniform(6, 70), r.uniform(-45, 45)))
-            if p.length > 12:
-                break
-        g = grains.grain(f"S1_bg{i}", rice_bg, seed=r.randrange(12), loc=p,
-                         rot=(r.uniform(0, 6.3), r.uniform(0, 6.3), r.uniform(0, 6.3)),
-                         coll=coll, subsurf=0, scale=r.uniform(0.9, 1.1))
-        fa = int(8 + (p.length / 70) * 70 + r.uniform(0, 25))
-        s = g.scale.copy()
-        g.scale = (0, 0, 0)
-        g.keyframe_insert("scale", frame=fa)
-        g.scale = s
-        g.keyframe_insert("scale", frame=fa + 18)
-        # slow drift
-        g.keyframe_insert("location", frame=f0)
-        g.location = p + Vector((r.uniform(-1, 1), r.uniform(-1, 1), r.uniform(-1, 1)))
-        g.keyframe_insert("location", frame=f1)
-        bg.append(g)
-    floating_dust(coll, 70, (0, 4, 0), 14, f0, f1, seed=3, size=0.05)
-    # the invader: climbs over the crest from the far side
-    mount = core.empty("S1_mount", parent=hero)
-    rig = creatures.build_weevil("S1W", coll=coll)
-    rig["root"].parent = mount
-    mount.keyframe_insert("rotation_euler", frame=f0)
-    xw = 0.5
+    P = props
+    rigs.world_gradient(scn, top=(0.010, 0.013, 0.02), bottom=(0.002, 0.002, 0.003))
+    P.counter(coll)
+    jar = P.jar(coll)
+    lid = P.lid(coll)
+    rice = M.rice_material("S1_JarRice", aged=0.12)
+    # weevils pressed against the glass deep in the rice: dark specks seen in the wide shot
+    glass_bugs = [(-math.pi / 2 + 0.42, 38.0, 0.010), (-math.pi / 2 - 0.30, 61.0, 0.014),
+                  (-math.pi / 2 + 0.05, 24.0, 0.008)]
+    avoid = []
+    for phi, z, _sp in glass_bugs:
+        c = Vector((P.JAR_RI * math.cos(phi), P.JAR_RI * math.sin(phi), z))
+        avoid += [(c + Vector((0, 0, dz)), 2.6) for dz in (-1.2, 0.0, 1.4)]
+    P.rice_fill(coll, rice, avoid=avoid)
+    for i, (phi, z, sp) in enumerate(glass_bugs):
+        w = creatures.build_weevil(f"S1Glass{i}", coll=coll)
+        rad = Vector((math.cos(phi), math.sin(phi), 0))
 
-    def theta(f):
-        a = core.ease_io((f - 86) / 82.0)
-        return math.radians(core.lerp(-112, 8, a))
+        def gpath(f, phi=phi, z=z, sp=sp, rad=rad):
+            return (rad * P.JAR_RI + Vector((0, 0, z + sp * (f - f0))), phi, 0.35, math.radians(-90))
 
-    for f in range(f0, f1 + 1):
-        mount.rotation_euler = (theta(f), 0, 0)
-        mount.keyframe_insert("rotation_euler", frame=f)
-    u = xw / 3.2
-    k = math.sqrt(1 - u * u) * (1 - 0.18 * abs(u) ** 3)
+        creatures.animate_weevil(w, f0, f1, gpath, antenna_seed=30 + i)
+    # the lid: twist (thread lifts it ~1.5 mm), then lifted away up and to the right
+    lid.rotation_mode = 'XYZ'
+    for f, rz, loc, rx in ((f0, 0.0, (0, 0, 0), 0.0), (28, 0.0, (0, 0, 0), 0.0),
+                           (50, -1.75, (0, 0, 1.6), 0.0), (54, -1.80, (0, 0, 2.4), 0.02),
+                           (84, -2.1, (95, 45, 120), 0.55)):
+        lid.rotation_euler = (rx, 0, rz)
+        lid.location = loc
+        lid.keyframe_insert("rotation_euler", frame=f)
+        lid.keyframe_insert("location", frame=f)
+    visible(lid, [(f0, 96)])
+    # weevils on the rice that come up the inside of the glass and over the rim
+    prof_hero = P.rim_profile(29.0)
+    hero_phi = -math.pi / 2 - 0.05
+    hero = creatures.build_weevil("S1Hero", coll=coll)
+    hero_path = P.path_on_profile(prof_hero, 60, f1, hero_phi, 0.17)
+    creatures.animate_weevil(hero, f0, f1, hero_path, antenna_seed=1,
+                             head=lambda f: (6 * math.sin(f / 9.0), 8 * math.sin(f / 13.0)))
+    second = creatures.build_weevil("S1Second", coll=coll)
+    sec_path = P.path_on_profile(P.rim_profile(31.5), 70, f1, -math.pi / 2 + 0.16, 0.17,
+                                 d0=0.0)
+    creatures.animate_weevil(second, f0, f1, sec_path, antenna_seed=2)
+    third = creatures.build_weevil("S1Third", coll=coll)
+    third_path = P.path_on_profile(P.rim_profile(33.0), 40, f1, -math.pi / 2 - 0.2, 0.15,
+                                   d0=4.0)
+    creatures.animate_weevil(third, f0, f1, third_path, antenna_seed=3)
+    # two more wandering on the rice surface
+    for i, (p0, yaw, spd) in enumerate((((-7.0, -22.0), -2.2, 0.06), ((9.0, -18.0), -0.9, 0.07),
+                                        ((2.0, -12.0), -1.4, 0.05))):
+        w = creatures.build_weevil(f"S1Rice{i}", coll=coll)
 
-    def path(f):
-        return (Vector((xw, 0, ellipse_r(theta(f)) * k - 0.04)), math.radians(-90), 0.9)
+        def wpath(f, p0=p0, yaw=yaw, spd=spd, i=i):
+            d = (f - f0) * spd
+            yy = yaw + 0.35 * math.sin(f / 24.0 + i * 2)
+            return (Vector((p0[0] + d * math.cos(yaw), p0[1] + d * math.sin(yaw), P.RICE_TOP)),
+                    yy, 1.0)
 
-    def head(f):
-        # head rises as it crests
-        return (core.lerp(-25, 6, core.smoothstep(120, 165, f)), 0.0)
+        creatures.animate_weevil(w, f0, f1, wpath, antenna_seed=20 + i)
 
-    def circles(rg, f):
-        if f < 150:  # antennae sweep small circles: the first sign of life
-            w = (f / 30.0) * 2 * math.pi * 1.1
-            for ant, elbow, s in rg["antennae"]:
-                ant.rotation_euler = (0, math.radians(-30 + 14 * math.cos(w)),
-                                      math.radians(14 * math.sin(w) * s))
-                ant.keyframe_insert("rotation_euler", frame=f)
+    def hero_at(f):
+        return hero_path(f)[0]
 
-    creatures.animate_weevil(rig, f0, f1, path, head=head, antenna_seed=1, extra=circles,
-                             phase_fn=lambda f: (f - f0) / 26.0)
-    visible(rig["root"], [(86, f1)])  # emerges from behind the grain
-    cam, tgt, foc = rigs.camera("S1_Cam", coll, lens=50, fstop=5.6)
+    cam, tgt, foc = rigs.camera("S1_Cam", coll, lens=50, fstop=8.0)
     scn.camera = cam
+    rim_front = Vector((0, -P.JAR_RI - 1.0, P.JAR_H - 1.0))
     shot(cam, tgt, foc, [
-        dict(f=f0, pos=(0.6, -42, 9), tgt=(0, 0, 0), fstop=1.4, lens=50),
-        dict(f=75, pos=(0.4, -24, 6.5), tgt=(0.2, 0, 0.2), fstop=1.6, lens=50),
-        dict(f=122, pos=(0.5, -11, 3.6), tgt=(0.4, 0, 0.55), fstop=2.2, lens=50),
-        dict(f=148, pos=(0.9, -4.6, 1.7), tgt=(0.5, -0.4, 1.0), fstop=2.8, lens=42),
-        dict(f=f1, pos=(1.1, -4.0, 1.45), tgt=(0.45, -0.6, 1.05), fstop=2.8, lens=42),
+        dict(f=f0, pos=(14, -330, 88), tgt=(0, 0, 54), foc=(0, -40, 54), fstop=8.0, lens=50),
+        dict(f=40, pos=(10, -265, 96), tgt=(0, 0, 58), foc=(0, -40, 60), fstop=8.0, lens=50),
+        dict(f=92, pos=(16, -120, 150), tgt=(0, -16, 86), foc=rim_front, fstop=8.0, lens=50),
+        dict(f=128, pos=lambda f: hero_at(f) + Vector((7, -22, 16)),
+             tgt=lambda f: hero_at(f) + Vector((0, 0, 0.8)), fstop=8.0, lens=50),
+        dict(f=f1, pos=lambda f: hero_at(f) + Vector((4, -15, 7)),
+             tgt=lambda f: hero_at(f) + Vector((0, 0, 0.6)), fstop=8.0, lens=50),
     ])
-    rigs.area_light("S1_Key", coll, (7, -10, 8), (0, 0, 0), 500, size=5, color=rigs.WARM)
-    rigs.area_light("S1_Rim", coll, (-3, 9, 6), (0, 0, 0.5), 1800, size=2.5, color=rigs.COOL)
-    rigs.area_light("S1_Rim2", coll, (5, 8, -2), (0, 0, 0), 600, size=3, color=rigs.WARM)
-    rigs.area_light("S1_BG", coll, (0, -30, 30), (0, 40, 0), 14000, size=40,
-                    color=(0.75, 0.85, 1.0))
+    # lighting: warm kitchen key, cool back light for the glass edges, tall strip for a
+    # vertical highlight down the jar, small warm kicker for the macro at the rim
+    rigs.area_light("S1_Key", coll, (-190, -170, 260), (0, 0, 60), 420000, size=140,
+                    color=rigs.WARM)
+    rigs.area_light("S1_Back", coll, (40, 260, 210), (0, 0, 70), 520000, size=120,
+                    color=rigs.COOL)
+    strip = rigs.area_light("S1_Strip", coll, (230, -90, 70), (0, 0, 55), 260000, size=1,
+                            color=(1.0, 0.97, 0.92))
+    strip.data.shape = 'RECTANGLE'
+    strip.data.size = 16
+    strip.data.size_y = 220
+    for f, e in ((f0, 260000), (88, 260000), (100, 0)):  # off once we're inside the rim
+        strip.data.energy = e
+        strip.data.keyframe_insert("energy", frame=f)
+    rigs.area_light("S1_Fill", coll, (120, -260, 40), (0, 0, 50), 90000, size=160,
+                    color=(0.85, 0.9, 1.0))
+    rigs.area_light("S1_RimKick", coll, (-40, -60, 140), rim_front, 9000, size=20,
+                    color=rigs.WARM)
     return scn
 
 

@@ -375,10 +375,13 @@ def slice_fx(t0, g=0.25):
 def sfx():
     out = np.zeros((N, 2))
     ev = []
-    ev += [boom(0.0, 0.55, 55, 25, 3.0)]                    # opening
-    ev += [footsteps(F(95), F(180), rate=10, g=0.05)]        # antennae / climb
-    ev += [whoosh(F(148), 0.35)]                             # fast push-in
-    ev += [boom(F(150), 0.45, 80, 35, 2.0)]                  # dramatic reveal
+    ev += [boom(0.0, 0.55, 55, 25, 3.0)]                    # opening: the sealed jar
+    ev += [crunch(F(28), F(50), rate=11, g=0.07, lo=2500, hi=7000)]  # lid thread grinding
+    ev += [crack(F(52), 0.12), plop(F(53), 0.14)]           # seal breaks, lid comes free
+    ev += [whoosh(F(72), 0.3)]                               # lid swept away
+    ev += [whoosh(F(94), 0.28, direction=-1)]                # camera rises to the rim
+    ev += [footsteps(F(60), F(180), rate=12, g=0.05)]        # weevils scrabbling on glass
+    ev += [boom(F(148), 0.45, 80, 35, 2.0)]                  # first weevil over the rim
     # scene transitions
     for fr in (181, 391, 631, 931, 1201):
         ev += [whoosh(F(fr) + 0.05, 0.3, direction=1 if fr % 2 else -1)]

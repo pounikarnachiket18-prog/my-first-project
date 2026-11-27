@@ -2,6 +2,7 @@
 
 Usage: python tools/assemble.py [--preview] [--reuse-segments]
   --reuse-segments  keep existing renders/segments/*.mp4 (use after audio/subtitle-only changes)
+  --redo=S1_Mystery[,S2_...]  with --reuse-segments, re-encode just these scenes
 Inputs : renders/frames/frame_0001..1500.png, assets/audio/mix.wav, assets/audio/subtitles.json
 Outputs: final/the_invisible_invader_50s.mp4 (+ final/subtitles.ass)
 """
@@ -115,7 +116,8 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 def segment(name, f0, f1, fin, fout, preview=False):
     os.makedirs(SEGS, exist_ok=True)
     out = os.path.join(SEGS, f"{name}.mp4")
-    if "--reuse-segments" in sys.argv and os.path.exists(out):
+    redo = [a.split("=", 1)[1].split(",") for a in sys.argv if a.startswith("--redo=")]
+    if "--reuse-segments" in sys.argv and os.path.exists(out) and name not in sum(redo, []):
         return out
     n = f1 - f0 + 1
     vf = "[0:v]" + GRADE.format(w=W, h=H)
