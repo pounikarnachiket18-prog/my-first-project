@@ -9,6 +9,14 @@ FRAMES = 44
 
 def build():
     rng, st, loose = S.base(seed=5, x_min=-60, x_max=120, crowd=10, clutter_n=60)
+    import bpy
+    keep = []
+    for v in loose["vehicles"]:  # nothing may drive between the camera and the hero
+        if v.location.y < 0 and -45 < v.location.x < 30:
+            bpy.data.objects.remove(v, do_unlink=True)
+        else:
+            keep.append(v)
+    loose["vehicles"] = keep
     S.drive(loose["vehicles"], list(range(0, FRAMES + 1)))
     S.walkers(loose["people"], list(range(0, FRAMES + 1)))
     hx, hy, _ = S.HERO_POS
