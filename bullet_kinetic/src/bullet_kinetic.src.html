@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="hi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bullet Kinetic Explainer</title>
+<!--
+  Kinetic-typography explainer: "How a bullet is fired" (5 s, 1080x1920).
+  Built from the @IncognitoPrince prompt in awesome-opus5-5-videos:
+  "Create a 1-minute explainer video about [Topic] featuring After Effects style kinetic text
+   animations. Use HTML/CSS/JS ... smooth transitions, bold typography, and timed reveals ..."
+  Topic: how a bullet is fired. Length: 5 s (shortened from 1 minute on request).
+  Open in a browser to watch it loop. ?render=1 hands control to a recorder via window.seek(t).
+-->
+<style>
+  @font-face { font-family: Inter9; src: url(fonts/inter-900.woff2) format('woff2'); font-weight: 900; }
+  @font-face { font-family: Inter9; src: url(fonts/inter-800.woff2) format('woff2'); font-weight: 800; }
+  @font-face { font-family: Inter9; src: url(fonts/inter-600.woff2) format('woff2'); font-weight: 600; }
+  @font-face { font-family: Deva; src: url(fonts/deva-800.woff2) format('woff2'); font-weight: 800; }
+  @font-face { font-family: Deva; src: url(fonts/deva-700.woff2) format('woff2'); font-weight: 700; }
+
+  :root { --accent: #ffb347; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: #000; overflow: hidden; }
+  body { display: flex; align-items: center; justify-content: center; }
+  #stage { position: relative; width: 1080px; height: 1920px; overflow: hidden; background: #07090d;
+           font-family: Inter9, 'Helvetica Neue', Arial, sans-serif; color: #fff; transform-origin: center; flex: none; }
+  .abs { position: absolute; }
+  #bg { inset: 0; }
+  #grid { inset: -200px; opacity: .5;
+          background-image: linear-gradient(rgba(140,170,210,.06) 2px, transparent 2px),
+                            linear-gradient(90deg, rgba(140,170,210,.06) 2px, transparent 2px);
+          background-size: 90px 90px; }
+  #vignette { inset: 0; background: radial-gradient(ellipse at 50% 45%, transparent 45%, rgba(0,0,0,.7) 100%); }
+
+  .topbar { top: 92px; left: 70px; right: 70px; display: flex; justify-content: space-between;
+            font-weight: 800; font-size: 26px; letter-spacing: 7px; color: #8b95a3; }
+  .topbar b { color: var(--accent); font-weight: 800; }
+
+  .beat { left: 0; right: 0; top: 520px; height: 900px; display: flex; flex-direction: column;
+          align-items: center; justify-content: center; text-align: center; will-change: transform; }
+  .num { font-weight: 800; font-size: 30px; letter-spacing: 6px; padding: 12px 28px; border-radius: 40px;
+         border: 3px solid var(--accent); color: var(--accent); margin-bottom: 26px; }
+  .en { font-weight: 900; line-height: .92; letter-spacing: -2px; text-transform: uppercase; }
+  .line { display: block; overflow: hidden; padding: 0 20px 8px; }
+  .ch { display: inline-block; will-change: transform; }
+  .hi { font-family: Deva, sans-serif; font-weight: 800; font-size: 92px; line-height: 1.35; margin-top: 30px; }
+  .hi .w { display: inline-block; margin: 0 12px; }
+  .sub { font-weight: 600; font-size: 40px; color: #b3bcc8; margin-top: 14px; letter-spacing: .5px; }
+  .counter { font-weight: 900; font-size: 128px; letter-spacing: -3px; margin-top: 36px; color: var(--accent); }
+  .counter small { font-size: 48px; letter-spacing: 2px; color: #c9d1dc; margin-left: 14px; }
+  .gauge { width: 680px; height: 18px; border-radius: 9px; background: rgba(255,255,255,.1); margin-top: 18px; overflow: hidden; }
+  .gauge i { display: block; height: 100%; width: 0; border-radius: 9px; background: var(--accent); box-shadow: 0 0 24px var(--accent); }
+
+  #ring { left: 540px; top: 840px; width: 300px; height: 300px; margin: -150px 0 0 -150px; border-radius: 50%;
+          border: 10px solid #5cc8ff; opacity: 0; }
+  .spark { left: 540px; top: 840px; width: 10px; height: 70px; margin-left: -5px; border-radius: 5px;
+           background: linear-gradient(#fff6c8, #ffb02e 60%, transparent); transform-origin: 50% 0; opacity: 0; }
+  .streak { height: 6px; border-radius: 3px; background: linear-gradient(90deg, transparent, rgba(255,255,255,.85)); opacity: 0; }
+
+  #track { left: 120px; right: 120px; top: 1560px; height: 170px; }
+  #barrel { left: 0; right: 120px; top: 30px; height: 44px; border-radius: 10px;
+            background: linear-gradient(#5a6472, #262c34 55%, #15191e); border: 2px solid rgba(190,210,235,.45); }
+  #chamber { left: 0; width: 170px; top: 18px; height: 68px; border-radius: 12px;
+             background: linear-gradient(#6a7584, #2b323b 55%, #171b21); border: 2px solid rgba(190,210,235,.5); }
+  #bullet { left: 40px; top: 36px; width: 110px; height: 32px; border-radius: 6px 60% 60% 6px / 6px 50% 50% 6px;
+            background: linear-gradient(#ffd9ad, #d77c3e 30%, #8f4318 75%, #3a1806); box-shadow: 0 0 0 rgba(255,140,60,0); }
+  #trail { left: 40px; top: 44px; height: 16px; width: 0; border-radius: 8px;
+           background: linear-gradient(90deg, rgba(255,120,40,0), rgba(255,210,140,.95)); }
+  .step { top: 108px; width: 180px; margin-left: -90px; text-align: center; font-weight: 800; font-size: 22px;
+          letter-spacing: 3px; color: #5d6672; }
+  .step::before { content: ''; display: block; width: 18px; height: 18px; border-radius: 50%; margin: 0 auto 12px;
+                  background: #2a3038; border: 3px solid #4a525d; }
+  .step.on { color: #fff; } .step.on::before { background: var(--accent); border-color: #fff; box-shadow: 0 0 18px var(--accent); }
+  .step.done { color: #9aa3ae; } .step.done::before { background: #9aa3ae; border-color: #9aa3ae; }
+
+  #wipeA, #wipeB { top: -300px; height: 2520px; width: 1500px; transform: skewX(-14deg); left: 0; }
+  #flash { inset: 0; opacity: 0; mix-blend-mode: screen;
+            background: radial-gradient(circle at 50% 44%, #fff 0%, rgba(255,220,170,.55) 25%, transparent 60%); }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="bg" class="abs"></div>
+  <div id="grid" class="abs"></div>
+
+  <div class="topbar abs"><span>BALLISTICS <b>101</b></span><span id="clock">0.0 / 5.0 S</span></div>
+
+  <div id="ring" class="abs"></div>
+  <div id="sparks"></div>
+  <div id="streaks"></div>
+
+  <section class="beat abs" id="b0">
+    <div class="en" style="font-size:210px"><span class="line">How a</span><span class="line">bullet</span><span class="line" style="color:var(--accent)">fires</span></div>
+    <div class="hi"><span class="w">गोली</span><span class="w">कैसे</span><span class="w">चलती</span><span class="w">है?</span></div>
+  </section>
+  <section class="beat abs" id="b1">
+    <div class="num">01</div>
+    <div class="en" style="font-size:215px"><span class="line">Strike</span></div>
+    <div class="hi"><span class="w">पिन</span><span class="w">टकराती</span><span class="w">है</span></div>
+    <div class="sub">The firing pin hits the primer</div>
+  </section>
+  <section class="beat abs" id="b2">
+    <div class="num">02</div>
+    <div class="en" style="font-size:245px"><span class="line">Spark</span></div>
+    <div class="hi"><span class="w">बारूद</span><span class="w">जल</span><span class="w">उठता</span><span class="w">है</span></div>
+    <div class="sub">The primer ignites the gunpowder</div>
+  </section>
+  <section class="beat abs" id="b3">
+    <div class="num">03</div>
+    <div class="en" style="font-size:168px"><span class="line">Pressure</span></div>
+    <div class="hi"><span class="w">गैस</span><span class="w">का</span><span class="w">दबाव</span></div>
+    <div class="sub">Burning powder turns into gas</div>
+    <div class="counter"><span class="val">0</span><small>BAR</small></div>
+    <div class="gauge"><i></i></div>
+  </section>
+  <section class="beat abs" id="b4">
+    <div class="num">04</div>
+    <div class="en" style="font-size:290px"><span class="line">Fire!</span></div>
+    <div class="hi"><span class="w">गोली</span><span class="w">बाहर!</span></div>
+    <div class="sub">Rifling spins it out of the barrel</div>
+    <div class="counter"><span class="val">0</span><small>M/S</small></div>
+  </section>
+
+  <div id="track" class="abs">
+    <div id="barrel" class="abs"></div>
+    <div id="chamber" class="abs"></div>
+    <div id="trail" class="abs"></div>
+    <div id="bullet" class="abs"></div>
+    <div class="step abs" style="left:12%">STRIKE</div>
+    <div class="step abs" style="left:37%">SPARK</div>
+    <div class="step abs" style="left:63%">PRESSURE</div>
+    <div class="step abs" style="left:88%">FIRE</div>
+  </div>
+
+  <div id="vignette" class="abs"></div>
+  <div id="wipeB" class="abs"></div>
+  <div id="wipeA" class="abs"></div>
+  <div id="flash" class="abs"></div>
+</div>
+
+<script>
+(() => {
+  const DUR = 5;
+  // ---- easing + helpers ----
+  const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+  const lerp = (a, b, u) => a + (b - a) * u;
+  const seg = (t, a, b) => clamp((t - a) / (b - a));
+  const outCubic = u => 1 - Math.pow(1 - u, 3);
+  const inCubic = u => u * u * u;
+  const inOut = u => u < .5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2;
+  const outBack = u => { const c = 1.9; return 1 + (c + 1) * Math.pow(u - 1, 3) + c * Math.pow(u - 1, 2); };
+  const hash = n => { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); };
+  const noise = x => { const i = Math.floor(x), f = x - i, u = f * f * (3 - 2 * f); return lerp(hash(i), hash(i + 1), u) * 2 - 1; };
+
+  // ---- timeline: beat windows and wipe centres ----
+  const BEATS = [
+    { id: 'b0', a: -0.12, b: 0.95, accent: '#ffb347' },
+    { id: 'b1', a: 0.95, b: 1.95, accent: '#5cc8ff' },
+    { id: 'b2', a: 1.95, b: 2.90, accent: '#ffc23a' },
+    { id: 'b3', a: 2.90, b: 3.85, accent: '#ff7a2f' },
+    { id: 'b4', a: 3.85, b: 9.00, accent: '#ff4a3a' },
+  ];
+  const WIPES = [0.95, 1.95, 2.90, 3.85];
+
+  // split English lines into letters, keep Hindi as whole words (Devanagari conjuncts must not be split)
+  for (const line of document.querySelectorAll('.en .line')) {
+    const txt = line.textContent; line.textContent = '';
+    for (const c of txt) { const s = document.createElement('span'); s.className = 'ch'; s.textContent = c === ' ' ? ' ' : c; line.appendChild(s); }
+  }
+  const $ = s => document.querySelector(s);
+  const stage = $('#stage');
+  const beats = BEATS.map(B => {
+    const el = document.getElementById(B.id);
+    return { ...B, el, chars: [...el.querySelectorAll('.ch')], words: [...el.querySelectorAll('.hi .w')],
+             num: el.querySelector('.num'), sub: el.querySelector('.sub'), counter: el.querySelector('.counter'),
+             val: el.querySelector('.val'), gauge: el.querySelector('.gauge i') };
+  });
+  const sparksBox = $('#sparks'), streakBox = $('#streaks');
+  const sparks = Array.from({ length: 26 }, (_, i) => { const d = document.createElement('div'); d.className = 'spark abs'; sparksBox.appendChild(d);
+    return { d, ang: (i / 26) * 360 + hash(i) * 10, sp: 260 + hash(i + 9) * 340, t0: 2.05 + hash(i + 3) * 0.35 }; });
+  const streaks = Array.from({ length: 16 }, (_, i) => { const d = document.createElement('div'); d.className = 'streak abs'; streakBox.appendChild(d);
+    return { d, y: 360 + hash(i + 40) * 1150, w: 220 + hash(i + 50) * 420, sp: 2600 + hash(i + 60) * 2200, ph: hash(i + 70) }; });
+  const steps = [...document.querySelectorAll('.step')];
+
+  function activeBeat(t) { let k = 0; for (let i = 0; i < WIPES.length; i++) if (t >= WIPES[i]) k = i + 1; return k; }
+
+  function seek(t) {
+    const k = activeBeat(t), B = beats[k];
+    stage.style.setProperty('--accent', B.accent);
+    $('#clock').textContent = `${Math.min(t, 5).toFixed(1)} / 5.0 S`;
+
+    // background glow in the current accent, slow drift on the grid
+    $('#bg').style.background = `radial-gradient(circle at 50% 44%, ${B.accent}33 0%, ${B.accent}10 30%, #07090d 62%)`;
+    $('#grid').style.transform = `translate(${(-t * 40) % 90}px, ${(-t * 22) % 90}px)`;
+
+    // ---- beats ----
+    beats.forEach((b, i) => {
+      const vis = t >= b.a - 0.01 && t < b.b + 0.2 && i === k;
+      b.el.style.visibility = vis ? 'visible' : 'hidden';
+      if (!vis) return;
+      const lt = t - b.a;                               // local time
+      const outU = inCubic(seg(t, b.b - 0.22, b.b));    // exit before the wipe lands
+
+      // letters: staggered rise with overshoot; beat 1 slams in sideways, beat 2 pops in scale
+      b.chars.forEach((c, j) => {
+        const u = seg(lt, j * 0.035, j * 0.035 + 0.38), e = outBack(u);
+        let tf;
+        if (i === 1) tf = `translateX(${(1 - e) * -140}%) skewX(${(1 - outCubic(u)) * 25}deg)`;
+        else if (i === 2) tf = `scale(${Math.max(0, e)})`;
+        else if (i === 4) tf = `scale(${lerp(2.6, 1, outCubic(seg(lt, j * 0.03, j * 0.03 + 0.25)))})`;
+        else tf = `translateY(${(1 - e) * 115}%) rotate(${(1 - outCubic(u)) * 14}deg)`;
+        const ou = seg(outU, j * 0.04, j * 0.04 + 0.6);
+        tf += ` translateY(${-ou * 120}%)`;
+        c.style.transform = tf;
+        c.style.opacity = (i === 4 ? clamp(seg(lt, j * 0.03, j * 0.03 + 0.1)) : clamp(u * 4)) * (1 - ou);
+        if (i === 2) {                                   // flicker like a spark catching
+          const f = clamp(0.5 + 0.5 * noise(t * 30 + j * 7));
+          c.style.color = `rgb(255,${lerp(255, 176, f) | 0},${lerp(255, 46, f) | 0})`;
+          c.style.textShadow = `0 0 ${20 + 50 * f}px rgba(255,170,40,${0.4 + 0.5 * f})`;
+        }
+        if (i === 3) c.style.transform += ` translate(${noise(t * 40 + j) * 4 * seg(lt, 0.2, 0.9)}px, ${noise(t * 40 + j + 50) * 4 * seg(lt, 0.2, 0.9)}px)`;
+        if (i === 4) c.style.textShadow = `0 0 ${60 * (1 - seg(lt, 0, 0.6))}px rgba(255,200,120,.9)`;
+      });
+      // Hindi words
+      b.words.forEach((w, j) => {
+        const u = outCubic(seg(lt, 0.14 + j * 0.06, 0.44 + j * 0.06));
+        w.style.transform = `translateY(${(1 - u) * 70 - outU * 60}px)`;
+        w.style.opacity = u * (1 - outU);
+        w.style.filter = `blur(${(1 - u) * 10}px)`;
+      });
+      if (b.num) { const u = outBack(seg(lt, 0, 0.3)); b.num.style.transform = `scale(${Math.max(0, u)})`; b.num.style.opacity = 1 - outU; }
+      if (b.sub) { const u = outCubic(seg(lt, 0.3, 0.6)); b.sub.style.transform = `translateY(${(1 - u) * 30}px)`; b.sub.style.opacity = u * (1 - outU); }
+      if (b.counter) {
+        const u = outCubic(seg(lt, 0.15, i === 3 ? 0.8 : 0.45));
+        b.val.textContent = Math.round((i === 3 ? 3500 : 900) * u).toLocaleString('en-US');
+        b.counter.style.opacity = clamp(seg(lt, 0.1, 0.25)) * (1 - outU);
+        if (b.gauge) b.gauge.style.width = `${u * 100}%`;
+      }
+      // whole-beat motion: strike shake, pressure swell, fire punch
+      let shake = 0, sc = 1;
+      if (i === 1) shake = 26 * Math.exp(-Math.max(0, lt - 0.3) * 9) * (lt > 0.3 ? 1 : 0);
+      if (i === 3) sc = lerp(0.96, 1.05, inOut(seg(lt, 0, 0.9)));
+      if (i === 4) shake = 30 * Math.exp(-lt * 5);
+      b.el.style.transform = `translate(${shake * noise(t * 60)}px, ${shake * noise(t * 60 + 9)}px) scale(${sc})`;
+    });
+
+    // ---- accents ----
+    { const u = seg(t, 1.25, 1.75); const r = $('#ring');            // strike impact ring
+      r.style.opacity = t > 1.25 && t < 1.75 ? (1 - u) * 0.9 : 0; r.style.transform = `scale(${0.2 + outCubic(u) * 3.2})`; }
+    for (const s of sparks) {                                         // spark burst
+      const u = seg(t, s.t0, s.t0 + 0.45);
+      s.d.style.opacity = t > s.t0 && t < s.t0 + 0.45 && t < 2.9 ? 1 - u : 0;
+      s.d.style.transform = `rotate(${s.ang}deg) translateY(${120 + outCubic(u) * s.sp}px) scaleY(${1 - u * 0.6})`;
+    }
+    for (const s of streaks) {                                        // speed streaks on fire
+      const on = t > 3.85 && t < 5, lt = t - 3.85;
+      const x = ((s.ph + lt * s.sp / 1600) % 1) * 1900 - 500;
+      s.d.style.opacity = on ? 0.65 * (1 - seg(lt, 0.6, 1.15)) : 0;
+      s.d.style.left = `${x}px`; s.d.style.top = `${s.y}px`; s.d.style.width = `${s.w}px`;
+    }
+
+    // ---- bottom track: bullet waits in the chamber, shivers under pressure, then leaves ----
+    { const bullet = $('#bullet'), trail = $('#trail');
+      const fire = inCubic(seg(t, 3.85, 4.2));
+      const jitter = t > 2.9 && t < 3.85 ? noise(t * 50) * 3 * seg(t, 2.9, 3.8) : 0;
+      const x = 40 + jitter + fire * 1100;
+      bullet.style.left = `${x}px`;
+      trail.style.width = `${Math.max(0, Math.min(x - 40, 840) * (1 - seg(t, 4.25, 4.8)))}px`;
+      trail.style.left = `${40 + Math.max(0, x - 40 - 840)}px`;
+      bullet.style.boxShadow = `0 0 ${40 * seg(t, 2.9, 3.85)}px rgba(255,140,60,.8)`;
+      const k2 = activeBeat(t) - 1;
+      steps.forEach((s, i) => { s.className = 'step abs' + (i === k2 ? ' on' : i < k2 ? ' done' : ''); });
+    }
+
+    // ---- wipes: two skewed panels sweep across at every beat change ----
+    const wa = $('#wipeA'), wb = $('#wipeB');
+    let shown = false;
+    for (let i = 0; i < WIPES.length; i++) {
+      const c = WIPES[i], u = seg(t, c - 0.17, c + 0.17);
+      if (u > 0 && u < 1) {
+        const e = inOut(u), col = BEATS[i + 1].accent;
+        wa.style.background = col; wb.style.background = '#0d1117';
+        wa.style.transform = `translateX(${lerp(-1800, 1500, e)}px) skewX(-14deg)`;
+        wb.style.transform = `translateX(${lerp(-1800, 1500, inOut(seg(t, c - 0.12, c + 0.2)))}px) skewX(-14deg)`;
+        shown = true;
+      }
+    }
+    if (!shown) { wa.style.transform = wb.style.transform = 'translateX(-2400px)'; }
+
+    // flash on strike and on fire
+    $('#flash').style.opacity = Math.max(t > 1.25 ? 0.5 * Math.exp(-(t - 1.25) * 14) : 0, t > 3.85 ? 0.9 * Math.exp(-(t - 3.85) * 6) : 0);
+  }
+  window.seek = seek;
+  window.DUR = DUR;
+
+  if (/render=1/.test(location.search)) { seek(0); return; }
+  const fit = () => { const s = Math.min(innerWidth / 1080, innerHeight / 1920); stage.style.transform = `scale(${s})`; };
+  addEventListener('resize', fit); fit();
+  document.fonts.ready.then(() => { let t0 = null; const loop = ts => { if (t0 === null) t0 = ts; seek(((ts - t0) / 1000) % DUR); requestAnimationFrame(loop); }; requestAnimationFrame(loop); });
+})();
+</script>
+</body>
+</html>
