@@ -1,0 +1,844 @@
+{
+ "fps": 30,
+ "lines": [
+  {
+   "id": "hook",
+   "start": 0.35,
+   "end": 3.519,
+   "accent": "#7fd4ff",
+   "lengthScale": 0.9,
+   "words": [
+    {
+     "text": "Socho...",
+     "start": 0.35,
+     "end": 0.858,
+     "emph": false
+    },
+    {
+     "text": "agar",
+     "start": 1.158,
+     "end": 1.442,
+     "emph": false
+    },
+    {
+     "text": "kal",
+     "start": 1.442,
+     "end": 1.542,
+     "emph": false
+    },
+    {
+     "text": "subah",
+     "start": 1.542,
+     "end": 1.782,
+     "emph": false
+    },
+    {
+     "text": "Earth",
+     "start": 1.782,
+     "end": 1.981,
+     "emph": true
+    },
+    {
+     "text": "ghoomna",
+     "start": 1.981,
+     "end": 2.38,
+     "emph": false
+    },
+    {
+     "text": "hi",
+     "start": 2.38,
+     "end": 2.664,
+     "emph": false
+    },
+    {
+     "text": "band",
+     "start": 2.664,
+     "end": 2.881,
+     "emph": false
+    },
+    {
+     "text": "kar",
+     "start": 2.881,
+     "end": 3.096,
+     "emph": false
+    },
+    {
+     "text": "de",
+     "start": 3.096,
+     "end": 3.379,
+     "emph": false
+    },
+    {
+     "text": "toh?",
+     "start": 3.379,
+     "end": 3.519,
+     "emph": false
+    }
+   ]
+  },
+  {
+   "id": "speed",
+   "start": 5.1,
+   "end": 11.862,
+   "accent": "#ffc24a",
+   "lengthScale": 0.804,
+   "words": [
+    {
+     "text": "Actually,",
+     "start": 5.1,
+     "end": 5.646,
+     "emph": false
+    },
+    {
+     "text": "hum",
+     "start": 5.646,
+     "end": 5.746,
+     "emph": false
+    },
+    {
+     "text": "sab",
+     "start": 5.746,
+     "end": 6.031,
+     "emph": false
+    },
+    {
+     "text": "already",
+     "start": 6.031,
+     "end": 6.42,
+     "emph": false
+    },
+    {
+     "text": "ek",
+     "start": 6.42,
+     "end": 6.705,
+     "emph": false
+    },
+    {
+     "text": "invisible",
+     "start": 6.705,
+     "end": 7.136,
+     "emph": true
+    },
+    {
+     "text": "speed",
+     "start": 7.136,
+     "end": 7.525,
+     "emph": true
+    },
+    {
+     "text": "par",
+     "start": 7.525,
+     "end": 7.75,
+     "emph": false
+    },
+    {
+     "text": "travel",
+     "start": 7.75,
+     "end": 8.079,
+     "emph": false
+    },
+    {
+     "text": "kar",
+     "start": 8.079,
+     "end": 8.234,
+     "emph": false
+    },
+    {
+     "text": "rahe",
+     "start": 8.234,
+     "end": 8.617,
+     "emph": false
+    },
+    {
+     "text": "hain...",
+     "start": 8.617,
+     "end": 8.759,
+     "emph": false
+    },
+    {
+     "text": "Equator",
+     "start": 9.009,
+     "end": 9.455,
+     "emph": false
+    },
+    {
+     "text": "par",
+     "start": 9.455,
+     "end": 9.705,
+     "emph": false
+    },
+    {
+     "text": "lagbhag",
+     "start": 9.705,
+     "end": 10.035,
+     "emph": false
+    },
+    {
+     "text": "1,670",
+     "start": 10.035,
+     "end": 10.85,
+     "emph": true
+    },
+    {
+     "text": "kilometres",
+     "start": 10.85,
+     "end": 11.423,
+     "emph": true
+    },
+    {
+     "text": "per",
+     "start": 11.423,
+     "end": 11.663,
+     "emph": true
+    },
+    {
+     "text": "hour!",
+     "start": 11.663,
+     "end": 11.862,
+     "emph": true
+    }
+   ]
+  },
+  {
+   "id": "inertia",
+   "start": 12.2,
+   "end": 19.393,
+   "accent": "#ff7a3d",
+   "lengthScale": 0.9,
+   "words": [
+    {
+     "text": "Aur",
+     "start": 12.2,
+     "end": 12.436,
+     "emph": false
+    },
+    {
+     "text": "agar",
+     "start": 12.436,
+     "end": 12.737,
+     "emph": false
+    },
+    {
+     "text": "Earth",
+     "start": 12.737,
+     "end": 12.863,
+     "emph": false
+    },
+    {
+     "text": "achanak",
+     "start": 12.863,
+     "end": 13.301,
+     "emph": false
+    },
+    {
+     "text": "ruk",
+     "start": 13.301,
+     "end": 13.525,
+     "emph": true
+    },
+    {
+     "text": "gayi...",
+     "start": 13.525,
+     "end": 13.697,
+     "emph": true
+    },
+    {
+     "text": "toh",
+     "start": 13.897,
+     "end": 14.012,
+     "emph": false
+    },
+    {
+     "text": "zameen",
+     "start": 14.012,
+     "end": 14.396,
+     "emph": false
+    },
+    {
+     "text": "ruk",
+     "start": 14.396,
+     "end": 14.547,
+     "emph": false
+    },
+    {
+     "text": "jaayegi,",
+     "start": 14.547,
+     "end": 15.067,
+     "emph": false
+    },
+    {
+     "text": "lekin",
+     "start": 15.067,
+     "end": 15.53,
+     "emph": false
+    },
+    {
+     "text": "hum,",
+     "start": 15.53,
+     "end": 15.769,
+     "emph": false
+    },
+    {
+     "text": "buildings",
+     "start": 15.769,
+     "end": 16.231,
+     "emph": false
+    },
+    {
+     "text": "aur",
+     "start": 16.231,
+     "end": 16.519,
+     "emph": false
+    },
+    {
+     "text": "atmosphere",
+     "start": 16.519,
+     "end": 17.137,
+     "emph": false
+    },
+    {
+     "text": "apni",
+     "start": 17.137,
+     "end": 17.254,
+     "emph": false
+    },
+    {
+     "text": "purani",
+     "start": 17.254,
+     "end": 17.643,
+     "emph": false
+    },
+    {
+     "text": "speed",
+     "start": 17.643,
+     "end": 18.131,
+     "emph": true
+    },
+    {
+     "text": "se",
+     "start": 18.131,
+     "end": 18.34,
+     "emph": false
+    },
+    {
+     "text": "aage",
+     "start": 18.34,
+     "end": 18.44,
+     "emph": false
+    },
+    {
+     "text": "badhte",
+     "start": 18.44,
+     "end": 18.964,
+     "emph": false
+    },
+    {
+     "text": "rahenge!",
+     "start": 18.964,
+     "end": 19.393,
+     "emph": false
+    }
+   ]
+  },
+  {
+   "id": "destruction",
+   "start": 20.25,
+   "end": 25.924,
+   "accent": "#ff4646",
+   "lengthScale": 0.9,
+   "words": [
+    {
+     "text": "Imagine",
+     "start": 20.25,
+     "end": 20.692,
+     "emph": false
+    },
+    {
+     "text": "karo...",
+     "start": 20.692,
+     "end": 20.992,
+     "emph": false
+    },
+    {
+     "text": "superfast",
+     "start": 21.242,
+     "end": 21.867,
+     "emph": true
+    },
+    {
+     "text": "winds,",
+     "start": 21.867,
+     "end": 22.388,
+     "emph": true
+    },
+    {
+     "text": "samundar",
+     "start": 22.388,
+     "end": 22.868,
+     "emph": false
+    },
+    {
+     "text": "ki",
+     "start": 22.868,
+     "end": 22.968,
+     "emph": false
+    },
+    {
+     "text": "massive",
+     "start": 22.968,
+     "end": 23.223,
+     "emph": true
+    },
+    {
+     "text": "waves",
+     "start": 23.223,
+     "end": 23.405,
+     "emph": true
+    },
+    {
+     "text": "aur",
+     "start": 23.405,
+     "end": 23.767,
+     "emph": false
+    },
+    {
+     "text": "duniya",
+     "start": 23.767,
+     "end": 24.07,
+     "emph": false
+    },
+    {
+     "text": "bhar",
+     "start": 24.07,
+     "end": 24.423,
+     "emph": false
+    },
+    {
+     "text": "mein",
+     "start": 24.423,
+     "end": 24.737,
+     "emph": false
+    },
+    {
+     "text": "unimaginable",
+     "start": 24.737,
+     "end": 25.452,
+     "emph": false
+    },
+    {
+     "text": "destruction!",
+     "start": 25.452,
+     "end": 25.924,
+     "emph": true
+    }
+   ]
+  },
+  {
+   "id": "yearday",
+   "start": 28.3,
+   "end": 34.246,
+   "accent": "#ffd36b",
+   "lengthScale": 0.9,
+   "words": [
+    {
+     "text": "Lekin",
+     "start": 28.3,
+     "end": 28.548,
+     "emph": false
+    },
+    {
+     "text": "maan",
+     "start": 28.548,
+     "end": 28.974,
+     "emph": false
+    },
+    {
+     "text": "lo",
+     "start": 28.974,
+     "end": 29.155,
+     "emph": false
+    },
+    {
+     "text": "tum",
+     "start": 29.155,
+     "end": 29.368,
+     "emph": false
+    },
+    {
+     "text": "kisi",
+     "start": 29.368,
+     "end": 29.646,
+     "emph": false
+    },
+    {
+     "text": "tarah",
+     "start": 29.646,
+     "end": 29.9,
+     "emph": false
+    },
+    {
+     "text": "bach",
+     "start": 29.9,
+     "end": 30.092,
+     "emph": false
+    },
+    {
+     "text": "gaye...",
+     "start": 30.092,
+     "end": 30.349,
+     "emph": false
+    },
+    {
+     "text": "toh",
+     "start": 30.599,
+     "end": 30.82,
+     "emph": false
+    },
+    {
+     "text": "ab",
+     "start": 30.82,
+     "end": 30.92,
+     "emph": false
+    },
+    {
+     "text": "ek",
+     "start": 30.92,
+     "end": 31.184,
+     "emph": false
+    },
+    {
+     "text": "din",
+     "start": 31.184,
+     "end": 31.391,
+     "emph": false
+    },
+    {
+     "text": "24",
+     "start": 31.391,
+     "end": 31.867,
+     "emph": false
+    },
+    {
+     "text": "ghante",
+     "start": 31.867,
+     "end": 32.18,
+     "emph": false
+    },
+    {
+     "text": "ka",
+     "start": 32.18,
+     "end": 32.401,
+     "emph": false
+    },
+    {
+     "text": "nahi,",
+     "start": 32.401,
+     "end": 32.639,
+     "emph": false
+    },
+    {
+     "text": "balki",
+     "start": 32.639,
+     "end": 33.056,
+     "emph": false
+    },
+    {
+     "text": "poore",
+     "start": 33.056,
+     "end": 33.367,
+     "emph": false
+    },
+    {
+     "text": "ek",
+     "start": 33.367,
+     "end": 33.528,
+     "emph": true
+    },
+    {
+     "text": "saal",
+     "start": 33.528,
+     "end": 33.833,
+     "emph": true
+    },
+    {
+     "text": "ka",
+     "start": 33.833,
+     "end": 33.933,
+     "emph": false
+    },
+    {
+     "text": "hoga!",
+     "start": 33.933,
+     "end": 34.246,
+     "emph": false
+    }
+   ]
+  },
+  {
+   "id": "twist",
+   "start": 37.1,
+   "end": 43.826,
+   "accent": "#ff9b3d",
+   "lengthScale": 0.83,
+   "words": [
+    {
+     "text": "Matlab,",
+     "start": 37.1,
+     "end": 37.588,
+     "emph": false
+    },
+    {
+     "text": "lagbhag",
+     "start": 37.588,
+     "end": 37.941,
+     "emph": false
+    },
+    {
+     "text": "6",
+     "start": 37.941,
+     "end": 38.168,
+     "emph": true
+    },
+    {
+     "text": "mahine",
+     "start": 38.168,
+     "end": 38.71,
+     "emph": true
+    },
+    {
+     "text": "tak",
+     "start": 38.71,
+     "end": 38.81,
+     "emph": false
+    },
+    {
+     "text": "din...",
+     "start": 38.81,
+     "end": 39.136,
+     "emph": false
+    },
+    {
+     "text": "aur",
+     "start": 39.286,
+     "end": 39.485,
+     "emph": false
+    },
+    {
+     "text": "6",
+     "start": 39.485,
+     "end": 39.688,
+     "emph": true
+    },
+    {
+     "text": "mahine",
+     "start": 39.688,
+     "end": 40.072,
+     "emph": true
+    },
+    {
+     "text": "tak",
+     "start": 40.072,
+     "end": 40.184,
+     "emph": false
+    },
+    {
+     "text": "raat!",
+     "start": 40.184,
+     "end": 40.525,
+     "emph": false
+    },
+    {
+     "text": "Ek",
+     "start": 40.825,
+     "end": 41.048,
+     "emph": false
+    },
+    {
+     "text": "taraf",
+     "start": 41.048,
+     "end": 41.332,
+     "emph": false
+    },
+    {
+     "text": "extreme",
+     "start": 41.332,
+     "end": 41.878,
+     "emph": true
+    },
+    {
+     "text": "heat,",
+     "start": 41.878,
+     "end": 42.263,
+     "emph": true
+    },
+    {
+     "text": "doosri",
+     "start": 42.263,
+     "end": 42.605,
+     "emph": false
+    },
+    {
+     "text": "taraf",
+     "start": 42.605,
+     "end": 42.973,
+     "emph": false
+    },
+    {
+     "text": "freezing",
+     "start": 42.973,
+     "end": 43.346,
+     "emph": true,
+     "accent": "#8fd8ff"
+    },
+    {
+     "text": "darkness.",
+     "start": 43.346,
+     "end": 43.826,
+     "emph": true,
+     "accent": "#8fd8ff"
+    }
+   ]
+  },
+  {
+   "id": "ending",
+   "start": 44.1,
+   "end": 49.471,
+   "accent": "#ffe08a",
+   "lengthScale": 0.708,
+   "words": [
+    {
+     "text": "Toh",
+     "start": 44.1,
+     "end": 44.3,
+     "emph": false
+    },
+    {
+     "text": "agli",
+     "start": 44.3,
+     "end": 44.473,
+     "emph": false
+    },
+    {
+     "text": "baar",
+     "start": 44.473,
+     "end": 44.669,
+     "emph": false
+    },
+    {
+     "text": "sunrise",
+     "start": 44.669,
+     "end": 45.031,
+     "emph": true
+    },
+    {
+     "text": "dekho...",
+     "start": 45.031,
+     "end": 45.322,
+     "emph": false
+    },
+    {
+     "text": "yaad",
+     "start": 45.382,
+     "end": 45.615,
+     "emph": false
+    },
+    {
+     "text": "rakhna,",
+     "start": 45.615,
+     "end": 46.015,
+     "emph": false
+    },
+    {
+     "text": "Earth",
+     "start": 46.015,
+     "end": 46.19,
+     "emph": true
+    },
+    {
+     "text": "ka",
+     "start": 46.19,
+     "end": 46.29,
+     "emph": false
+    },
+    {
+     "text": "ghoomna",
+     "start": 46.29,
+     "end": 46.57,
+     "emph": true
+    },
+    {
+     "text": "hi",
+     "start": 46.57,
+     "end": 46.833,
+     "emph": false
+    },
+    {
+     "text": "life",
+     "start": 46.833,
+     "end": 47.051,
+     "emph": true
+    },
+    {
+     "text": "ko",
+     "start": 47.051,
+     "end": 47.198,
+     "emph": false
+    },
+    {
+     "text": "possible",
+     "start": 47.198,
+     "end": 47.366,
+     "emph": false
+    },
+    {
+     "text": "banane",
+     "start": 47.366,
+     "end": 47.85,
+     "emph": false
+    },
+    {
+     "text": "wale",
+     "start": 47.85,
+     "end": 48.096,
+     "emph": false
+    },
+    {
+     "text": "important",
+     "start": 48.096,
+     "end": 48.422,
+     "emph": false
+    },
+    {
+     "text": "factors",
+     "start": 48.422,
+     "end": 48.763,
+     "emph": false
+    },
+    {
+     "text": "mein",
+     "start": 48.763,
+     "end": 48.924,
+     "emph": false
+    },
+    {
+     "text": "se",
+     "start": 48.924,
+     "end": 49.177,
+     "emph": false
+    },
+    {
+     "text": "ek",
+     "start": 49.177,
+     "end": 49.321,
+     "emph": false
+    },
+    {
+     "text": "hai!",
+     "start": 49.321,
+     "end": 49.471,
+     "emph": false
+    }
+   ]
+  }
+ ]
+}

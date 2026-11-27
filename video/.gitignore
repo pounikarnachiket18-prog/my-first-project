@@ -3,3 +3,6 @@ out/
 *.log
 .env
 .env.local
+# Earth reel: Piper voice model is downloaded by the README step (79 MB)
+earth/voices/
+__pycache__/
