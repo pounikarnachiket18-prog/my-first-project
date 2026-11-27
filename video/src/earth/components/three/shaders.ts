@@ -57,7 +57,7 @@ void main(){
   vec3 H = normalize(L + V);
   float nh = max(dot(Ng, H), 0.);
   float fres = pow(1. - max(dot(Ng, V), 0.), 5.);
-  col += water * (1.-cs) * lit * sunCol * (pow(nh, 900.)*1.6 + pow(nh, 90.)*0.12 + pow(nh, 14.)*0.015);
+  col += water * (1.-cs) * lit * sunCol * (pow(nh, 1400.)*0.55 + pow(nh, 160.)*0.06 + pow(nh, 18.)*0.01);
   col += water * fres * vec3(0.10,0.22,0.5) * lit * 0.6;
   // aerial perspective / limb haze
   float limb = pow(1. - max(dot(Ng, V), 0.), 2.6);

@@ -6,40 +6,45 @@ import { FONT } from "../fonts";
 type Word = { text: string; start: number; end: number; emph: boolean; accent?: string };
 type Line = { id: string; start: number; end: number; accent: string; words: Word[] };
 
-const MAX_CHARS = 17; // per subtitle line at this size -> max two lines on screen
+const MAX_CHARS = 15; // per subtitle line at this size; a page never exceeds two lines
 
-/** Split each narration line into pages of <= 2 short lines; a page breaks on punctuation when possible. */
-const paginate = (line: Line) => {
-  const pages: Word[][] = [];
-  let cur: Word[] = [];
-  let chars = 0;
-  for (const w of line.words) {
-    const len = w.text.length + 1;
-    if (cur.length && (chars + len > MAX_CHARS * 2 || (chars > MAX_CHARS * 0.9 && /[.,!?…]$/.test(cur[cur.length - 1].text)))) {
-      pages.push(cur);
-      cur = [];
-      chars = 0;
-    }
-    cur.push(w);
-    chars += len;
-  }
-  if (cur.length) pages.push(cur);
-  return pages;
-};
-
-const splitLines = (words: Word[]) => {
+const rowsOf = (words: Word[]) => {
   const rows: Word[][] = [[]];
   let chars = 0;
   for (const w of words) {
-    if (chars + w.text.length > MAX_CHARS && rows[rows.length - 1].length) {
+    if (rows[rows.length - 1].length && chars + w.text.length > MAX_CHARS) {
       rows.push([]);
       chars = 0;
     }
     rows[rows.length - 1].push(w);
     chars += w.text.length + 1;
   }
-  return rows.slice(0, 2);
+  return rows;
 };
+
+/** Split each narration line into pages of at most two lines; prefer breaking after punctuation. */
+const paginate = (line: Line) => {
+  const pages: Word[][] = [];
+  let cur: Word[] = [];
+  for (const w of line.words) {
+    const tooLong = cur.length > 0 && rowsOf([...cur, w]).length > 2;
+    const punctBreak = cur.length >= 3 && /[.,!?…]$/.test(cur[cur.length - 1].text) && rowsOf(cur).length === 2;
+    if (tooLong || punctBreak) {
+      pages.push(cur);
+      cur = [];
+    }
+    cur.push(w);
+  }
+  if (cur.length) pages.push(cur);
+  // avoid a lonely last word: pull one word down from the previous page
+  const n = pages.length;
+  if (n >= 2 && pages[n - 1].length === 1 && pages[n - 2].length >= 2) {
+    pages[n - 1].unshift(pages[n - 2].pop()!);
+  }
+  return pages;
+};
+
+const splitLines = rowsOf;
 
 export const Subtitles: React.FC<{ y?: number }> = ({ y = 0.64 }) => {
   const frame = useCurrentFrame();
@@ -75,13 +80,13 @@ export const Subtitles: React.FC<{ y?: number }> = ({ y = 0.64 }) => {
         }}
       >
         {rows.map((row, ri) => (
-          <div key={ri} style={{ display: "flex", flexWrap: "nowrap", justifyContent: "center", gap: "0 20px" }}>
+          <div key={ri} style={{ display: "flex", flexWrap: "nowrap", justifyContent: "center", gap: "0 30px" }}>
             {row.map((w, wi) => {
               const active = t >= w.start - 0.03 && t < w.end + 0.02;
               const spoken = t >= w.start - 0.03;
               const accent = w.accent ?? page.line.accent;
               const pop = spring({ frame: frame - Math.round((w.start - 0.03) * fps), fps, config: { damping: 12, stiffness: 320, mass: 0.5 } });
-              const s = active ? interpolate(pop, [0, 1], [0.96, 1.05]) : 1;
+              const s = active ? interpolate(pop, [0, 1], [0.97, 1.04]) : 1;
               const color = w.emph && spoken ? accent : active ? accent : "#ffffff";
               return (
                 <span
