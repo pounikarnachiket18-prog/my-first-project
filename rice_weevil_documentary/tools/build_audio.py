@@ -1,6 +1,8 @@
 """Narration (Kokoro TTS, Hindi), original procedural score, sound design and mix.
 
 Usage: python tools/build_audio.py <kokoro_model_dir>
+       python tools/build_audio.py --reuse-narration   (keep narration.wav + subtitles.json as
+                                                        they are; rebuild score, SFX and mix)
 Outputs: assets/audio/{narration,music,sfx,mix}.wav and assets/audio/subtitles.json
 Everything here is synthesised from scratch — no third-party or reference-video audio.
 """
@@ -23,6 +25,10 @@ rng = np.random.default_rng(7)
 
 def F(frame):  # timeline frame -> seconds
     return (frame - 1) / 30.0
+
+
+def J(src):  # S1 jar source frame -> seconds on the final timeline (see tools/finish.py JAR)
+    return F(float(np.interp(src, [22, 84, 180], [61, 110, 180])))
 
 
 # (window start, window end, [(hindi chunk, english chunk), ...])
@@ -242,7 +248,7 @@ def music():
         tt += step
         k += 1
     # heartbeat in the mystery and the emergence
-    for t0, t1 in ((0.8, 6.0), (40.4, 46.8)):
+    for t0, t1 in ((2.0, 6.0), (40.4, 46.8)):
         bt = t0
         while bt < t1:
             for off, amp in ((0, 1.0), (0.22, 0.6)):
@@ -372,19 +378,86 @@ def slice_fx(t0, g=0.25):
     return [(tp, w), (t0 + 0.55, pan(glass * g * 3, 0))]
 
 
+def stinger(t0, g=0.3, sec=1.6):
+    """Dissonant orchestral-style hit: detuned cluster + sub, fast attack, long tail."""
+    n = int(sec * SR)
+    x = np.arange(n) / SR
+    s = sum(saw(NOTE(m) * (1 + d), x, harmonics=10) for m, d in
+            ((62, 0.0), (63, 0.003), (69, -0.002), (74, 0.004), (75, 0.0)))
+    s = bp(s, 300, 5000) * np.exp(-x * 2.6) * (1 - np.exp(-x * 400))
+    s += np.sin(2 * np.pi * 42 * x) * np.exp(-x * 5) * 1.6
+    return t0, pan(np.tanh(s * 0.8) * g, 0)
+
+
+def scan(t0, sec=0.55, g=0.12):
+    """X-ray scan: a bright filtered sweep over a low electrical hum."""
+    n = int(sec * SR)
+    x = np.arange(n) / SR
+    sweep = np.zeros(n)
+    src = noise(sec)
+    for a in range(0, n, 960):
+        fc = 600 + 5200 * (a / n)
+        bb, aa = signal.butter(2, [fc * 0.8 / (SR / 2), min(0.99, fc * 1.25 / (SR / 2))], 'band')
+        sweep[a:a + 960] = signal.lfilter(bb, aa, src[a:a + 960])
+    hum = sum(np.sin(2 * np.pi * f * x) / i for i, f in enumerate((100, 200, 300, 400), 1))
+    s = (sweep * 1.4 + hum * 0.15) * env_adsr(n, 0.05, 0.2)
+    p = np.linspace(-0.4, 0.4, n)
+    return t0, np.stack([s * np.cos((p + 1) * np.pi / 4), s * np.sin((p + 1) * np.pi / 4)], 1) * g
+
+
+def snap(t0, g=0.16):
+    """Tiny whoosh + click for a snap zoom."""
+    tp, w = whoosh(t0 + 0.12, g=g, sec=0.4)
+    return [(tp, w), (t0 + 0.12, pan(hp(noise(0.02), 3000) * np.exp(-np.arange(int(0.02 * SR))
+                                                                       / SR * 300) * g * 0.6, 0))]
+
+
+def atmosphere():
+    """Low room tone + air, a slow tension pulse under the life cycle, darker in the grain."""
+    t = np.arange(N) / SR
+    brown = np.cumsum(rng.standard_normal(N))
+    brown = hp(brown - np.convolve(brown, np.ones(4800) / 4800, mode="same"), 25)
+    room = lp(brown, 220)
+    room /= np.abs(room).max() + 1e-9
+    air = bp(rng.standard_normal(N), 2500, 7000)
+    air /= np.abs(air).max() + 1e-9
+    bed = room * (0.8 + 0.2 * np.sin(2 * np.pi * 0.05 * t)) + air * 0.08
+    # tension pulse (low D, 2 Hz tremolo) from the egg-laying to the break-out
+    pulse = np.sin(2 * np.pi * NOTE(26) * t) * (0.5 + 0.5 * np.sin(2 * np.pi * 2.0 * t)) ** 2
+    pulse *= np.interp(t, [0, 13, 16, 31, 33, 38, 42.5, 43.5, 50], [0, 0, 1, 1, 1.3, 1.5, 1.6, 0, 0])
+    out = np.stack([bed, np.roll(bed, 2400)], 1) * 0.25 + np.stack([pulse, pulse], 1) * 0.18
+    return out * np.interp(t, [0, 0.3, 49, 50], [0, 1, 1, 0])[:, None]
+
+
 def sfx():
     out = np.zeros((N, 2))
     ev = []
-    ev += [boom(0.0, 0.55, 55, 25, 3.0)]                    # opening: the sealed jar
-    ev += [crunch(F(28), F(50), rate=11, g=0.07, lo=2500, hi=7000)]  # lid thread grinding
-    ev += [crack(F(52), 0.12), plop(F(53), 0.14)]           # seal breaks, lid comes free
-    ev += [whoosh(F(72), 0.3)]                               # lid swept away
-    ev += [whoosh(F(94), 0.28, direction=-1)]                # camera rises to the rim
-    ev += [footsteps(F(60), F(180), rate=12, g=0.05)]        # weevils scrabbling on glass
-    ev += [boom(F(148), 0.45, 80, 35, 2.0)]                  # first weevil over the rim
+    # cold open: the grain bursts on frame 1, the head pushes out, focus lands on the eye
+    ev += [boom(0.0, 0.85, 95, 30, 2.4), crack(0.0, 0.4)]
+    ev += [crunch(0.0, 0.5, rate=34, g=0.22, lo=1500, hi=8000)]
+    ev += [crunch(F(8), F(32), rate=14, g=0.13, lo=900, hi=5000)]   # chitin against the grain
+    ev += [stinger(F(26), 0.32)]                                     # eye snaps into focus
+    ev += [whoosh(F(60), 0.42, sec=1.0, direction=-1)]               # snap back...
+    ev += [boom(F(61), 0.5, 70, 30, 1.6)]                            # ...into the jar
+    # the sealed jar (sound placed on the speed-ramped timeline)
+    ev += [crunch(J(28), J(50), rate=11, g=0.08, lo=2500, hi=7000)]  # lid thread grinding
+    ev += [crack(J(52), 0.14), plop(J(53), 0.15)]           # seal breaks, lid comes free
+    ev += [whoosh(J(72), 0.3)]                               # lid swept away
+    ev += [whoosh(J(94), 0.28, direction=-1)]                # camera rises to the rim
+    ev += [footsteps(J(60), F(180), rate=13, g=0.055)]       # weevils scrabbling on glass
+    ev += [boom(J(148), 0.45, 80, 35, 2.0)]                  # first weevil over the rim
+    ev += [whoosh(F(181), 0.4, sec=0.8)]                     # zoom-through into scene 2
     # scene transitions
-    for fr in (181, 391, 631, 931, 1201):
-        ev += [whoosh(F(fr) + 0.05, 0.3, direction=1 if fr % 2 else -1)]
+    ev += [whoosh(F(391), 0.22, sec=1.1, direction=-1)]      # rack-focus transition
+    ev += [whoosh(F(631) + 0.05, 0.3)]                       # match cut into the grain
+    ev += [scan(F(924), 0.5, 0.16)]                          # x-ray scan wipe
+    ev += [whoosh(F(1201), 0.3, direction=-1), shimmer(F(1194), 0.9, 0.04)]  # particles
+    # snap zooms on reveals; anticipation risers and soft hits on each new stage
+    for fr in (298, 584, 644):
+        ev += snap(F(fr))
+    ev += [riser(F(998), 2.0, 0.12), boom(F(998), 0.22, 90, 45, 1.2)]       # pupa
+    ev += [boom(F(1104), 0.26, 90, 45, 1.2)]                                 # adult
+    ev += [riser(F(1290), 2.2, 0.12)]                                        # break-out
     ev += [footsteps(F(181), F(300), rate=12, g=0.045, p=-0.2)]      # S2 walking
     ev += [footsteps(F(391), F(445), rate=13, g=0.05)]                # S3 walk
     ev += [crunch(F(455), F(522), rate=8.1, g=0.16)]                  # drilling with mandibles
@@ -412,26 +485,33 @@ def sfx():
 
 # --------------------------------------------------------------------------- mix
 def main():
-    model_dir = sys.argv[1]
     os.makedirs(OUT, exist_ok=True)
-    vo, subs, report = narration(model_dir)
+    if "--reuse-narration" in sys.argv:  # identical voice + subtitle timing as before
+        vo, _sr = sf.read(os.path.join(OUT, "narration.wav"), always_2d=True)
+        subs = json.load(open(os.path.join(OUT, "subtitles.json"), encoding="utf-8"))
+        report = "reused narration.wav"
+    else:
+        vo, subs, report = narration(sys.argv[1])
     print("narration fit (line, speed, seconds, window):", report)
     mus = music()
     fx = sfx()
+    atm = atmosphere()
     # duck music under the voice (smooth sidechain)
     v_env = lp(np.abs(vo[:, 0]), 6)
     v_env = np.clip(v_env / (v_env.max() + 1e-9) * 6, 0, 1)
-    duck = 1.0 - 0.55 * v_env
+    duck = 1.0 - 0.72 * v_env
     mus = mus * duck[:, None]
+    atm = atm * (1.0 - 0.45 * v_env)[:, None]
 
     def norm(x, peak):
         return x / (np.abs(x).max() + 1e-9) * peak
 
-    vo, mus, fx = norm(vo, 0.9), norm(mus, 0.42), norm(fx, 0.55)
-    mix = vo + mus + fx
+    vo, mus, fx, atm = norm(vo, 0.9), norm(mus, 0.32), norm(fx, 0.6), norm(atm, 0.12)
+    fx = fx * (1.0 - 0.3 * v_env)[:, None]
+    mix = vo + mus + fx + atm
     mix = np.tanh(mix * 1.1) / np.tanh(1.1)  # gentle master saturation / limiting
     mix *= np.interp(np.arange(N) / SR, [0, 0.02, 49.88, 50.0], [0, 1, 1, 0])[:, None]
-    for name, x in (("narration", vo), ("music", mus), ("sfx", fx), ("mix", mix)):
+    for name, x in (("narration", vo), ("music", mus), ("sfx", fx), ("atmos", atm), ("mix", mix)):
         sf.write(os.path.join(OUT, f"{name}.wav"), x.astype(np.float32), SR, subtype="PCM_24")
     with open(os.path.join(OUT, "subtitles.json"), "w", encoding="utf-8") as fh:
         json.dump(subs, fh, ensure_ascii=False, indent=1)

@@ -18,7 +18,8 @@ from any reference video is used.
 
 | # | Frames | Sequence | What happens |
 |---|---|---|---|
-| 1 | 1–180 | The Sealed Jar | A closed glass jar of rice on a dark kitchen counter (a few dark specks visible through the glass). The lid twists off; the camera rises to the rim as weevils crawl up the inside of the glass and out over the rim. |
+| 0 | 1–60 (renders 2001–2060) | Cold Open | Extreme macro of one clean-looking grain: it cracks and an adult weevil pushes its head out of an exit hole; focus racks from the grain to its eye, then the camera snaps back. Real 3D motion blur. |
+| 1 | 61–180 (renders 22–180, speed-ramped) | The Sealed Jar | A closed glass jar of rice on a dark kitchen counter (a few dark specks visible through the glass). The lid twists off; the camera rises to the rim as weevils crawl up the inside of the glass and out over the rim. |
 | 2 | 181–390 | Meet the Invader | 360° macro orbit of an articulated adult beside a grain for scale, settling into a side profile. Species card. |
 | 3 | 391–630 | The Secret Egg | Female walks the grain, taps it with her antennae, chews a hole with the mandibles at the tip of her rostrum (flour spills), turns, deposits one egg, seals it with a gelatinous plug; the grain is sliced open to reveal the egg. |
 | 4 | 631–930 | Hidden Destruction | Match‑cut into the cutaway: the egg hatches; a legless C‑shaped larva feeds and moults in spurts while its chamber widens and frass accumulates. |
@@ -45,8 +46,12 @@ rice_weevil_documentary/
     props.py              glass storage jar (lathe), screw lid, stone counter, rice fill, rim‑crossing walk paths
     scenes.py             the seven sequences (TIMELINE, build_s1 … build_s7)
   tools/
-    build_audio.py        TTS narration fitted to each scene window, procedural score, SFX, mix
-    assemble.py           grade, upscale, transitions, ASS subtitles/titles, loudness, H.264 export
+    build_audio.py        TTS narration fitted to each scene window, procedural score, SFX, atmosphere, mix
+    track.py              screen positions of rostrum / egg / larva / pupa / exit hole from the cameras
+    finish.py             cinematic finishing pass: edit list (cold open, speed ramp), snap zooms, macro-zoom,
+                          rack-focus, X-ray scan and particle transitions, impact flash/shake, dust, light shafts
+    assemble.py           upscale + grade, animated ASS typography (highlighted Hindi subs, tracked callouts,
+                          life-cycle tracker, day counter, titles), loudness, H.264 export (--classic = old edit)
   assets/
     fonts/                Noto Sans Devanagari, Inter, Cinzel (SIL OFL)
     audio/                narration / music / sfx / mix stems + subtitles.json
@@ -71,8 +76,10 @@ python3.11 -m venv audiovenv && audiovenv/bin/pip install kokoro-onnx soundfile 
 #   github.com/thewh1teagle/kokoro-onnx/releases (model-files-v1.0)
 audiovenv/bin/python tools/build_audio.py /path/to/kokoro_models
 
-# 3. Edit + export
-python3 tools/assemble.py
+# 3. Track, finish, edit + export (numpy + scipy: use the audio venv)
+venv/bin/python tools/track.py                                # -> assets/tracking.json
+audiovenv/bin/python tools/build_audio.py --reuse-narration    # remix without re-running TTS
+audiovenv/bin/python tools/assemble.py                         # --range=1,240 for a quick preview
 ```
 
 Note for headless/background use: Blender only evaluates animation for the window's active

@@ -16,6 +16,8 @@ TIMELINE = {  # name: (first frame, last frame)
     "S5_Transformation": (931, 1200),
     "S6_FinalReveal": (1201, 1410),
     "S7_Takeaway": (1411, 1500),
+    # 2-second cold-open shot; rendered off the 1..1500 timeline and placed by tools/assemble.py
+    "S0_Hook": (2001, 2060),
 }
 HX = 0.4  # x position of the oviposition hole on the hero grain (grain local space)
 HERO_SEED = 5
@@ -707,4 +709,94 @@ def build_s7():
     return scn
 
 
-BUILDERS = [build_s1, build_s2, build_s3, build_s4, build_s5, build_s6, build_s7]
+# --------------------------------------------------------------------------- S0 (cold open)
+def build_s0():
+    """Cold open, 2 s: an extreme macro of one clean-looking rice grain. Its surface cracks
+    and an adult weevil pushes its head out through an exit hole (adults really do chew their
+    way out of the grain they grew up in). Focus racks from the grain to the weevil's eye,
+    then the camera snaps back for the cut to the jar. Real 3D motion blur."""
+    scn, coll, f0, f1 = setup("S0_Hook")
+    scn.render.use_motion_blur = True
+    scn.render.motion_blur_shutter = 0.5
+    rigs.world_gradient(scn, top=(0.006, 0.009, 0.016), bottom=(0.001, 0.001, 0.002))
+    rice = M.rice_material("S0_Rice", aged=0.15)
+    heap_rice = M.rice_material("S0_HeapRice", aged=0.08)
+    endo = M.endosperm_material("S0_Endo")
+    rigs.ground(coll, z=0, color=(0.012, 0.011, 0.010), rough=0.5)
+    crest = grains.crest_fn(grains.grain_mesh(HERO_SEED))
+    ex = 0.6
+    top = crest(ex)
+    g, slicer, cavs = grains.cutaway_grain(
+        "S0_Grain", rice, endo, seed=HERO_SEED, coll=coll,
+        cavities=[((ex, 0, top - 0.75), (1.0, 1.0, 1.4)), ((-0.6, 0, -0.05), (4.4, 1.45, 1.1))])
+    g.location = (0, 0, 0.8)
+    eh = cavs[0]
+    # the surface gives way fast: the exit-hole cutter breaks through in ~half a second
+    eh.keyframe_insert("location", frame=f0)
+    eh.location = (ex, 0, top - 0.55)
+    eh.keyframe_insert("location", frame=f0 + 5)
+    eh.location = (ex, 0, top - 0.28)
+    eh.keyframe_insert("location", frame=f0 + 14)
+    # out-of-focus grains around it: layered depth and parallax for the push-in / pull-back
+    grains.heap("S0_Heap", heap_rice, 330, (0, 0, -0.75), 18, seed=31, coll=coll, layers=3,
+                avoid=[((0, 0, 0), 4.6)])
+    hole_c = Vector((ex, 0, top))
+    hole_w = Vector(g.location) + hole_c
+    # chewed debris bursts out of the hole as the head breaks through
+    r = core.rng(17)
+    specs = []
+    for i in range(46):
+        fa = f0 + 4 + int(i * 0.45)
+        a = r.uniform(0, 6.28)
+        p0 = hole_c + Vector((0.12 * math.cos(a), 0.12 * math.sin(a), 0.04))
+        d = r.uniform(0.45, 1.5)
+        p1 = hole_c + Vector((d * math.cos(a) + 0.35, d * math.sin(a), r.uniform(-0.35, 0.25)))
+        specs.append((fa, p0, p1, fa + r.randint(7, 12)))
+    particles("S0_Debris", coll, M.frass_material("S0_Frass"), specs, size=0.06, parent=g)
+    floating_dust(coll, 36, hole_w + Vector((1.4, -1.0, 0.8)), 2.4, f0, f1, seed=8, size=0.028)
+    # the weevil, inside the grain until the surface cracks, then pushing its head out
+    rig = creatures.build_weevil("S0W", coll=coll)
+    rig["root"].parent = g
+    rig["root"].scale = (0.92, 0.92, 0.92)
+
+    def path(f):
+        t = core.ease((f - (f0 + 6)) / 24.0) if f > f0 + 6 else 0.0
+        a = math.radians(58 - 12 * t)
+        back = core.lerp(1.9, 0.25, t)
+        p = hole_c + Vector((-back * math.cos(a), 0, -back * math.sin(a) - 0.15))
+        return (p, 0.0, 1.0 if f0 + 6 < f < f0 + 32 else 0.15, -a)
+
+    def head(f):
+        look = core.smoothstep(f0 + 30, f0 + 44, f)
+        return (-6 * look, 16 * math.sin((f - f0) / 7.0) * look)
+
+    creatures.animate_weevil(rig, f0, f1, path, head=head, antenna_seed=7)
+    cam, tgt, foc = rigs.camera("S0_Cam", coll, lens=60, fstop=2.8)
+    scn.camera = cam
+    # rack focus: starts on the grain's near ridge, pulls onto the weevil's eye as it emerges
+    eye = core.empty("S0_EyeFocus", parent=rig["head"])
+    eye.location = (0.12, -0.1, 0.03)
+    core.move_tree_to(eye, coll)
+    cl = foc.constraints.new('COPY_LOCATION')
+    cl.target = eye
+    for f, v in ((f0, 0.0), (f0 + 16, 0.0), (f0 + 27, 1.0)):
+        cl.influence = v
+        cl.keyframe_insert("influence", frame=f)
+    near = hole_w + Vector((1.1, -0.55, -0.12))
+    shot(cam, tgt, foc, [
+        dict(f=f0, pos=hole_w + Vector((3.9, -2.5, 1.7)), tgt=hole_w + Vector((0.2, 0, 0.1)),
+             foc=near, fstop=2.8, lens=60),
+        dict(f=f0 + 38, pos=hole_w + Vector((2.55, -1.55, 1.05)),
+             tgt=hole_w + Vector((0.35, 0, 0.35)), foc=near, fstop=2.8, lens=60),
+        dict(f=f1, pos=hole_w + Vector((9.0, -7.5, 6.5)), tgt=hole_w + Vector((0.2, 0, 0.0)),
+             foc=near, fstop=5.6, lens=35),
+    ])
+    rigs.three_point(coll, hole_w, dist=10, key=700, fill=70, rim=2600)
+    # warm light behind the grain makes the endosperm glow and silhouettes the head
+    rigs.area_light("S0_Back", coll, (-3, 4, 2.0), hole_w, 900, size=2.5, color=rigs.WARM)
+    rigs.spot("S0_Spot", coll, hole_w + Vector((4, -3, 7)), hole_w, 700, angle=14, blend=0.7,
+              color=(0.85, 0.93, 1.0), radius=0.2)
+    return scn
+
+
+BUILDERS = [build_s1, build_s2, build_s3, build_s4, build_s5, build_s6, build_s7, build_s0]
