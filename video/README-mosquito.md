@@ -7,13 +7,19 @@ generated procedurally and deterministically; nothing is downloaded at render ti
 The existing HypoExplained reel (`src/index.ts`) is untouched. This project has
 its own entry point: `src/mosquito/index.ts`.
 
+## Outputs
+
+- `out/jki-mosquito-final.mp4`: final, 1080×1920, 30 fps, 35.05 s, H.264 CRF 16 with AAC 48 kHz stereo (≈78 MB; not committed, regenerate with `npm run mosquito:render`)
+- `renders/jki-mosquito-preview.mp4`: preview, 540×960, downscaled from the final (committed)
+- `renders/jki-mosquito-contact-sheet.png`: one frame per second, for review
+
 ## Render it again
 
 ```bash
 cd video
 npm install
 npm run mosquito:audio      # (re)build public/jki/audio/{sfx,vo}.wav from the timeline
-npm run mosquito:preview    # out/jki-mosquito-preview.mp4  (540×960, fast check)
+npm run mosquito:preview    # out/jki-mosquito-preview.mp4  (540×960 screenshot scale; 3D cost is the same as the final)
 npm run mosquito:render     # out/jki-mosquito-final.mp4    (1080×1920, CRF 16)
 npm run mosquito:studio     # interactive preview / scrubbing
 ```
