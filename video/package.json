@@ -18,6 +18,7 @@
     "@fontsource/montserrat": "5.2.5",
     "@fontsource/noto-sans-devanagari": "5.2.5",
     "@remotion/cli": "4.0.469",
+    "@remotion/fonts": "4.0.469",
     "@remotion/google-fonts": "4.0.469",
     "@remotion/layout-utils": "4.0.469",
     "@remotion/media": "4.0.469",

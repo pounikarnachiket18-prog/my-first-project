@@ -87,8 +87,14 @@ SAMPLES=4 bash earth/blender/render_queue.sh B1 C1 C2 C3 D1 D2 D3 D4 E1 G1 F2 F3
 /opt/bpyenv/bin/python earth/blender/export_track.py      # orbit-diagram label positions
 #   one test frame:  /opt/bpyenv/bin/python earth/blender/render.py C2 --only 40 --pct 50 --out _test
 
-npx remotion render src/earth/index.ts EarthStopped ../earth_stopped_rotating_final.mp4 \
-    --codec=h264 --crf=18 --audio-codec=aac --audio-bitrate=320k
+# Render in 300-frame chunks (one long render can stall a browser tab in this CPU-only container),
+# then join and add the mix:
+for r in 0-299 300-599 600-899 900-1199 1200-1499; do
+  npx remotion render src/earth/index.ts EarthStoppedSilent out/chunks/c_$r.mp4 --frames=$r --crf=16 --muted --timeout=120000
+done
+printf "file 'c_%s.mp4'\n" 0-299 300-599 600-899 900-1199 1200-1499 > out/chunks/list.txt
+ffmpeg -f concat -safe 0 -i out/chunks/list.txt -i public/earth/audio/final_mix.wav -map 0:v -map 1:a \
+  -c:v libx264 -preset slow -crf 19 -pix_fmt yuv420p -c:a aac -b:a 320k -t 50 -movflags +faststart ../earth_stopped_rotating_final.mp4
 ```
 
 Render settings: Cycles on CPU with OpenImageDenoise. Earth shots use 720 × 1280 at 8 samples. Ground shots use 648 × 1152 at 4 samples, with motion blur on the action shots. The edit scales everything to 1080 × 1920.
