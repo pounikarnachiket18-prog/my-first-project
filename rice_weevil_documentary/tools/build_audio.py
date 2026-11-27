@@ -27,10 +27,9 @@ def F(frame):  # timeline frame -> seconds
 
 # (window start, window end, [(hindi chunk, english chunk), ...])
 LINES = [
-    (0.20, 6.15, [("क्या आपने कभी सोचा है", "Have you ever wondered"),
-                  ("कि एयरटाइट कंटेनर में भी", "how even airtight containers"),
-                  ("कीड़े हो जाते हैं?", "end up with insects?"),
-                  ("चलिए जानते हैं कैसे।", "Let's find out how.")]),
+    (0.20, 6.15, [("रुकिए!", "Wait!"),
+                  ("ये चावल पकाने से पहले", "Before you cook this rice,"),
+                  ("जान लीजिए अंदर क्या है।", "find out what's inside.")]),
     (6.25, 13.10, [("ये है राइस वीविल, एक छोटा सा कीट,", "This is the rice weevil, a tiny insect"),
                    ("जो चावल ही नहीं, गेहूँ और दूसरे अनाज को भी", "that harms not just rice, but wheat"),
                    ("नुकसान पहुंचा सकता है।", "and other grains too.")]),
