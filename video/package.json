@@ -13,9 +13,10 @@
   },
   "dependencies": {
     "@fontsource/anton": "5.2.5",
+    "@fontsource/baloo-2": "5.2.5",
     "@fontsource/jetbrains-mono": "5.2.5",
     "@fontsource/montserrat": "5.2.5",
-    "@react-three/fiber": "9.1.2",
+    "@fontsource/noto-sans-devanagari": "5.2.5",
     "@remotion/cli": "4.0.469",
     "@remotion/google-fonts": "4.0.469",
     "@remotion/layout-utils": "4.0.469",
@@ -23,13 +24,10 @@
     "@remotion/noise": "4.0.469",
     "@remotion/paths": "4.0.469",
     "@remotion/shapes": "4.0.469",
-    "@remotion/three": "4.0.469",
     "@remotion/transitions": "4.0.469",
-    "@types/three": "0.171.0",
     "react": "19.0.0",
     "react-dom": "19.0.0",
-    "remotion": "4.0.469",
-    "three": "0.171.0"
+    "remotion": "4.0.469"
   },
   "devDependencies": {
     "@types/react": "19.0.0",

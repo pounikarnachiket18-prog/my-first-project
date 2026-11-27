@@ -19,10 +19,10 @@ AUD = os.path.join(ROOT, "public", "earth", "audio")
 rng = np.random.default_rng(1234)
 
 F = lambda frame: frame / 30.0  # frame -> seconds
-BEAT = dict(freeze=F(80), title=F(108), b1=F(150), arcs=F(200), whip=F(270), count0=F(300), count1=F(328), city=F(360),
+BEAT = dict(freeze=F(80), title=F(108), b1=F(150), arcs=F(200), whip=F(255), count0=F(300), count1=F(328), city=F(360),
             stop=F(400), slow_end=F(462), realtime=F(482), c3=F(510), d1=F(600), d2=F(668), d3=F(724), hit=F(764), d4=F(766),
             calm=F(840), e2=F(930), strike=F(960), year=F(1005), f1=F(1110), day=F(1138), night=F(1184), hot=F(1215),
-            cold=F(1275), end=F(1323), black=F(1484), final=F(1486))
+            cold=F(1275), end=F(1323), g2=F(1400), black=F(1484), final=F(1486))
 
 
 # ------------------------------------------------------------------ primitives
@@ -417,6 +417,7 @@ def build_sfx():
     s.add(crack(0.4, 7000), B["cold"] + 0.6, 0.35, pan=0.3)
     # ending
     s.add(whoosh(1.4, 150, 4000, 0.6), B["end"] - 0.5, 0.4, width=1)
+    s.add(whoosh(1.0, 200, 5000, 0.6), B["g2"] - 0.5, 0.35, width=1)
     s.add(lp(noise(6, "brown"), 110) * 0.5, B["end"], 0.3, width=1)
     s.add(riser(B["black"] - B["end"] - 1.0, 100, 2500), B["end"] + 1.0, 0.18, width=1)
     s.add(impact(4.0, 2.2, 4000), B["final"], 1.25, width=1)

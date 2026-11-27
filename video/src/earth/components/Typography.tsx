@@ -16,7 +16,7 @@ export const TitleCard: React.FC<{
   const { fps, height } = useVideoConfig();
   if (f < at - 1 || f > out + 12) return null;
   const outT = interpolate(f, [out, out + 10], [1, 0], clamp);
-  const back = interpolate(f, [at - 2, at + 8], [0, 1], clamp) * outT;
+  const back = 0 * outT;
   return (
     <AbsoluteFill style={{ pointerEvents: "none" }}>
       <AbsoluteFill style={{ opacity: back, background: `linear-gradient(180deg, rgba(0,0,0,0.0) ${y * 100 - 12}%, rgba(0,0,0,0.55) ${y * 100 + 6}%, rgba(0,0,0,0.55) ${y * 100 + 16}%, rgba(0,0,0,0) ${y * 100 + 30}%)` }} />

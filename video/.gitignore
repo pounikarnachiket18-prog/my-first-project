@@ -6,3 +6,5 @@ out/
 # Earth reel: Piper voice model is downloaded by the README step (79 MB)
 earth/voices/
 __pycache__/
+# third-party character models are downloaded by earth/tools/fetch_assets.sh (not redistributed)
+earth/assets/*.glb
