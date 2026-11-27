@@ -5,6 +5,8 @@
   python main.py render  S3_SecretEgg [pct] [samples]    # resumable PNG sequence
   python main.py render  ALL [pct] [samples]
   python main.py render  S1_Mystery 50 16 --force --frames=22-180   # re-render part of a scene
+  python main.py render  S2_Invader,S3_SecretEgg 50 16 --force --since=renders/stamp
+                                         # re-render, resumable: skips frames newer than stamp
 
 Run with Blender's Python module (bpy 4.5) or `blender -b -P main.py -- <args>`.
 """
@@ -77,10 +79,12 @@ def preview(name, frames, pct=25, samples=8, tag="latest"):
         print(f"PREVIEW {name} f{f} {time.time() - t:.1f}s", flush=True)
 
 
-def render(name, pct=50, samples=16, force=False, frames=None):
+def render(name, pct=50, samples=16, force=False, frames=None, since=None):
+    """since: path of a stamp file; frames written after it are kept (resumable --force)."""
     load()
     names = [s.name for s in sorted(bpy.data.scenes, key=lambda s: s.frame_start)] \
-        if name == "ALL" else [name]
+        if name == "ALL" else name.split(",")
+    t_since = os.path.getmtime(since) if since else None
     os.makedirs(FRAMES, exist_ok=True)
     for n in names:
         scn = bpy.data.scenes[n]
@@ -93,6 +97,9 @@ def render(name, pct=50, samples=16, force=False, frames=None):
         for f in range(max(lo, scn.frame_start), min(hi, scn.frame_end) + 1):
             out = os.path.join(FRAMES, f"frame_{f:04d}.png")
             if not force and os.path.exists(out) and os.path.getsize(out) > 0:
+                continue
+            if t_since and os.path.exists(out) and os.path.getmtime(out) > t_since \
+                    and os.path.getsize(out) > 0:
                 continue
             scn.frame_set(f)
             scn.render.filepath = out
@@ -113,5 +120,6 @@ if __name__ == "__main__":
     elif cmd == "render":
         render(a[1], int(a[2]) if len(a) > 2 else 50, int(a[3]) if len(a) > 3 else 16,
                force="--force" in a,
+               since=next((x.split("=", 1)[1] for x in a if x.startswith("--since=")), None),
                frames=next((tuple(int(v) for v in x.split("=")[1].split("-"))
                             for x in a if x.startswith("--frames=")), None))

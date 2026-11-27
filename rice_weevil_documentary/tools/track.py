@@ -4,9 +4,10 @@ The finishing pass uses these to pin animated callouts (rostrum, egg, larva, pup
 to the real 3D subjects and to aim punch-in zooms at them.
 
 Usage (Blender Python): venv/bin/python tools/track.py
-Output: assets/tracking.json  {name: {frame: [x_px, y_px] in the 1080x1920 frame}}
+Output: assets/tracking.json  {name: {frame: [x_px, y_px, px_per_mm] in the 1080x1920 frame}}
 """
 import json
+import math
 import os
 import sys
 
@@ -70,8 +71,13 @@ def main():
             frames.append(b)
         for f in frames:
             scn.frame_set(f)
-            co = world_to_camera_view(scn, scn.camera, fn())
-            d[f] = [round(co.x * rx, 1), round((1 - co.y) * ry, 1)]
+            wp = fn()
+            co = world_to_camera_view(scn, scn.camera, wp)
+            # true scale: screen pixels per millimetre at the subject's depth
+            right = scn.camera.matrix_world.to_3x3().col[0].normalized()
+            c2 = world_to_camera_view(scn, scn.camera, wp + right)
+            ppm = math.hypot((c2.x - co.x) * rx, (c2.y - co.y) * ry)
+            d[f] = [round(co.x * rx, 1), round((1 - co.y) * ry, 1), round(ppm, 2)]
         out[name] = d
         print("tracked", name, len(d), flush=True)
     with open(OUT, "w") as fh:

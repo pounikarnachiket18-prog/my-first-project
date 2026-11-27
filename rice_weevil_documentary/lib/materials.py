@@ -294,7 +294,7 @@ def emission_material(name, color=(0.4, 0.85, 1.0, 1), strength=4.0):
     return mat
 
 
-def dissolve(mat, value_name, scale=9.0, invert=False):
+def dissolve(mat, value_name, scale=9.0, invert=False, edge=None):
     """Wrap an existing material's surface in a noise-threshold dissolve driven by a Value node."""
     nt = mat.node_tree
     out = next(n for n in nt.nodes if n.type == 'OUTPUT_MATERIAL')
@@ -330,6 +330,30 @@ def dissolve(mat, value_name, scale=9.0, invert=False):
         nt.links.new(cmp_.outputs[0], mix.inputs[0])
         nt.links.new(tr.outputs[0], mix.inputs[1])
         nt.links.new(src, mix.inputs[2])
+    if edge and not invert:
+        # glowing transformation front: a thin emissive band just beyond the dissolve edge
+        col, strength, width = edge
+        thr2 = nt.nodes.new("ShaderNodeMath")
+        thr2.operation = 'ADD'
+        thr2.inputs[1].default_value = width
+        nt.links.new(mr.outputs[0], thr2.inputs[0])
+        cmp2 = nt.nodes.new("ShaderNodeMath")
+        cmp2.operation = 'LESS_THAN'
+        nt.links.new(nz.outputs["Fac"], cmp2.inputs[0])
+        nt.links.new(thr2.outputs[0], cmp2.inputs[1])
+        band = nt.nodes.new("ShaderNodeMath")
+        band.operation = 'SUBTRACT'
+        band.use_clamp = True
+        nt.links.new(cmp2.outputs[0], band.inputs[0])
+        nt.links.new(cmp_.outputs[0], band.inputs[1])
+        em = nt.nodes.new("ShaderNodeEmission")
+        em.inputs["Color"].default_value = (*col, 1)
+        em.inputs["Strength"].default_value = strength
+        mix_e = nt.nodes.new("ShaderNodeMixShader")
+        nt.links.new(band.outputs[0], mix_e.inputs[0])
+        nt.links.new(tr.outputs[0], mix_e.inputs[1])
+        nt.links.new(em.outputs[0], mix_e.inputs[2])
+        nt.links.new(mix_e.outputs[0], mix.inputs[1])
     nt.links.new(mix.outputs[0], out.inputs["Surface"])
     return val
 

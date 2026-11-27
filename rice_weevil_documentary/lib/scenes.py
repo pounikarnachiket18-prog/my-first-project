@@ -6,7 +6,7 @@ import os
 import bpy
 from mathutils import Vector
 
-from . import core, creatures, grains, props, rigs
+from . import cinema, core, creatures, grains, props, rigs
 from . import materials as M
 
 TIMELINE = {  # name: (first frame, last frame)
@@ -251,9 +251,13 @@ def build_s1():
 def build_s2():
     scn, coll, f0, f1 = setup("S2_Invader")
     rice = M.rice_material("S2_Rice")
-    rigs.ground(coll, z=0, color=(0.018, 0.016, 0.015), rough=0.55)
+    rigs.ground(coll, z=0, color=(0.014, 0.013, 0.013), rough=0.32)
     grains.grain("S2_Grain", rice, seed=4, loc=(1.2, 2.05, 0.78), rot=(0, 0, -0.08), coll=coll)
     grains.heap("S2_Heap", rice, 150, (0, 26, 0.0), 20, seed=2, coll=coll, layers=2)
+    # micro-epic scale: a plain of grains, each 6 mm long, reads as a field of boulders that
+    # fades into haze; kept clear of the orbit path around the weevil
+    grains.scatter_grains("S2_Field", rice, 230, (0, 0, 0), 46, seed=41, coll=coll, floor=0.0,
+                          avoid=[((0, 0, 0), 12.0), ((0, 26, 0), 19.0)])
     rig = creatures.build_weevil("S2W", coll=coll)
 
     def path(f):
@@ -267,15 +271,16 @@ def build_s2():
         return (6 * math.sin(f / 23.0) * core.smoothstep(300, 320, f), 10 * math.sin(f / 37.0))
 
     creatures.animate_weevil(rig, f0, f1, path, head=head, antenna_seed=2)
-    cam, tgt, foc = rigs.camera("S2_Cam", coll, lens=35, fstop=6.3)
+    cam, tgt, foc = rigs.camera("S2_Cam", coll, lens=28, fstop=5.0)
     scn.camera = cam
     c = lambda f: Vector(path(f)[0]) + Vector((0.35, 0, 0.42))  # noqa: E731
+    # low "hero" orbit: the lens sits at the weevil's eye height so the grains loom overhead
     for f in range(f0, f1 + 1):
         t = core.ease_io((f - f0) / (330 - f0))
         ang = math.radians(-100 + 360 * t)
         settle = core.smoothstep(330, 375, f)
-        rad = core.lerp(6.8, 5.2, settle)
-        h = core.lerp(2.2 + 3.2 * math.sin(t * math.pi) ** 2, 0.55, settle)
+        rad = core.lerp(5.6, 4.4, settle)
+        h = core.lerp(0.75 + 3.4 * math.sin(t * math.pi) ** 2, 0.42, settle)
         if f > 330:
             ang = math.radians(-100 + 360 + 10 * settle)
         cen = c(f)
@@ -284,8 +289,20 @@ def build_s2():
         foc.location = cen + Vector((0.35, 0, 0))
         for o in (cam, tgt, foc):
             o.keyframe_insert("location", frame=f)
-    rigs.three_point(coll, (0, 0, 0.5), dist=10, key=650, fill=90, rim=1500)
-    rigs.area_light("S2_Top", coll, (0, 0, 12), (0, 0, 0), 300, size=10)
+    pal = cinema.PALETTES["reveal"]
+    k, fl, rim = cinema.palette_three_point(coll, (0, 0, 0.5), "reveal", dist=10, key=700, fill=70,
+                                            rim=2600)
+    top = rigs.area_light("S2_Top", coll, (0, 0, 12), (0, 0, 0), 260, size=10, color=pal["key"])
+    # reveal from silhouette: only the hot rim reads at first, then the key comes up
+    cinema.key_energy(k, [(f0, 60), (198, 60), (232, 700)])
+    cinema.key_energy(top, [(f0, 30), (198, 30), (232, 260)])
+    cinema.key_energy(fl, [(f0, 15), (198, 15), (232, 70)])
+    sun = cinema.beam("S2_Sun", coll, (-14, 34, 26), (0, 0, 0.4), 160000, angle=13, blend=0.3,
+                      color=pal["beam"], radius=0.4)
+    cool = cinema.beam("S2_Cool", coll, (20, -6, 30), (0, 3, 0), 40000, angle=9, blend=0.4,
+                       color=pal["key"], radius=0.3)
+    cinema.keep_volume_dark(coll, except_=(sun, cool))
+    cinema.atmosphere(coll, (0, 6, 10), (60, 60, 11), density=0.0035)
     return scn
 
 
@@ -406,8 +423,16 @@ def build_s3():
         dict(f=f1, pos=hole_w + Vector((0.3, -1.6, 5.2)), tgt=hole_w + Vector((0.1, 0, -0.6)),
              fstop=8.0),
     ])
-    rigs.three_point(coll, (0, 0, 1.0), dist=10, key=700, fill=110, rim=1600)
-    rigs.spot("S3_Spot", coll, (HX + 3, -2, 8), hole_w, 900, angle=25, color=rigs.WARM)
+    pal = cinema.PALETTES["secret"]
+    cinema.palette_three_point(coll, (0, 0, 1.0), "secret", dist=10, key=520, fill=55, rim=2200)
+    spot = rigs.spot("S3_Spot", coll, (HX + 3, -2, 8), hole_w, 1100, angle=22, blend=0.45,
+                     color=pal["beam"], radius=0.12)
+    cinema.keep_volume_dark(coll, except_=(spot,))
+    cinema.atmosphere(coll, (0, 0, 4), (18, 18, 5), density=0.010)
+    # the egg goes in: a soft cold pulse of light marks the moment (fades with the plug)
+    glow = rigs.area_light("S3_EggPulse", coll, hole_w + Vector((0.6, -1.4, 1.6)), hole_w, 0,
+                           size=0.8, color=pal["rim"])
+    cinema.key_energy(glow, [(566, 0), (588, 260), (612, 0)])
     return scn
 
 
@@ -494,12 +519,15 @@ def build_s4():
         dict(f=f1, pos=hw + Vector((-1.6, -3.6, 5.2)), tgt=hw + Vector((-0.9, 0, -0.75)),
              fstop=7.1),
     ])
-    rigs.area_light("S4_Top", coll, (2, -3, 9), (0, 0, 0.8), 650, size=6, color=(0.9, 0.95, 1.0))
-    # warm light glowing through the translucent grain from behind/below
-    rigs.area_light("S4_Back", coll, (-1, 5, 1.2), (0, 0, 0.6), 900, size=3, color=rigs.WARM)
-    rigs.spot("S4_Beam", coll, (-6, 4, 9), (0, 0, 0.6), 1800, angle=18, blend=0.8,
-              color=(1.0, 0.85, 0.6), radius=0.2)
+    pal = cinema.PALETTES["inside"]
+    rigs.area_light("S4_Top", coll, (2, -3, 9), (0, 0, 0.8), 560, size=6, color=pal["key"])
+    # furnace light glowing through the translucent grain from behind/below
+    rigs.area_light("S4_Back", coll, (-1, 5, 1.2), (0, 0, 0.6), 1300, size=3, color=pal["rim"])
+    bm = rigs.spot("S4_Beam", coll, (-6, 4, 9), (0, 0, 0.6), 2200, angle=16, blend=0.5,
+                   color=pal["beam"], radius=0.15)
     rigs.area_light("S4_Rim", coll, (5, 6, 3), (0, 0, 0.8), 900, size=2, color=rigs.COOL)
+    cinema.keep_volume_dark(coll, except_=(bm,))
+    cinema.atmosphere(coll, (0, 0, 4), (16, 16, 4.5), density=0.006)
     return scn
 
 
@@ -525,7 +553,7 @@ def build_s5():
     larva.rotation_euler = (math.radians(90), 0, math.radians(170))
     lm = materials_of(larva)
     for m in lm:
-        M.dissolve(m, "LarvaVis", scale=30)
+        M.dissolve(m, "LarvaVis", scale=30, edge=((0.45, 0.9, 1.0), 9.0, 0.05))
     key_values(lm, "LarvaVis", [(f0, 1.0), (962, 1.0), (995, 0.0)])
     creatures.animate_larva(larva, f0, 995, speed=0.4,
                             stretch=lambda f: core.lerp(0.4, 0.0, core.smoothstep(f0, 990, f)))
@@ -536,7 +564,7 @@ def build_s5():
     pupa.rotation_euler = (math.radians(180), 0, math.radians(180))  # lies on its back
     pm = materials_of(pupa)
     for m in pm:
-        M.dissolve(m, "PupaVis", scale=30)
+        M.dissolve(m, "PupaVis", scale=30, edge=((0.75, 0.55, 1.0), 9.0, 0.05))
     key_values(pm, "PupaVis", [(965, 0.0), (998, 1.0), (1072, 1.0), (1102, 0.0)])
     key_values([peye], "PupaEye", [(f0, 0.0), (1005, 0.0), (1050, 1.0)])
     key_values([pmat], "PupaDark", [(f0, 0.0), (1030, 0.0), (1070, 0.45)])
@@ -549,7 +577,7 @@ def build_s5():
     rig["root"].scale = (0.76, 0.76, 0.76)
     am = materials_of(rig["root"])
     for m in am:
-        M.dissolve(m, "AdultVis", scale=30)
+        M.dissolve(m, "AdultVis", scale=30, edge=((0.45, 0.9, 1.0), 10.0, 0.05))
     key_values(am, "AdultVis", [(1070, 0.0), (1104, 1.0)])
     key_values(am, wm.sclero_name, [(f0, 0.0), (1104, 0.0), (1185, 1.0)])
 
@@ -577,9 +605,19 @@ def build_s5():
         foc.location = tt
         for o in (cam, tgt, foc):
             o.keyframe_insert("location", frame=f)
-    rigs.three_point(coll, (0, 0, 0.8), dist=10, key=900, fill=160, rim=2200)
-    rigs.spot("S5_God", coll, (-4, 3, 10), (0, 0, 0.8), 1600, angle=16, blend=0.9,
-              color=(0.75, 0.9, 1.0), radius=0.3)
+    pal = cinema.PALETTES["dimension"]
+    cinema.palette_three_point(coll, (0, 0, 0.8), "dimension", dist=10, key=820, fill=120,
+                               rim=3000)
+    god = rigs.spot("S5_God", coll, (-4, 3, 10), (0, 0, 0.8), 2000, angle=15, blend=0.5,
+                    color=pal["beam"], radius=0.2)
+    under = rigs.spot("S5_Under", coll, (5, 7, 6), (HX - 1.0, 0, 0.6), 1500, angle=12, blend=0.4,
+                      color=pal["rim"], radius=0.2)
+    cinema.keep_volume_dark(coll, except_=(god, under))
+    cinema.atmosphere(coll, (0, 0, 4), (20, 20, 5), density=0.007, color=(0.85, 0.92, 1.0))
+    # the lab scanner powers up as the X-ray reveal starts, fades before the camera closes in
+    cinema.scan_rings(coll, cen, f0 + 2, 1100, 1125, color=(0.38, 0.86, 1.0),
+                      radii=(3.9, 4.5, 5.2))
+    floating_dust(coll, 40, cen + Vector((0, 0, 1.0)), 6.0, f0, f1, seed=12, size=0.03)
     return scn
 
 
@@ -606,6 +644,9 @@ def build_s6():
     heap_mats = [rice] * 5 + [aged]
     hp = grains.heap("S6_Heap", rice, 420, (0, 0, 0.0), 17, seed=12, coll=coll, layers=3,
                      avoid=[((0, 0, 0), 3.6)], mats=heap_mats)
+    # the wider store: a plain of grain running out into the haze (scale reveal on the pull-back)
+    grains.scatter_grains("S6_Plain", rice, 520, (0, 6, 0.0), 70, seed=77, coll=coll, floor=0.0,
+                          avoid=[((0, 0, 0), 17.5)], mats=heap_mats)
     r = core.rng(21)
     cut = 0
     for hg in hp:
@@ -680,11 +721,21 @@ def build_s6():
         dict(f=1300, pos=hw + Vector((2.2, -3.4, 1.8)), tgt=hw + Vector((0.2, 0, 0.3)),
              fstop=5.0),
         dict(f=1345, pos=hw + Vector((3.0, -6.0, 3.2)), tgt=hw + Vector((0.6, 0, 0.1)),
-             fstop=6.3),
-        dict(f=f1, pos=(5.0, -24.0, 17.0), tgt=(0.5, 0, 0.6), foc=(0.5, 0, 1.6), fstop=10.0),
+             fstop=6.3, lens=40),
+        dict(f=f1, pos=(6.0, -30.0, 15.0), tgt=(0.5, 2, 0.4), foc=(0.5, 0, 1.6), fstop=10.0,
+             lens=34),
     ])
-    rigs.three_point(coll, (0, 0, 1.5), dist=14, key=1200, fill=160, rim=2600)
-    rigs.area_light("S6_Sky", coll, (0, -6, 30), (0, 0, 0), 2500, size=30, color=(0.9, 0.93, 1.0))
+    pal = cinema.PALETTES["epic"]
+    cinema.palette_three_point(coll, (0, 0, 1.5), "epic", dist=14, key=1100, fill=110, rim=3600)
+    rigs.area_light("S6_Sky", coll, (0, -6, 30), (0, 0, 0), 1800, size=30, color=pal["fill"])
+    sun = cinema.beam("S6_Sun", coll, (-30, 60, 34), (0, 0, 1.2), 520000, angle=16, blend=0.25,
+                      color=pal["beam"], radius=0.6)
+    cinema.key_energy(sun, [(f0, 300000), (1286, 300000), (1292, 620000), (1330, 520000)])
+    cinema.keep_volume_dark(coll, except_=(sun,))
+    cinema.atmosphere(coll, (0, 10, 12), (85, 85, 13), density=0.0028)
+    # break-through shockwave: chewed fragments skim out across the grain in a ring
+    cinema.dust_ring("S6_Shock", coll, hole_c + Vector((0, 0, 0.03)), 1288, n=40, r0=0.3, r1=2.0,
+                     dur=12, size=0.05, seed=23, parent=g, lift=0.2)
     return scn
 
 
@@ -709,8 +760,80 @@ def build_s7():
         dict(f=f0, pos=(0.0, -6.5, 15.5), tgt=(0, 0.1, 0.5), fstop=11),
         dict(f=f1, pos=(0.0, -5.6, 13.2), tgt=(0, 0.1, 0.5), fstop=11),
     ])
-    rigs.three_point(coll, (0, 0, 0.8), dist=12, key=900, fill=120, rim=1800)
+    cinema.palette_three_point(coll, (0, 0, 0.8), "verdict", dist=12, key=900, fill=110, rim=2600)
+    title3d(scn, coll, cam, tgt, f0, f1)
     return scn
+
+
+def title3d(scn, coll, cam, tgt, f0, f1):
+    """THE INVISIBLE INVADER as extruded, bevelled brushed-gold letters floating in the
+    camera's focal plane (so the f/11 macro lens holds them sharp while the grains sit below).
+    They swing up from edge-on, letter-spacing tightens, and a strip light sweeps across the
+    bevels. The dark glossy floor picks up their reflection."""
+    font = os.path.join(ROOT, "assets", "fonts", "Cinzel.ttf")
+    gold = cinema.metal_material("TitleGold", color=(0.98, 0.80, 0.52), rough=0.2)
+    steel = cinema.metal_material("TitleSteel", color=(0.86, 0.88, 0.92), rough=0.24)
+    piv = core.empty("TitlePivot")
+    core.link(piv, coll)
+    piv.parent = cam
+    big = cinema.text3d("TitleInvader", coll, "INVADER", font, 1.0, 0.09, 0.022, gold)
+    small = cinema.text3d("TitleTheInvisible", coll, "THE INVISIBLE", font, 1.0, 0.07, 0.016, steel)
+    bpy.context.view_layer.update()
+    for o in (big, small):
+        o.parent = piv
+    scn.frame_set(f0)
+    # framing maths: sensor fit AUTO -> the 36 mm sensor spans the frame height
+    lens, sensor = cam.data.lens, cam.data.sensor_width
+    rx, ry = scn.render.resolution_x, scn.render.resolution_y
+    big_w, small_w = 0.62, 0.50          # fraction of frame width
+    y_big, y_small = 432.0, 318.0        # target screen rows (px, 1920 high)
+
+    def dist(f):
+        t = core.ease_io((f - f0) / (f1 - f0))
+        a = Vector((0.0, -6.5, 15.5)).lerp(Vector((0.0, -5.6, 13.2)), t)
+        return (a - Vector((0, 0.1, 0.5))).length
+
+    bw = big.dimensions.x / big.scale.x
+    sw = small.dimensions.x / small.scale.x
+    for f in range(f0, f1 + 1):
+        d = dist(f)
+        h = d * sensor / lens             # visible height at the focal plane
+        w = h * rx / ry
+        piv.location = (0, 0, -d)
+        piv.keyframe_insert("location", frame=f)
+        k = f - f0
+        rise = core.ease((k - 2) / 22.0)
+        spacing = core.lerp(1.55, 1.0, core.ease((k - 2) / 30.0))
+        for o, frac, row, base in ((big, big_w, y_big, bw), (small, small_w, y_small, sw)):
+            sc = w * frac / base * core.lerp(1.12, 1.0, rise)
+            o.scale = (sc, sc, sc)
+            o.location = (0, (960 - row) / ry * h, 0)
+            o.rotation_euler = (math.radians(core.lerp(80, 0, rise)), 0, 0)
+            o.data.space_character = spacing
+            o.keyframe_insert("scale", frame=f)
+            o.keyframe_insert("location", frame=f)
+            o.keyframe_insert("rotation_euler", frame=f)
+            o.data.keyframe_insert("space_character", frame=f)
+    # light sweep: a tall thin strip glides across in front of the letters (camera space)
+    sweep = rigs.area_light("TitleSweep", coll, (0, 0, 0), (0, 0, -1), 0, size=1)
+    sweep.data.shape = 'RECTANGLE'
+    sweep.data.size, sweep.data.size_y = 0.25, 9.0
+    sweep.parent = cam
+    sweep.visible_camera = False
+    for f in range(f0, f1 + 1):
+        d = dist(f)
+        t = core.ease_io((f - (f0 + 10)) / 40.0)
+        sweep.location = (core.lerp(-6, 6, t), 2.2, -d + 3.0)
+        sweep.rotation_euler = (math.radians(-12), math.radians(core.lerp(28, -28, t)), 0)
+        sweep.keyframe_insert("location", frame=f)
+        sweep.keyframe_insert("rotation_euler", frame=f)
+    cinema.key_energy(sweep, [(f0, 0), (f0 + 8, 0), (f0 + 14, 150), (f0 + 50, 150), (f0 + 58, 40)])
+    # soft top card so the metal always has something to reflect
+    card = rigs.area_light("TitleCard", coll, (0, 6, -6), (0, 2, -16), 80, size=6,
+                           color=(1.0, 0.95, 0.88))
+    card.parent = cam
+    card.visible_camera = False
+    return big, small
 
 
 # --------------------------------------------------------------------------- S0 (cold open)
@@ -795,11 +918,21 @@ def build_s0():
         dict(f=f1, pos=hole_w + Vector((9.0, -7.5, 6.5)), tgt=hole_w + Vector((0.2, 0, 0.0)),
              foc=near, fstop=5.6, lens=35),
     ])
-    rigs.three_point(coll, hole_w, dist=10, key=700, fill=70, rim=2600)
+    # blockbuster palette "hook": cold steel key, molten rim, one shaft cutting the haze
+    pal = cinema.PALETTES["hook"]
+    cinema.palette_three_point(coll, hole_w, "hook", dist=10, key=620, fill=45, rim=3200)
     # warm light behind the grain makes the endosperm glow and silhouettes the head
-    rigs.area_light("S0_Back", coll, (-3, 4, 2.0), hole_w, 900, size=2.5, color=rigs.WARM)
+    rigs.area_light("S0_Back", coll, (-3, 4, 2.0), hole_w, 1100, size=2.5, color=pal["rim"])
     rigs.spot("S0_Spot", coll, hole_w + Vector((4, -3, 7)), hole_w, 700, angle=14, blend=0.7,
-              color=(0.85, 0.93, 1.0), radius=0.2)
+              color=pal["key"], radius=0.2)
+    shaft = cinema.beam("S0_Shaft", coll, hole_w + Vector((-5, 9, 9)), hole_w + Vector((1, -2, 0)),
+                        5200, angle=11, blend=0.35, color=pal["beam"], radius=0.08)
+    cinema.key_energy(shaft, [(f0, 2600), (f0 + 5, 7200), (f0 + 30, 5200)])  # flares on the crack
+    cinema.keep_volume_dark(coll, except_=(shaft,))
+    cinema.atmosphere(coll, hole_w + Vector((0, 0, 3)), (14, 14, 5), density=0.012)
+    # shockwave: the shell bursts and debris skims outward across the grain surface
+    cinema.dust_ring("S0_Shock", coll, hole_c + Vector((0, 0, 0.02)), f0 + 4, n=36, r0=0.2, r1=1.6,
+                     dur=10, size=0.04, seed=19, parent=g, lift=0.12)
     return scn
 
 
