@@ -9,7 +9,7 @@ export type Shot = { id: string; from: number; to: number; frames: number; offse
 export const SHOTS: Shot[] = [
   { id: "A1", from: 0, to: 150, frames: 154 }, // Earth (India), spin freezes on "band" (f80)
   { id: "B1", from: 150, to: 255, frames: 109 }, // hero on a Mumbai zebra crossing, camera orbits
-  { id: "B2", from: 255, to: 360, frames: 109 }, // equator lights up, 1,670 km/h
+  { id: "B2", from: 255, to: 360, frames: 109, offset: 4 }, // equator lights up, 1,670 km/h
   { id: "C1", from: 360, to: 400, frames: 44 }, // ordinary morning traffic
   { id: "C2", from: 400, to: 510, frames: 114 }, // the stop: hero flung east (slow motion)
   { id: "C3", from: 510, to: 600, frames: 94 }, // everything streams east
