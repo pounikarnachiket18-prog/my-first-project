@@ -13,7 +13,7 @@ CORRIDOR = [(0, 0, 45), (110, 30, 40), (220, 60, 38), (330, 90, 45)]  # kept fre
 
 def setup(res=(720, 1280), samples=6, blur=True):
     sc = reset(res=res, samples=samples, motion_blur=blur)
-    sc.cycles.transparent_max_bounces = 24
+    sc.cycles.transparent_max_bounces = 128
     sc.render.fps = 24
     return sc
 
@@ -41,7 +41,7 @@ def finish(cam, frames, rng, fog=0.0026, dust_region=None, n=36, smoke=True, win
         for k, (x, y) in enumerate([(320, 260), (60, 240), (420, -60), (150, -180)]):
             reg = ((x - 10, x + 10), (y - 10, y + 10), (40, 220))
             W.dust_cards(cam, frames, reg, n=7, size=(40, 90), wind=(0.6, 0.0, 0.5), rng=rng,
-                         color=(0.09, 0.085, 0.08), alpha=0.85, key=f"smoke{k}")
+                         color=(0.30, 0.26, 0.22), alpha=0.6, key=f"smoke{k}")   # pre-hazed: cards are added after the fog pass
 
 
 def handheld(f, amp=0.03, rot=0.6, seed=0.0, speed=0.35):

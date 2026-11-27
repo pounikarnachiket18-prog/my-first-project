@@ -1,0 +1,26 @@
+[
+ {
+  "who": "arjun",
+  "text": "Control… something is wrong.",
+  "start": 1.15,
+  "end": 3.494
+ },
+ {
+  "who": "control",
+  "text": "Captain! You're losing altitude!",
+  "start": 26.25,
+  "end": 28.381
+ },
+ {
+  "who": "arjun",
+  "text": "I'm not leaving her behind!",
+  "start": 42.15,
+  "end": 43.726
+ },
+ {
+  "who": "control",
+  "text": "Captain… this was only the beginning.",
+  "start": 53.0,
+  "end": 55.776
+ }
+]

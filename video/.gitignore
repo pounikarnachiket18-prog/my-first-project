@@ -8,3 +8,5 @@ earth/voices/
 __pycache__/
 # third-party character models are downloaded by earth/tools/fetch_assets.sh (not redistributed)
 earth/assets/*.glb
+# THE LAST FLIGHT: Piper voices are downloaded by lastflight/tools/fetch_assets.sh
+lastflight/voices/
