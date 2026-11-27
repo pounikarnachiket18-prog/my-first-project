@@ -1,6 +1,7 @@
 """Edit, grade, title, subtitle and export the final film with ffmpeg.
 
-Usage: python tools/assemble.py [--preview]
+Usage: python tools/assemble.py [--preview] [--reuse-segments]
+  --reuse-segments  keep existing renders/segments/*.mp4 (use after audio/subtitle-only changes)
 Inputs : renders/frames/frame_0001..1500.png, assets/audio/mix.wav, assets/audio/subtitles.json
 Outputs: final/the_invisible_invader_50s.mp4 (+ final/subtitles.ass)
 """
@@ -114,6 +115,8 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 def segment(name, f0, f1, fin, fout, preview=False):
     os.makedirs(SEGS, exist_ok=True)
     out = os.path.join(SEGS, f"{name}.mp4")
+    if "--reuse-segments" in sys.argv and os.path.exists(out):
+        return out
     n = f1 - f0 + 1
     vf = "[0:v]" + GRADE.format(w=W, h=H)
     if fin[0]:

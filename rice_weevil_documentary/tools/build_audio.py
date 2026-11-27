@@ -27,9 +27,10 @@ def F(frame):  # timeline frame -> seconds
 
 # (window start, window end, [(hindi chunk, english chunk), ...])
 LINES = [
-    (0.25, 6.10, [("आपके चावल के एक छोटे से दाने के अंदर...", "Inside one tiny grain of your rice..."),
-                  ("एक पूरी ज़िंदगी पल सकती है।", "an entire life can grow."),
-                  ("लेकिन कैसे?", "But how?")]),
+    (0.20, 6.15, [("क्या आपने कभी सोचा है", "Have you ever wondered"),
+                  ("कि एयरटाइट कंटेनर में भी", "how even airtight containers"),
+                  ("कीड़े हो जाते हैं?", "end up with insects?"),
+                  ("चलिए जानते हैं कैसे।", "Let's find out how.")]),
     (6.25, 13.10, [("ये है राइस वीविल, एक छोटा सा कीट,", "This is the rice weevil, a tiny insect"),
                    ("जो चावल ही नहीं, गेहूँ और दूसरे अनाज को भी", "that harms not just rice, but wheat"),
                    ("नुकसान पहुंचा सकता है।", "and other grains too.")]),
@@ -152,6 +153,8 @@ def narration(model_dir):
                              en=e, line=li))
             t += d + GAP
         report.append((li, round(speed, 3), round(total, 2), round(avail, 2)))
+    for a, b in zip(subs, subs[1:]):  # never let two subtitle lines overlap
+        a["end"] = round(min(a["end"], b["start"] - 0.02), 3)
     # broadcast-style voice chain: HPF, gentle presence, light compression, small room
     vo = hp(vo, 85)
     pres = bp(vo, 2500, 5000)

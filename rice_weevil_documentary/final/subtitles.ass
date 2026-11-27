@@ -16,9 +16,10 @@ Style: Card,Inter,44,&H00E9F4FF,&H00FFFFFF,&H000A0A0A,&H78000000,1,0,0,0,100,100
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
-Dialogue: 0,0:00:00.25,0:00:03.04,Sub,,0,0,0,,{\fad(120,120)}आपके चावल के एक छोटे से दाने के अंदर...\N{\fnInter\fs40\b0\c&HB9E3FF&}Inside one tiny grain of your rice...
-Dialogue: 0,0:00:03.06,0:00:04.97,Sub,,0,0,0,,{\fad(120,120)}एक पूरी ज़िंदगी पल सकती है।\N{\fnInter\fs40\b0\c&HB9E3FF&}an entire life can grow.
-Dialogue: 0,0:00:05.00,0:00:06.08,Sub,,0,0,0,,{\fad(120,120)}लेकिन कैसे?\N{\fnInter\fs40\b0\c&HB9E3FF&}But how?
+Dialogue: 0,0:00:00.20,0:00:01.79,Sub,,0,0,0,,{\fad(120,120)}क्या आपने कभी सोचा है\N{\fnInter\fs40\b0\c&HB9E3FF&}Have you ever wondered
+Dialogue: 0,0:00:01.81,0:00:03.57,Sub,,0,0,0,,{\fad(120,120)}कि एयरटाइट कंटेनर में भी\N{\fnInter\fs40\b0\c&HB9E3FF&}how even airtight containers
+Dialogue: 0,0:00:03.59,0:00:04.72,Sub,,0,0,0,,{\fad(120,120)}कीड़े हो जाते हैं?\N{\fnInter\fs40\b0\c&HB9E3FF&}end up with insects?
+Dialogue: 0,0:00:04.74,0:00:06.23,Sub,,0,0,0,,{\fad(120,120)}चलिए जानते हैं कैसे।\N{\fnInter\fs40\b0\c&HB9E3FF&}Let's find out how.
 Dialogue: 0,0:00:06.25,0:00:08.59,Sub,,0,0,0,,{\fad(120,120)}ये है राइस वीविल, एक छोटा सा कीट,\N{\fnInter\fs40\b0\c&HB9E3FF&}This is the rice weevil, a tiny insect
 Dialogue: 0,0:00:08.61,0:00:11.51,Sub,,0,0,0,,{\fad(120,120)}जो चावल ही नहीं, गेहूँ और दूसरे अनाज को भी\N{\fnInter\fs40\b0\c&HB9E3FF&}that harms not just rice, but wheat
 Dialogue: 0,0:00:11.53,0:00:13.08,Sub,,0,0,0,,{\fad(120,120)}नुकसान पहुंचा सकता है।\N{\fnInter\fs40\b0\c&HB9E3FF&}and other grains too.
