@@ -1,93 +1,107 @@
-# What If Earth Suddenly Stopped Rotating? (50 s vertical reel, Hinglish)
+# What If Earth Suddenly Stopped Rotating? (50 s vertical reel, Hinglish, Indian setting)
 
-Final render: `../../earth_stopped_rotating_final.mp4` (1080 × 1920, 30 fps, 1500 frames, exactly 50.000 s, H.264 + AAC 48 kHz stereo, −14 LUFS).
+Final render: `../../earth_stopped_rotating_final.mp4`. It is 1080 × 1920 at 30 fps: 1,500 frames, exactly 50.000 s, with H.264 video and AAC 48 kHz stereo audio at −14 LUFS.
 
-## How it is built
+## Look
 
-The pipeline is a hybrid of three parts. Everything is procedural or public-domain; there's no stock footage and no copyrighted music.
+All 17 shots are rendered in **Blender 5.3 Cycles**, following the reference video's style:
+- bright overcast daylight
+- wet asphalt and zebra crossings
+- one recurring character
+- slow-motion flying people and vehicles
+- a wall of water beside a promenade
+- a simple dark-space orbit diagram
+- one-word captions
 
-| Layer | Tool | What it makes |
+The setting is Mumbai and India:
+- balconied buildings with grilles, chhajjas, AC units and laundry
+- Hindi/English shop signboards
+- black-and-yellow kerbs, electric poles and wires
+- kaali-peeli taxis, auto-rickshaws and a red BEST bus
+- Marine Drive with tetrapods for the wave
+- the Thar desert for the heat
+- Ladakh-style ice for the frozen night side
+- India facing the camera on the globe
+
+Remotion handles the edit, captions, the few science overlays (the 1,670 km/h counter, "1 din = 1 saal", "6 mahine din/raat", orbit labels), camera shake, flashes, light rain, debris and snow, and the audio.
+
+| Time | Shot | Blender file |
 |---|---|---|
-| Ground-level 3D shots | **Blender 5.3 / Cycles** (`bpy` Python module) | City street + inertia fling (C1–C3), FFT storm ocean (D2), coastal wave wall (D3), scorched desert (F2), frozen night side (F3) → JPG sequences in `public/earth/renders/<shot>/` |
-| Planetary 3D shots | **Three.js / WebGL in Remotion** (`@remotion/three`) with custom GLSL | Photoreal Earth (NASA Blue Marble day map, Black Marble city lights, ocean glint, topo bump, cloud shadows, limb scattering), Sun, orbit, equator ring |
-| Edit, graphics, subtitles | **Remotion 4** | Cuts, transitions, colour grade per scene, particles, speedometer, callouts, word-by-word Hinglish subtitles |
-| Voice + sound | **Piper TTS** (`hi_IN-pratham-medium`) + numpy/scipy synthesis | Narration with word timings, procedural score and SFX, ducked mix |
+| 0–5 s | Earth with India in view; the spin freezes on "band" (2.67 s). The clouds keep drifting. | `shots/A1.py` |
+| 5–8.5 s | Hero on a Mumbai zebra crossing, with a low orbiting camera and normal traffic | `B1.py` |
+| 8.5–12 s | The equator lights up and the counter reaches 1,670 km/h | `B2.py` |
+| 12–13.3 s | Ordinary morning: the hero crosses the street | `C1.py` |
+| 13.3–17 s | The ground stops. The hero, taxis, autos and a bus keep their eastward speed, in slow motion. | `C2.py` |
+| 17–20 s | Everything streams east; signboards rip off and trees bend | `C3.py` |
+| 20–22.3 s | Superfast winds | `D1.py` |
+| 22.3–25.6 s | Marine Drive: the Arabian Sea rears into a wall of water that hits on "destruction" | `D2.py`, `D3.py` |
+| 25.6–28 s | The wrecked street | `D4.py` |
+| 28–31 s | The survivor sits up | `E1.py` |
+| 31–37 s | Orbit diagram: Earth keeps orbiting but doesn't rotate, so Bharat goes from DIN to RAAT over half an orbit (1 din = 1 saal) | `E2.py` (+ `export_track.py` for the labels) |
+| 37–40.5 s | Half-lit planet: 6 mahine din / 6 mahine raat | `F1.py` |
+| 40.5–42.5 s | Thar: extreme heat | `F2.py` |
+| 42.5–44.1 s | Ladakh: freezing darkness | `F3.py` |
+| 44.1–46.7 s | Sunrise on Marine Drive | `G1.py` |
+| 46.7–50 s | Earth spinning again, pull-back, black, final hit | `G2.py` |
 
-The Earth shots were first built in Cycles too, but a single frame took ~48 s on this 4-core CPU. They moved to a GLSL shader that renders in about 1 s per frame. The Blender ground shots render in roughly 4–20 s per frame at 576 × 1024 (10 samples + OpenImageDenoise + motion blur), and the edit upscales them to 1080 × 1920.
-
-### Source layout
+## Source layout
 
 ```
-video/
-  earth/
-    tools/narration_script.py   Hinglish lines: (subtitle word, spoken Devanagari word, emphasis) + target windows
-    tools/build_narration.py    Piper TTS -> public/earth/audio/narration.wav + src/earth/data/captions.json
-    tools/build_audio.py        procedural score + SFX, sidechain ducking, loudnorm -> public/earth/audio/final_mix.wav
-    blender/common.py           scene/render setup, cameras, worlds, easing
-    blender/city.py             procedural street, facades, cars, people, trees, debris, fog, inertia `fling()`
-    blender/ocean.py            FFT Ocean + foam material, breaking wave wall, spray
-    blender/landscape.py        terrain + cracked-earth / frozen-ice materials
-    blender/shots/*.py          one file per shot (C1 C2 C3 D2 D3 F2 F3)
-    blender/render.py           render one shot      blender/render_queue.sh  render many
-  src/earth/
-    index.ts, EarthRoot.tsx     separate Remotion entry (compositions EarthStopped / EarthStoppedSilent)
-    EarthStopped.tsx            top-level edit
-    timeline.ts                 every cut and beat (frames), aligned to narration timings
-    scenes/S1Hook … S7Ending    one file per storyboard section
-    components/three/           EarthGlobe + GLSL shaders, Starfield, Sun, GlowRing, CameraRig, texture preloader
-    components/                 Subtitles, Typography (TitleCard/Callout/Tag), Speedometer, Particles,
-                                Look (Grade/Shake/Flash/Fade), Transitions (whip blur, zoom punch, diagonal split),
-                                FrameSequence (plays Blender renders with bloom)
-  public/earth/textures         NASA Blue Marble / Black Marble / clouds / topology / water mask / star map
-  public/earth/renders          Blender frame sequences (committed so the edit renders without Blender)
-  public/earth/audio            narration, music, sfx stems and final mix
-  public/earth/fonts            Anton, Montserrat, JetBrains Mono (from @fontsource, OFL)
+video/earth/
+  blender/common.py        scene + render setup, cameras, worlds, easing
+  blender/look.py          the reference look: bright overcast daylight + light haze
+  blender/india.py         Mumbai kit: buildings (one multi-material mesh each), signboards, kerbs, poles,
+                           wires, neem trees, taxi, auto-rickshaw, BEST bus, hatchback, scooter, clutter
+  blender/character.py     rigged people (restyled avatar: kurta/jacket colours, skin tones, hair),
+                           posed by aiming limbs at directions; stand / walk / flail / sit / shield-eyes / hug-cold
+  blender/mumbai.py        street assembly + inertia physics: objects keep ~465 m/s east, slow-motion clock
+  blender/street_scene.py  per-shot variants (traffic, walkers, clearing the lens path)
+  blender/marine.py        Marine Drive: ocean, tetrapods, sea wall, promenade, art-deco row, wave wall
+  blender/ocean.py         FFT ocean + foam, breaking-wave mesh
+  blender/landscape.py     dunes / ice terrain + materials
+  blender/planet.py        fast Cycles Earth (NASA day/night/cloud textures), atmosphere, markers, rings
+  blender/shots/*.py       one file per shot
+  blender/render.py        render one shot;  blender/render_queue.sh  render many (resumable)
+  tools/narration_script.py, build_narration.py   Hinglish narration (Piper TTS) + word timings
+  tools/build_audio.py     procedural score + SFX, ducking, loudness
+  tools/make_signboards.js Hindi/English signboard textures (Chromium, correct Devanagari shaping)
+  tools/fetch_assets.sh    downloads the third-party character model and the TTS voice
+video/src/earth/           Remotion edit: EarthStopped.tsx, timeline.ts, components/
 ```
 
-## Regenerating the video
+## Regenerating
 
 Run everything from `video/`.
 
 ```bash
 npm ci
+bash earth/tools/fetch_assets.sh                 # avatar .glb + Hindi voice (not committed)
+node earth/tools/make_signboards.js              # optional: signboard PNGs are committed
+python3 earth/tools/build_narration.py           # optional: narration + captions.json are committed
+python3 earth/tools/build_audio.py               # sound design + final mix
 
-# 1) Voice (optional: narration.wav + captions.json are committed)
-pip install piper-tts soundfile scipy numpy
-mkdir -p earth/voices && cd earth/voices
-curl -L -O https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/vits-piper-hi_IN-pratham-medium.tar.bz2
-tar xjf vits-piper-hi_IN-pratham-medium.tar.bz2 && cd ../..
-python3 earth/tools/build_narration.py
-
-# 2) Sound design + mix (re-run after changing narration or beat times)
-python3 earth/tools/build_audio.py
-
-# 3) Blender shots (optional: frames are committed). Needs Python 3.13.
+# Blender shots (frames are committed; re-render only if you change a shot). Needs Python 3.13.
 python3 -m venv /opt/bpyenv && /opt/bpyenv/bin/pip install bpy==5.3.0
-BLENDER_PY=/opt/bpyenv/bin/python SAMPLES=10 bash earth/blender/render_queue.sh C1 C2 C3 D3 D2 F2 F3
-#    quick look at a single frame:  /opt/bpyenv/bin/python earth/blender/render.py C2 --only 40 --pct 50
+SAMPLES=8 bash earth/blender/render_queue.sh A1 B2 F1 G2 E2
+SAMPLES=4 bash earth/blender/render_queue.sh B1 C1 C2 C3 D1 D2 D3 D4 E1 G1 F2 F3
+/opt/bpyenv/bin/python earth/blender/export_track.py      # orbit-diagram label positions
+#   one test frame:  /opt/bpyenv/bin/python earth/blender/render.py C2 --only 40 --pct 50 --out _test
 
-# 4) Final render
 npx remotion render src/earth/index.ts EarthStopped ../earth_stopped_rotating_final.mp4 \
     --codec=h264 --crf=18 --audio-codec=aac --audio-bitrate=320k
-#    preview in the studio:  npx remotion studio src/earth/index.ts
 ```
 
-`remotion.config.ts` points Remotion at the container's pre-installed Chrome headless shell and uses SwiftShader WebGL (`swangle`), so it renders on CPU without a GPU. On a normal desktop you can delete the `setBrowserExecutable` line, and `--gl=angle` is faster.
-
-## Storyboard ↔ timeline
-
-| Time | Section | Shots |
-|---|---|---|
-| 0–5 s | Hook: dolly-in, Earth's spin freezes on "band" (2.67 s), impact and shake, title | A1 (WebGL) |
-| 5–12 s | Invisible speed: orbit with eastward speed trails, equator ring, speedometer → 1,670 km/h, 40,075 km ÷ 24 h | B1, B2 (WebGL) |
-| 12–20 s | Inertia: morning traffic, the ground stops (13.33 s), slow-motion fling east, "INERTIA" callout, towers shear | C1–C3 (Blender) |
-| 20–28 s | Destruction: atmosphere races over the stopped surface, storm ocean, wave wall hits coast (25.47 s), global storms | D1, D4 (WebGL), D2, D3 (Blender) |
-| 28–37 s | Year-long day: still Earth, then orbit diagram with fixed orientation; "1 DIN = 24 GHANTE" struck out → "1 DIN = 1 SAAL" | E1, E2 (WebGL) |
-| 37–44 s | Twist: half-lit planet "6 MAHINE DIN / RAAT", extreme heat → diagonal split → freezing darkness | F1 (WebGL), F2, F3 (Blender) |
-| 44–50 s | Ending: sunrise over the limb, Earth spinning again, pull-back, black at 49.47 s, final hit | G1 (WebGL) |
+Render settings: Cycles on CPU with OpenImageDenoise. Earth shots use 720 × 1280 at 8 samples. Ground shots use 648 × 1152 at 4 samples, with motion blur on the action shots. The edit scales everything to 1080 × 1920.
 
 ## Science notes
 
-- Hypothesis: the solid Earth stops spinning. The atmosphere, oceans and unanchored objects keep their eastward momentum (≈ 465 m/s ≈ 1,670 km/h at the equator; 40,075 km ÷ 24 h). That's why everything in the city shots, the dust and the wave travel east. The magnetic field isn't mentioned.
-- The Earth keeps orbiting the Sun. In the orbit diagram only rotation is removed: the planet keeps a fixed orientation, so a marked location takes about half an orbit (about 6 months) to go from day to night. The diagram is idealised, not to scale, and ignores axial tilt, as its on-screen tag says.
-- City lights and textures: NASA Blue Marble / Black Marble (public domain), via the `three-globe` npm package.
+- Hypothesis: the solid Earth stops rotating. The air, oceans, people and unanchored objects keep their eastward momentum: about 1,670 km/h at the equator (40,075 km ÷ 24 h), modelled as about 465 m/s in the scenes. That's why everything flies, and the sea surges, to the east. The magnetic field isn't mentioned.
+- The Earth keeps orbiting the Sun. Only rotation is removed, so a place takes half an orbit (about 6 months) to go from day to night. The diagram is idealised, not to scale, and ignores axial tilt.
+
+## Credits / licences
+
+- Earth textures: NASA Blue Marble / Black Marble (public domain), via the `three-globe` npm package.
+- The character is the Ready Player Me sample avatar from the three.js examples repository. It's downloaded at build time and not redistributed here.
+- Fonts: Anton, Montserrat, Baloo 2, Noto Sans Devanagari (SIL OFL, via @fontsource).
+- The voice is Piper `hi_IN-pratham-medium`.
+- All music and SFX are synthesised procedurally in `build_audio.py`.
