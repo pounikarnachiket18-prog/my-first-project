@@ -9,6 +9,11 @@ FRAMES = 94
 
 def build():
     rng, st, loose = D4.wreck(seed=17, keep_clear=(0.0, 7.0))
+    import bpy
+    for c in list(loose["clutter"]):  # nothing between the lens and the hero
+        if -5.0 < c.location.x < 4.0 and -5.5 < c.location.y < 0.6:
+            bpy.data.objects.remove(c, do_unlink=True)
+            loose["clutter"].remove(c)
     hero = C.Person("hero", "brown", True, loc=(0, -0.6, -0.72), heading=math.radians(-15))
     for f in range(0, FRAMES + 1, 3):
         p = C.sit_ground(math.sin(f * 0.2))
