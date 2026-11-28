@@ -6,6 +6,17 @@ Final export: `../../THE_LAST_FLIGHT_FINAL.mp4`
 
 The original Earth reel (`earth/`, `src/earth/`, `earth_stopped_rotating_final.mp4`) is untouched. This film lives in its own folders and has its own Remotion entry.
 
+## Version 2: daylight and designed transitions
+
+- Every shot is re-rendered in bright daylight so the whole frame reads clearly: a high clear sun, blue sky, thin haze, lighter dust and urban ground. The frames are in `public/lastflight/renders_day/`.
+- The earlier dusk-and-dust version is kept untouched in `public/lastflight/renders/`. To render that look again, set `DAY = False` in `lf_world.py` and `LF_RENDERS=renders`.
+- Every cut has a designed transition (`src/lastflight/components/Cuts.tsx`):
+  - **Whip pans:** continuous moves with directional motion blur, horizontal or vertical.
+  - **Zoom push-throughs:** into the cockpit, the planet and the hand.
+  - **Cross-dissolves.**
+  - **Warm light-leak dissolves.**
+  - **Hard cuts:** only on the power failure and the turbulence hit.
+
 ## Story & shot list
 
 | Time | Shot | What you see | Sound / dialogue |
