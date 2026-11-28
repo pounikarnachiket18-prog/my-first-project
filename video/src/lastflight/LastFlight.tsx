@@ -19,6 +19,7 @@ const GRADES: Record<GradeName, { filter: string; tint?: string; tintO?: number;
   street: { filter: "contrast(1.16) saturate(0.85) sepia(0.2)", tint: "#c9783a", tintO: 0.32, shadows: "#22170f", shadowO: 0.25, vignette: 0.65, grain: 0.08 },
   chase: { filter: "contrast(1.15) saturate(1.02)", tint: "#e0893a", tintO: 0.24, shadows: "#0e3a44", shadowO: 0.36, vignette: 0.6, grain: 0.06 },
   roof: { filter: "contrast(1.12) saturate(0.95) sepia(0.18)", tint: "#ff9a4a", tintO: 0.28, shadows: "#2a1a10", shadowO: 0.22, vignette: 0.62, grain: 0.07 },
+  glass: { filter: "contrast(1.22) saturate(0.95) brightness(1.18)", tint: "#ffa060", tintO: 0.2, vignette: 0.45, grain: 0.05 },
   slowmo: { filter: "contrast(1.18) saturate(0.75) brightness(1.04)", tint: "#ffd0a0", tintO: 0.22, vignette: 0.78, grain: 0.05 },
   dusk: { filter: "contrast(1.12) saturate(1.12)", tint: "#ff8a2a", tintO: 0.36, shadows: "#2a1206", shadowO: 0.25, vignette: 0.6, grain: 0.06 },
   earth: { filter: "contrast(1.12) saturate(1.05)", tint: "#3a7aff", tintO: 0.12, vignette: 0.6, grain: 0.04 },
@@ -97,7 +98,8 @@ export const LastFlight: React.FC<{ audio?: boolean }> = ({ audio = true }) => {
       {/* 2D atmosphere over the 3D plates: the dust sea, wind-blown debris, motes in the low sun */}
       <Sequence from={s(10)} durationInFrames={s(46) - s(10)}><Particles kind="dust" count={14} seed="lfdust" speed={1.6} opacity={0.9} /></Sequence>
       <Sequence from={s(13)} durationInFrames={s(18.5) - s(13)}><Particles kind="streaks" count={55} seed="lfwind" speed={1.4} opacity={0.6} /></Sequence>
-      <Sequence from={s(37)} durationInFrames={s(46) - s(37)}><Particles kind="streaks" count={28} seed="lfroof" speed={1.1} opacity={0.4} /></Sequence>
+      <Sequence from={s(37)} durationInFrames={s(42) - s(37)}><Particles kind="streaks" count={28} seed="lfroof" speed={1.1} opacity={0.4} /></Sequence>
+      <Sequence from={s(44)} durationInFrames={s(46) - s(44)}><Particles kind="streaks" count={28} seed="lfroof2" speed={1.1} opacity={0.4} /></Sequence>
       <Sequence from={s(46)} durationInFrames={s(47) - s(46)}><Particles kind="motes" count={70} seed="lfslow" speed={0.15} opacity={0.8} /></Sequence>
       <Sequence from={s(49)} durationInFrames={s(53) - s(49)}><Particles kind="motes" count={60} seed="lfdusk" speed={0.4} dir={0.4} opacity={0.6} /></Sequence>
       {/* cuts */}

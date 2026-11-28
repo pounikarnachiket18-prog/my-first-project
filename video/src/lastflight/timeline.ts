@@ -4,7 +4,7 @@ export const TOTAL = 1440;
 const s = (sec: number) => Math.round(sec * FPS);
 
 export type Shot = { id: string; from: number; to: number; frames: number; offset?: number; grade: GradeName; zoom?: number; origin?: string };
-export type GradeName = "cockpit" | "space" | "dust" | "street" | "chase" | "roof" | "slowmo" | "dusk" | "earth";
+export type GradeName = "cockpit" | "space" | "dust" | "street" | "chase" | "roof" | "glass" | "slowmo" | "dusk" | "earth";
 
 // `frames` = rendered frames in public/lastflight/renders/<id>/ ; the edit takes [offset, offset + (to - from)).
 export const SHOTS: Shot[] = [
@@ -23,7 +23,7 @@ export const SHOTS: Shot[] = [
   { id: "S4F", from: s(35), to: s(37), frames: 50, grade: "chase" },
   { id: "S5A", from: s(37), to: s(40), frames: 74, grade: "roof" },
   { id: "S5B", from: s(40), to: s(42), frames: 50, grade: "roof" },
-  { id: "S5C", from: s(42), to: s(44), frames: 50, grade: "cockpit", zoom: 1.45, origin: "40% 42%" },
+  { id: "S5C", from: s(42), to: s(44), frames: 50, grade: "glass", zoom: 1.45, origin: "40% 42%" },
   { id: "S5D", from: s(44), to: s(46), frames: 50, grade: "roof" },
   { id: "S5E", from: s(46), to: s(47), frames: 26, grade: "slowmo" },
   { id: "S5F", from: s(47), to: s(49), frames: 50, grade: "roof" },
