@@ -601,9 +601,9 @@ def main():
     duck = 1.0 - 0.72 * v_env
     mus = mus * duck[:, None]
     atm = atm * (1.0 - 0.6 * v_env)[:, None]
-    # slow motion (output frames ~1270-1306): the world goes muffled, then snaps back on time
+    # slow motion (output frames 1290-1326): the world goes muffled, then snaps back on time
     tt = np.arange(N) / SR
-    m = np.interp(tt, [F(1268), F(1278), F(1300), F(1308)], [0, 1, 1, 0])[:, None]
+    m = np.interp(tt, [F(1288), F(1292), F(1320), F(1330)], [0, 1, 1, 0])[:, None]
     mus = mus * (1 - m) + lp(mus, 450) * m
     atm = atm * (1 - m) + lp(atm, 300) * m * 1.3
 

@@ -118,7 +118,7 @@ def slowmo(pct=50, samples=16):
     configure(scn, pct, samples)
     os.makedirs(FRAMES, exist_ok=True)
     for k in range(edit.SLOWMO[0], edit.SLOWMO[1] + 1):
-        out = os.path.join(FRAMES, f"slow_{k:04d}.png")
+        out = os.path.join(FRAMES, f"{edit.SLOW_PREFIX}_{k:04d}.png")
         if os.path.exists(out) and os.path.getsize(out) > 0:
             continue
         s = edit.source(k)

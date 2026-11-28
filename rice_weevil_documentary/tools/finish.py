@@ -6,8 +6,8 @@ which upscales, grades, burns in typography and encodes.
 Edit (output frame k, 1..1500, 30 fps):
   1-60     cold open (S0_Hook, frames 2001-2060), real 3D motion blur + rack focus
   61-180   the sealed jar (S1 frames 22-180, speed-ramped ~1.3x with frame blending)
-  181-1500 sequences 2-7 1:1, except the S6 emergence (1201-1345): ~1.16x chewing, true 3D
-           slow motion (0.44x sub-frame renders) through the break-through, then catch-up;
+  181-1500 sequences 2-7 1:1, except the S6 emergence (1290-1375): true 3D slow motion
+           (0.44x sub-frame renders) as the head pushes out, then a speed-ramp catch-up;
            every scene starts and ends on its original frame, so narration timing holds
 Effects are keyed to story beats only: macro zoom transitions, rack-focus transition,
 X-ray scan wipe, particle transition, impact flash/shake, snap zooms on reveals, anticipation
@@ -198,7 +198,7 @@ LOOK = {
     "S5": dict(sh=(0.006, -0.008, 0.035), hi=(-0.010, 0.020, 0.035), sat=1.12, con=0.28,
                streak=(0.45, 0.8, 1.0), st=0.34),
     "S6": dict(sh=(-0.018, 0.004, 0.032), hi=(0.040, 0.016, -0.030), sat=1.12, con=0.32,
-               streak=(1.0, 0.62, 0.3), st=0.30),
+               streak=(1.0, 0.62, 0.3), st=0.20),
     "S7": dict(sh=(-0.010, 0.000, 0.020), hi=(0.035, 0.020, -0.020), sat=1.06, con=0.30,
                streak=(1.0, 0.8, 0.5), st=0.36),
 }
@@ -295,8 +295,8 @@ def frame_at(s, k=None):
     """Fractional source frame: blend neighbours (reads as motion blur on speed ramps).
     Inside the slow-motion window real sub-frame renders are used instead."""
     if k is not None and edit.SLOWMO[0] <= k <= edit.SLOWMO[1] and \
-            os.path.exists(os.path.join(FRAMES, f"slow_{k:04d}.png")):
-        return load(k, "slow")
+            os.path.exists(os.path.join(FRAMES, f"{edit.SLOW_PREFIX}_{k:04d}.png")):
+        return load(k, edit.SLOW_PREFIX)
     a = int(math.floor(s))
     t = s - a
     if t < 1e-3:

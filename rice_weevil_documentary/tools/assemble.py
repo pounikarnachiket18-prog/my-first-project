@@ -162,16 +162,16 @@ def holo(ev, k, shape, layer=6, alpha=0, glow=True):
     a = f"&H{alpha:02X}&"
     if glow:
         ag = f"&H{min(255, alpha + 120):02X}&"
-        ev.append(f"Dialogue: {layer},{t0},{t1},Draw,,0,0,0,,{{\an7\pos(0,0)\p1\bord4\blur7"
-                  f"\shad0\c{HOLO}\3c{HOLO}\alpha{ag}}}{shape}{{\p0}}")
-    ev.append(f"Dialogue: {layer + 1},{t0},{t1},Draw,,0,0,0,,{{\an7\pos(0,0)\p1\bord0"
-              f"\shad0\c&HFFF6E6&\alpha{a}}}{shape}{{\p0}}")
+        ev.append(rf"Dialogue: {layer},{t0},{t1},Draw,,0,0,0,,{{\an7\pos(0,0)\p1\bord4\blur7"
+                  rf"\shad0\c{HOLO}\3c{HOLO}\alpha{ag}}}{shape}{{\p0}}")
+    ev.append(rf"Dialogue: {layer + 1},{t0},{t1},Draw,,0,0,0,,{{\an7\pos(0,0)\p1\bord0"
+              rf"\shad0\c&HFFF6E6&\alpha{a}}}{shape}{{\p0}}")
 
 
 def holo_text(ev, k0, k1, x, y, text, an=7, size=28, fad=(120, 180), sp=6, layer=8):
     ev.append(f"Dialogue: {layer},{t_ass(fr(k0))},{t_ass(fr(k1))},Small,,0,0,0,,"
-              f"{{\an{an}\pos({x:.0f},{y:.0f})\fs{size}\fsp{sp}\b1\c{HOLO}\3c&H3A2A10&"
-              f"\bord1.4\blur0.6\fad({fad[0]},{fad[1]})}}{text}")
+              rf"{{\an{an}\pos({x:.0f},{y:.0f})\fs{size}\fsp{sp}\b1\c{HOLO}\3c&H3A2A10&"
+              rf"\bord1.4\blur0.6\fad({fad[0]},{fad[1]})}}{text}")
 
 
 def brackets(cx, cy, hw, hh, arm, t=4.0):
@@ -210,8 +210,8 @@ def hud_lock(ev, trk, k0, k1, label, half_mm=(0.85, 0.55)):
         n = int(len(label) * min(1.0, max(0.0, (k - k0 - 6) / 12.0)))
         if n:
             ev.append(f"Dialogue: 8,{t_ass(fr(k))},{t_ass(fr(k + 1))},Small,,0,0,0,,"
-                      f"{{\an1\pos({cx - hw:.0f},{cy - hh - 12:.0f})\fs26\fsp6\b1\c{HOLO}"
-                      f"\bord1.4\3c&H3A2A10&\alpha&H{alpha:02X}&}}{label[:n]}")
+                      rf"{{\an1\pos({cx - hw:.0f},{cy - hh - 12:.0f})\fs26\fsp6\b1\c{HOLO}"
+                      rf"\bord1.4\3c&H3A2A10&\alpha&H{alpha:02X}&}}{label[:n]}")
 
 
 def hud_scale(ev, trk, k0, k1, x=90, y=1212, units=((1.0, "1 mm"),), max_px=420):
@@ -226,8 +226,8 @@ def hud_scale(ev, trk, k0, k1, x=90, y=1212, units=((1.0, "1 mm"),), max_px=420)
         bar = (rect(x, y, L, 4) + " " + rect(x, y - 12, 3, 16) + " " + rect(x + L - 3, y - 12, 3, 16))
         holo(ev, k, bar, alpha=alpha)
         ev.append(f"Dialogue: 8,{t_ass(fr(k))},{t_ass(fr(k + 1))},Small,,0,0,0,,"
-                  f"{{\an1\pos({x:.0f},{y - 18:.0f})\fs26\fsp5\b1\c{HOLO}\bord1.4"
-                  f"\3c&H3A2A10&\alpha&H{alpha:02X}&}}SCALE  {txt}")
+                  rf"{{\an1\pos({x:.0f},{y - 18:.0f})\fs26\fsp5\b1\c{HOLO}\bord1.4"
+                  rf"\3c&H3A2A10&\alpha&H{alpha:02X}&}}SCALE  {txt}")
 
 
 def hud_scan(ev, k0, k1, x=90, y=1212, w=330):
@@ -240,8 +240,8 @@ def hud_scan(ev, k0, k1, x=90, y=1212, w=330):
         holo(ev, k, rect(x, y - 3, w * p, 8), alpha=alpha)
         label = "X-RAY SCAN  " + ("COMPLETE" if p >= 1 else f"{int(p * 100):3d}%")
         ev.append(f"Dialogue: 8,{t_ass(fr(k))},{t_ass(fr(k + 1))},Small,,0,0,0,,"
-                  f"{{\an1\pos({x:.0f},{y - 14:.0f})\fs26\fsp5\b1\c{HOLO}\bord1.4"
-                  f"\3c&H3A2A10&\alpha&H{alpha:02X}&}}{label}")
+                  rf"{{\an1\pos({x:.0f},{y - 14:.0f})\fs26\fsp5\b1\c{HOLO}\bord1.4"
+                  rf"\3c&H3A2A10&\alpha&H{alpha:02X}&}}{label}")
 
 
 def build_ass(path, classic=False):
@@ -343,7 +343,7 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
                   r"{\fad(400,0)\blur6\fsp30\t(0,500,\blur0.8\fsp8)}THE INVISIBLE\NINVADER")
     ev.append(f"Dialogue: 3,{t_ass(fr(1425))},{t_ass(50.0)},Small,,0,0,0,,"
               + (r"{\fad(500,0)\an8\pos(540,560)}" if classic else
-                 r"{\fad(500,0)\an8\pos(540,512)\fsp9\t(0,700,\fsp2)}")
+                 r"{\fad(500,0)\an8\pos(540,470)\fsp9\t(0,700,\fsp2)}")
               + "HOW A TINY WEEVIL DESTROYS YOUR RICE")
     ev.append(f"Dialogue: 3,{t_ass(fr(1440))},{t_ass(50.0)},Card,,0,0,0,,"
               r"{\fad(300,0)\fscx90\fscy90\t(0,200,\fscx100\fscy100)}STORE GRAINS DRY.\N"
