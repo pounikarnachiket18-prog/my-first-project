@@ -10,7 +10,7 @@ sys.path[:0] = [HERE, os.path.join(HERE, "shots"), os.path.join(VIDEO, "earth", 
 import bpy  # noqa
 import common  # noqa
 common.FPS = 24
-common.RENDERS = os.path.join(VIDEO, "public", "lastflight", "renders")
+common.RENDERS = os.path.join(VIDEO, "public", "lastflight", os.environ.get("LF_RENDERS", "renders_day"))  # renders/ holds the earlier dusk version
 
 ap = argparse.ArgumentParser()
 ap.add_argument("shot"); ap.add_argument("--only", default=""); ap.add_argument("--pct", type=int, default=100)

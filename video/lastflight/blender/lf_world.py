@@ -9,12 +9,22 @@ import india
 from city import building as tower_block, WALLS
 
 
+DAY = True   # bright daytime look (everything readable); False = the original low, dusty dusk
+
+
 def dusk_dust_light(sun_elev=14, sun_az=200, sun=2.6, sky=0.9):
-    """Low sun filtered through dust: warm key, desaturated sky."""
-    gradient_world(top=(0.42, 0.42, 0.42), horizon=(0.78, 0.66, 0.52), strength=sky)
+    """Key light + sky. In DAY mode: high clear sun and a blue sky with light haze at the horizon,
+    whatever the shot asks for (shots keep their sun azimuth so shadows stay consistent)."""
+    if DAY:
+        sun_elev, sun, sky = max(sun_elev, 48), 4.2, 1.15
+        gradient_world(top=(0.26, 0.45, 0.82), horizon=(0.82, 0.84, 0.86), strength=sky)
+        color = (1.0, 0.96, 0.9)
+    else:
+        gradient_world(top=(0.42, 0.42, 0.42), horizon=(0.78, 0.66, 0.52), strength=sky)
+        color = (1.0, 0.8, 0.6)
     el, az = math.radians(sun_elev), math.radians(sun_az)
     d = Vector((math.cos(el) * math.cos(az), math.cos(el) * math.sin(az), math.sin(el)))
-    sun_light("Sun", tuple(-d), strength=sun, color=(1.0, 0.8, 0.6), angle_deg=3)
+    sun_light("Sun", tuple(-d), strength=sun, color=color, angle_deg=2)
     return d
 
 
@@ -179,5 +189,5 @@ def dust_cards(cam, frames, region, n=24, size=(20, 60), wind=(1.2, 0.0, 0.1), r
 def ground(z=0.0, color=(0.42, 0.4, 0.37)):
     bpy.ops.mesh.primitive_plane_add(size=6000, location=(0, 0, z))
     g = bpy.context.active_object; g.name = "Ground"
-    set_mat(g, india.paint_material(color, "GroundDust"))
+    set_mat(g, india.paint_material((0.2, 0.2, 0.2) if DAY else color, "GroundDust"))   # sunlit urban ground, not pale dust
     return g

@@ -34,9 +34,13 @@ def city(rng, towers=150, roof=True, sun_az=200, sun_elev=12, fog=0.0042, fires=
 
 def finish(cam, frames, rng, fog=0.0026, dust_region=None, n=36, smoke=True, wind=(1.4, 0.0, 0.08), dust_alpha=0.5):
     """Call last: fog on every material, then dust cards + smoke stacks that face this camera."""
-    fog_all((0.64, 0.57, 0.48), fog, 1.0)
+    if W.DAY:   # daylight: thin bright haze, lighter dust, so the city and the action stay readable
+        fog, dust_alpha, n, dust_col, haze = fog * 0.28, dust_alpha * 0.45, int(n * 0.6), (0.86, 0.8, 0.7), (0.78, 0.82, 0.88)
+    else:
+        dust_col, haze = (0.6, 0.53, 0.44), (0.64, 0.57, 0.48)
+    fog_all(haze, fog, 1.0)
     if dust_region:
-        W.dust_cards(cam, frames, dust_region, n=n, size=(25, 80), wind=wind, rng=rng, alpha=dust_alpha)
+        W.dust_cards(cam, frames, dust_region, n=n, size=(25, 80), wind=wind, rng=rng, alpha=dust_alpha, color=dust_col)
     if smoke:
         for k, (x, y) in enumerate([(320, 260), (60, 240), (420, -60), (150, -180)]):
             reg = ((x - 10, x + 10), (y - 10, y + 10), (40, 220))
