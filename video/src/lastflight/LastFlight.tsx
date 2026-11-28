@@ -55,7 +55,7 @@ const Shots: React.FC = () => {
             return (
               <Sequence key={sh.id} from={sh.from} durationInFrames={sh.to - sh.from} name={sh.id}>
                 <Grade tint={g.tint} tintOpacity={g.tintO} shadows={g.shadows} shadowOpacity={g.shadowO} vignette={g.vignette} grain={g.grain}>
-                  <Plate shot={sh.id} frames={sh.frames} offset={sh.offset ?? 0} filter={g.filter} bloom={sh.grade === "dusk" || sh.grade === "earth" ? 0.35 : 0.22} />
+                  <Plate shot={sh.id} frames={sh.frames} offset={sh.offset ?? 0} filter={g.filter} bloom={sh.grade === "dusk" || sh.grade === "earth" ? 0.35 : 0.22} scale={sh.zoom ?? 1} origin={sh.origin} />
                 </Grade>
               </Sequence>
             );
