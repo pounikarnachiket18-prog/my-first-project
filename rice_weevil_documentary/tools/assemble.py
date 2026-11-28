@@ -64,9 +64,9 @@ def fr(f):
 
 # --------------------------------------------------------------------------- typography
 AMBER = r"&H3FC8FF&"   # highlight (BGR)
-KEY_HI = ["रुकिए!", "अंदर", "राइस वीविल", "गेहूँ", "छोटा सा छेद", "अंडा", "खास स्राव", "लार्वा",
+KEY_HI = ["कभी", "बंद चावल के डिब्बे", "कीड़े", "अंदर", "राइस वीविल", "गेहूँ", "छोटा सा छेद", "अंडा", "खास स्राव", "लार्वा",
           "बाहर नहीं", "प्यूपा", "वयस्क वीविल", "बाहर निकलता", "खोखला", "सूखा", "बंद डिब्बों"]
-KEY_EN = ["Wait!", "inside", "rice weevil", "wheat", "tiny hole", "egg", "secretion", "larva",
+KEY_EN = ["ever", "sealed", "bugs", "inside", "rice weevil", "wheat", "tiny hole", "egg", "secretion", "larva",
           "never comes out", "pupa", "adult weevil", "emerges", "hollowed out", "dry",
           "tightly sealed"]
 
@@ -276,7 +276,7 @@ def hud_scan(ev, k0, k1, x=90, y=1212, w=330):
 
 # --------------------------------------------------------------------------- brand motion graphics
 BRAND = r"&H2012D6&"    # Just KnowIt red (BGR of #D61220)
-CHAPTERS = [(1, 60, "00", "ALERT"), (61, 180, "01", "THE JAR"), (181, 390, "02", "THE INVADER"),
+CHAPTERS = [(1, 60, "00", "THE MYSTERY"), (61, 180, "01", "THE JAR"), (181, 390, "02", "THE INVADER"),
             (391, 630, "03", "THE SECRET EGG"), (631, 930, "04", "INSIDE THE GRAIN"),
             (931, 1200, "05", "METAMORPHOSIS"), (1201, 1410, "06", "THE ESCAPE"),
             (1411, 1500, "07", "PROTECT YOUR RICE")]
@@ -373,7 +373,7 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
     for i, s in enumerate(subs):
         hi = highlight(s["hi"], KEY_HI)
         en = highlight(s["en"], KEY_EN, base="&HDDDDDD&", pop=108)
-        size = r"\fs112" if i == 0 else ""   # the cold-open "Wait!" hits big
+        size = r"\fs90" if i == 0 else ""    # the cold-open question hits bigger
         pop = (r"\fscx135\fscy135\t(0,160,\fscx100\fscy100)" if i == 0 else
                r"\fscx94\fscy94\t(0,130,\fscx100\fscy100)")
         txt = (rf"{{\fad(70,110)\blur0.6{size}{pop}}}" + hi
@@ -535,7 +535,7 @@ def classic():
     ass = os.path.join(FINAL, "subtitles.ass")
     build_ass(ass, classic=True)
     out = os.path.join(FINAL, "the_invisible_invader_50s.mp4")
-    vf = (f"subtitles='{ass}':fontsdir='{FONTS}',fade=t=out:st=49.55:d=0.45,"
+    vf = (f"ass='{ass}':fontsdir='{FONTS}':shaping=complex,fade=t=out:st=49.55:d=0.45,"
           f"format=yuv420p")
     af = "loudnorm=I=-14:TP=-1.5:LRA=11,aresample=48000"
     run(["ffmpeg", "-v", "error", "-y", "-f", "concat", "-safe", "0", "-i", lst,
@@ -569,7 +569,7 @@ def cinematic():
     vf = (f"[0:v]{GRADE.format(w=W, h=H)},setpts=PTS+{t0}/TB[gv];"
           f"[2:v]setpts=PTS-STARTPTS+{t0}/TB,format=rgba[bug];"
           f"[gv][bug]overlay={bx}:{by}:eof_action=pass:format=auto,"
-          f"subtitles='{ass}':fontsdir='{FONTS}',setpts=PTS-STARTPTS,"
+          f"ass='{ass}':fontsdir='{FONTS}':shaping=complex,setpts=PTS-STARTPTS,"
           f"fade=t=out:st={49.55 - t0}:d=0.45,format=yuv420p[v]")
     af = (f"[1:a]atrim=start={t0}:duration={dur},asetpts=PTS-STARTPTS,"
           "loudnorm=I=-14:TP=-1.5:LRA=11,aresample=48000[a]")

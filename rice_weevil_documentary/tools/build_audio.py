@@ -33,9 +33,9 @@ def J(src):  # S1 jar source frame -> seconds on the final timeline (see tools/f
 
 # (window start, window end, [(hindi chunk, english chunk), ...])
 LINES = [
-    (0.20, 6.15, [("रुकिए!", "Wait!"),
-                  ("ये चावल पकाने से पहले", "Before you cook this rice,"),
-                  ("जान लीजिए अंदर क्या है।", "find out what's inside.")]),
+    (0.20, 6.15, [("क्या आपने सोचा है कि कभी", "Have you ever wondered"),
+                  ("बंद चावल के डिब्बे में", "how, inside a sealed rice container,"),
+                  ("कीड़े कैसे हो जाते हैं?", "bugs suddenly appear?")]),
     (6.25, 13.10, [("ये है राइस वीविल, एक छोटा सा कीट,", "This is the rice weevil, a tiny insect"),
                    ("जो चावल ही नहीं, गेहूँ और दूसरे अनाज को भी", "that harms not just rice, but wheat"),
                    ("नुकसान पहुंचा सकता है।", "and other grains too.")]),

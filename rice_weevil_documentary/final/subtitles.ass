@@ -21,9 +21,9 @@ Style: Draw,Inter,20,&H00FFFFFF,&H00FFFFFF,&H00000000,&H00000000,0,0,0,0,100,100
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
-Dialogue: 0,0:00:00.20,0:00:01.09,Sub,,0,0,0,,{\fad(70,110)\blur0.6\fs112\fscx135\fscy135\t(0,160,\fscx100\fscy100)}{\c&H3FC8FF&\fscx118\fscy118\t(40,260,\fscx100\fscy100)}रुकिए!{\c&HFFFFFF&\fscx100\fscy100}\N{\fnInter\fs40\b0\c&HDDDDDD&\fscx100\fscy100}{\c&H3FC8FF&\fscx108\fscy108\t(40,260,\fscx100\fscy100)}Wait!{\c&HDDDDDD&\fscx100\fscy100}
-Dialogue: 0,0:00:01.11,0:00:03.11,Sub,,0,0,0,,{\fad(70,110)\blur0.6\fscx94\fscy94\t(0,130,\fscx100\fscy100)}ये चावल पकाने से पहले\N{\fnInter\fs40\b0\c&HDDDDDD&\fscx100\fscy100}Before you cook this rice,
-Dialogue: 0,0:00:03.13,0:00:05.15,Sub,,0,0,0,,{\fad(70,110)\blur0.6\fscx94\fscy94\t(0,130,\fscx100\fscy100)}जान लीजिए {\c&H3FC8FF&\fscx118\fscy118\t(40,260,\fscx100\fscy100)}अंदर{\c&HFFFFFF&\fscx100\fscy100} क्या है।\N{\fnInter\fs40\b0\c&HDDDDDD&\fscx100\fscy100}find out what's {\c&H3FC8FF&\fscx108\fscy108\t(40,260,\fscx100\fscy100)}inside{\c&HDDDDDD&\fscx100\fscy100}.
+Dialogue: 0,0:00:00.20,0:00:02.39,Sub,,0,0,0,,{\fad(70,110)\blur0.6\fs90\fscx135\fscy135\t(0,160,\fscx100\fscy100)}क्या आपने सोचा है कि {\c&H3FC8FF&\fscx118\fscy118\t(40,260,\fscx100\fscy100)}कभी{\c&HFFFFFF&\fscx100\fscy100}\N{\fnInter\fs40\b0\c&HDDDDDD&\fscx100\fscy100}Have you {\c&H3FC8FF&\fscx108\fscy108\t(40,260,\fscx100\fscy100)}ever{\c&HDDDDDD&\fscx100\fscy100} wondered
+Dialogue: 0,0:00:02.41,0:00:04.27,Sub,,0,0,0,,{\fad(70,110)\blur0.6\fscx94\fscy94\t(0,130,\fscx100\fscy100)}{\c&H3FC8FF&\fscx118\fscy118\t(40,260,\fscx100\fscy100)}बंद चावल के डिब्बे{\c&HFFFFFF&\fscx100\fscy100} में\N{\fnInter\fs40\b0\c&HDDDDDD&\fscx100\fscy100}how, inside a {\c&H3FC8FF&\fscx108\fscy108\t(40,260,\fscx100\fscy100)}sealed{\c&HDDDDDD&\fscx100\fscy100} rice container,
+Dialogue: 0,0:00:04.29,0:00:06.14,Sub,,0,0,0,,{\fad(70,110)\blur0.6\fscx94\fscy94\t(0,130,\fscx100\fscy100)}{\c&H3FC8FF&\fscx118\fscy118\t(40,260,\fscx100\fscy100)}कीड़े{\c&HFFFFFF&\fscx100\fscy100} कैसे हो जाते हैं?\N{\fnInter\fs40\b0\c&HDDDDDD&\fscx100\fscy100}{\c&H3FC8FF&\fscx108\fscy108\t(40,260,\fscx100\fscy100)}bugs{\c&HDDDDDD&\fscx100\fscy100} suddenly appear?
 Dialogue: 0,0:00:06.25,0:00:08.59,Sub,,0,0,0,,{\fad(70,110)\blur0.6\fscx94\fscy94\t(0,130,\fscx100\fscy100)}ये है {\c&H3FC8FF&\fscx118\fscy118\t(40,260,\fscx100\fscy100)}राइस वीविल{\c&HFFFFFF&\fscx100\fscy100}, एक छोटा सा कीट,\N{\fnInter\fs40\b0\c&HDDDDDD&\fscx100\fscy100}This is the {\c&H3FC8FF&\fscx108\fscy108\t(40,260,\fscx100\fscy100)}rice weevil{\c&HDDDDDD&\fscx100\fscy100}, a tiny insect
 Dialogue: 0,0:00:08.61,0:00:11.51,Sub,,0,0,0,,{\fad(70,110)\blur0.6\fscx94\fscy94\t(0,130,\fscx100\fscy100)}जो चावल ही नहीं, {\c&H3FC8FF&\fscx118\fscy118\t(40,260,\fscx100\fscy100)}गेहूँ{\c&HFFFFFF&\fscx100\fscy100} और दूसरे अनाज को भी\N{\fnInter\fs40\b0\c&HDDDDDD&\fscx100\fscy100}that harms not just rice, but {\c&H3FC8FF&\fscx108\fscy108\t(40,260,\fscx100\fscy100)}wheat{\c&HDDDDDD&\fscx100\fscy100}
 Dialogue: 0,0:00:11.53,0:00:13.08,Sub,,0,0,0,,{\fad(70,110)\blur0.6\fscx94\fscy94\t(0,130,\fscx100\fscy100)}नुकसान पहुंचा सकता है।\N{\fnInter\fs40\b0\c&HDDDDDD&\fscx100\fscy100}and other grains too.
@@ -4743,20 +4743,20 @@ Dialogue: 6,0:00:43.37,0:00:44.80,Callout,,0,0,0,,{\an9\pos(826,770)\fad(160,220
 Dialogue: 6,0:00:43.47,0:00:44.80,CalloutBox,,0,0,0,,{\an9\pos(820,828)\fad(220,220)\blur3\t(0,260,\blur0)}बाहर निकलने का छेद
 Dialogue: 6,0:00:00.00,0:00:02.00,Draw,,0,0,0,,{\an5\pos(1022,166)\p1\bord0\shad0\c&H2012D6&\fscx40\fscy40\t(0,180,\fscx108\fscy108)\t(180,300,\fscx100\fscy100)}m 4 0 l 48 0 b 52 0 52 0 52 4 l 52 36 b 52 40 52 40 48 40 l 4 40 b 0 40 0 40 0 36 l 0 4 b 0 0 0 0 4 0{\p0}
 Dialogue: 7,0:00:00.00,0:00:02.00,Small,,0,0,0,,{\an5\pos(1022,167)\fs26\fsp1\b1\c&HFFFFFF&\bord0\shad0\t(0,120,\alpha&H80&)\t(120,240,\alpha&H00&)}00
-Dialogue: 7,0:00:00.00,0:00:00.03,Small,,0,0,0,,{\an6\pos(986,166)\fs26\fsp5\b1\c&HFFFFFF&\bord1.6\3c&H101010&\shad0}{\c&H2012D6&}▍
-Dialogue: 7,0:00:00.03,0:00:00.07,Small,,0,0,0,,{\an6\pos(986,166)\fs26\fsp5\b1\c&HFFFFFF&\bord1.6\3c&H101010&\shad0}A{\c&H2012D6&}▍
-Dialogue: 7,0:00:00.07,0:00:00.10,Small,,0,0,0,,{\an6\pos(986,166)\fs26\fsp5\b1\c&HFFFFFF&\bord1.6\3c&H101010&\shad0}A{\c&H2012D6&}▍
-Dialogue: 7,0:00:00.10,0:00:00.13,Small,,0,0,0,,{\an6\pos(986,166)\fs26\fsp5\b1\c&HFFFFFF&\bord1.6\3c&H101010&\shad0}AL
-Dialogue: 7,0:00:00.13,0:00:00.17,Small,,0,0,0,,{\an6\pos(986,166)\fs26\fsp5\b1\c&HFFFFFF&\bord1.6\3c&H101010&\shad0}AL{\c&H2012D6&}▍
-Dialogue: 7,0:00:00.17,0:00:00.20,Small,,0,0,0,,{\an6\pos(986,166)\fs26\fsp5\b1\c&HFFFFFF&\bord1.6\3c&H101010&\shad0}ALE{\c&H2012D6&}▍
-Dialogue: 7,0:00:00.20,0:00:00.23,Small,,0,0,0,,{\an6\pos(986,166)\fs26\fsp5\b1\c&HFFFFFF&\bord1.6\3c&H101010&\shad0}ALE{\c&H2012D6&}▍
-Dialogue: 7,0:00:00.23,0:00:00.27,Small,,0,0,0,,{\an6\pos(986,166)\fs26\fsp5\b1\c&HFFFFFF&\bord1.6\3c&H101010&\shad0}ALER
-Dialogue: 7,0:00:00.27,0:00:00.30,Small,,0,0,0,,{\an6\pos(986,166)\fs26\fsp5\b1\c&HFFFFFF&\bord1.6\3c&H101010&\shad0}ALER{\c&H2012D6&}▍
-Dialogue: 7,0:00:00.30,0:00:00.33,Small,,0,0,0,,{\an6\pos(986,166)\fs26\fsp5\b1\c&HFFFFFF&\bord1.6\3c&H101010&\shad0}ALERT{\c&H2012D6&}▍
-Dialogue: 7,0:00:00.33,0:00:00.37,Small,,0,0,0,,{\an6\pos(986,166)\fs26\fsp5\b1\c&HFFFFFF&\bord1.6\3c&H101010&\shad0}ALERT{\c&H2012D6&}▍
-Dialogue: 7,0:00:00.37,0:00:00.40,Small,,0,0,0,,{\an6\pos(986,166)\fs26\fsp5\b1\c&HFFFFFF&\bord1.6\3c&H101010&\shad0}ALERT
-Dialogue: 7,0:00:00.40,0:00:00.43,Small,,0,0,0,,{\an6\pos(986,166)\fs26\fsp5\b1\c&HFFFFFF&\bord1.6\3c&H101010&\shad0}ALERT{\c&H2012D6&}▍
-Dialogue: 7,0:00:00.43,0:00:02.00,Small,,0,0,0,,{\an6\pos(986,166)\fs26\fsp5\b1\c&HFFFFFF&\bord1.6\3c&H101010&\shad0}ALERT
+Dialogue: 7,0:00:00.00,0:00:00.03,Small,,0,0,0,,{\an6\pos(986,166)\fs26\fsp5\b1\c&HFFFFFF&\bord1.6\3c&H101010&\shad0}T{\c&H2012D6&}▍
+Dialogue: 7,0:00:00.03,0:00:00.07,Small,,0,0,0,,{\an6\pos(986,166)\fs26\fsp5\b1\c&HFFFFFF&\bord1.6\3c&H101010&\shad0}TH{\c&H2012D6&}▍
+Dialogue: 7,0:00:00.07,0:00:00.10,Small,,0,0,0,,{\an6\pos(986,166)\fs26\fsp5\b1\c&HFFFFFF&\bord1.6\3c&H101010&\shad0}THE{\c&H2012D6&}▍
+Dialogue: 7,0:00:00.10,0:00:00.13,Small,,0,0,0,,{\an6\pos(986,166)\fs26\fsp5\b1\c&HFFFFFF&\bord1.6\3c&H101010&\shad0}THE 
+Dialogue: 7,0:00:00.13,0:00:00.17,Small,,0,0,0,,{\an6\pos(986,166)\fs26\fsp5\b1\c&HFFFFFF&\bord1.6\3c&H101010&\shad0}THE M{\c&H2012D6&}▍
+Dialogue: 7,0:00:00.17,0:00:00.20,Small,,0,0,0,,{\an6\pos(986,166)\fs26\fsp5\b1\c&HFFFFFF&\bord1.6\3c&H101010&\shad0}THE MY{\c&H2012D6&}▍
+Dialogue: 7,0:00:00.20,0:00:00.23,Small,,0,0,0,,{\an6\pos(986,166)\fs26\fsp5\b1\c&HFFFFFF&\bord1.6\3c&H101010&\shad0}THE MYS{\c&H2012D6&}▍
+Dialogue: 7,0:00:00.23,0:00:00.27,Small,,0,0,0,,{\an6\pos(986,166)\fs26\fsp5\b1\c&HFFFFFF&\bord1.6\3c&H101010&\shad0}THE MYST
+Dialogue: 7,0:00:00.27,0:00:00.30,Small,,0,0,0,,{\an6\pos(986,166)\fs26\fsp5\b1\c&HFFFFFF&\bord1.6\3c&H101010&\shad0}THE MYSTE{\c&H2012D6&}▍
+Dialogue: 7,0:00:00.30,0:00:00.33,Small,,0,0,0,,{\an6\pos(986,166)\fs26\fsp5\b1\c&HFFFFFF&\bord1.6\3c&H101010&\shad0}THE MYSTERY{\c&H2012D6&}▍
+Dialogue: 7,0:00:00.33,0:00:00.37,Small,,0,0,0,,{\an6\pos(986,166)\fs26\fsp5\b1\c&HFFFFFF&\bord1.6\3c&H101010&\shad0}THE MYSTERY{\c&H2012D6&}▍
+Dialogue: 7,0:00:00.37,0:00:00.40,Small,,0,0,0,,{\an6\pos(986,166)\fs26\fsp5\b1\c&HFFFFFF&\bord1.6\3c&H101010&\shad0}THE MYSTERY
+Dialogue: 7,0:00:00.40,0:00:00.43,Small,,0,0,0,,{\an6\pos(986,166)\fs26\fsp5\b1\c&HFFFFFF&\bord1.6\3c&H101010&\shad0}THE MYSTERY{\c&H2012D6&}▍
+Dialogue: 7,0:00:00.43,0:00:02.00,Small,,0,0,0,,{\an6\pos(986,166)\fs26\fsp5\b1\c&HFFFFFF&\bord1.6\3c&H101010&\shad0}THE MYSTERY
 Dialogue: 6,0:00:02.00,0:00:06.00,Draw,,0,0,0,,{\an5\pos(1022,166)\p1\bord0\shad0\c&H2012D6&\fscx40\fscy40\t(0,180,\fscx108\fscy108)\t(180,300,\fscx100\fscy100)}m 4 0 l 48 0 b 52 0 52 0 52 4 l 52 36 b 52 40 52 40 48 40 l 4 40 b 0 40 0 40 0 36 l 0 4 b 0 0 0 0 4 0{\p0}
 Dialogue: 7,0:00:02.00,0:00:06.00,Small,,0,0,0,,{\an5\pos(1022,167)\fs26\fsp1\b1\c&HFFFFFF&\bord0\shad0}01
 Dialogue: 7,0:00:02.00,0:00:02.03,Small,,0,0,0,,{\an6\pos(986,166)\fs26\fsp5\b1\c&HFFFFFF&\bord1.6\3c&H101010&\shad0}{\c&H2012D6&}▍

@@ -1,23 +1,23 @@
 [
  {
   "start": 0.2,
-  "end": 1.092,
-  "hi": "रुकिए!",
-  "en": "Wait!",
+  "end": 2.388,
+  "hi": "क्या आपने सोचा है कि कभी",
+  "en": "Have you ever wondered",
   "line": 0
  },
  {
-  "start": 1.112,
-  "end": 3.108,
-  "hi": "ये चावल पकाने से पहले",
-  "en": "Before you cook this rice,",
+  "start": 2.408,
+  "end": 4.267,
+  "hi": "बंद चावल के डिब्बे में",
+  "en": "how, inside a sealed rice container,",
   "line": 0
  },
  {
-  "start": 3.128,
-  "end": 5.148,
-  "hi": "जान लीजिए अंदर क्या है।",
-  "en": "find out what's inside.",
+  "start": 4.287,
+  "end": 6.142,
+  "hi": "कीड़े कैसे हो जाते हैं?",
+  "en": "bugs suddenly appear?",
   "line": 0
  },
  {
