@@ -17,7 +17,18 @@ const clamp = { extrapolateLeft: "clamp", extrapolateRight: "clamp" } as const;
 let uid = 0;
 
 /** How far before/after its nominal range a shot must stay on screen for a given cut. */
-export const overlap = (c?: Cut) => (!c ? 0 : c.kind === "dissolve" || c.kind === "leak" ? c.h : 2);
+export const isWhip = (c?: Cut) => !!c && c.kind.startsWith("whip");
+export const overlap = (c?: Cut) => (!c ? 0 : c.kind === "dissolve" || c.kind === "leak" || isWhip(c) ? c.h : 2);
+
+/** Whip pan as one continuous move: both shots joined edge to edge slide across over [at-h, at+h]. */
+const whipOffset = (c: Cut, f: number, incoming: boolean, W: number, H: number) => {
+  const u = ease(Math.min(1, Math.max(0, (f - (c.at - c.h)) / (2 * c.h))));
+  const blur = 4 * u * (1 - u) * 110;
+  const d = incoming ? 1 - u : -u;
+  const sx = c.kind === "whip" ? 1 : c.kind === "whipL" ? -1 : 0;
+  const sy = c.kind === "whipVD" ? -1 : c.kind === "whipV" ? 1 : 0;
+  return { tx: sx * d * W, ty: sy * d * H, bx: sx ? blur : 0, by: sy ? blur : 0 };
+};
 
 /** Wraps one shot. f is the GLOBAL frame; cin/cout are the transitions at its head and tail. */
 export const CutLayer: React.FC<{ f: number; cin?: Cut; cout?: Cut; width: number; height: number; children: React.ReactNode }> = ({
@@ -38,14 +49,18 @@ export const CutLayer: React.FC<{ f: number; cin?: Cut; cout?: Cut; width: numbe
       default: break;
     }
   };
-  if (cin) {
+  if (cin && isWhip(cin)) {
+    const w = whipOffset(cin, f, true, width, height); tx += w.tx; ty += w.ty; blurX += w.bx; blurY += w.by;
+  } else if (cin) {
     if (cin.kind === "dissolve" || cin.kind === "leak") op *= interpolate(f, [cin.at - cin.h, cin.at + cin.h], [0, 1], clamp);
     else {
       op *= interpolate(f, [cin.at - 1, cin.at], [0, 1], clamp);
       if (f >= cin.at - 1 && f < cin.at + cin.h) motion(cin, 1 - Math.max(0, f - cin.at) / cin.h, false);
     }
   }
-  if (cout && cout.kind !== "dissolve" && cout.kind !== "leak" && cout.kind !== "cut" && f > cout.at - cout.h && f <= cout.at + 1) {
+  if (cout && isWhip(cout)) {
+    const w = whipOffset(cout, f, false, width, height); tx += w.tx; ty += w.ty; blurX += w.bx; blurY += w.by;
+  } else if (cout && cout.kind !== "dissolve" && cout.kind !== "leak" && cout.kind !== "cut" && f > cout.at - cout.h && f <= cout.at + 1) {
     motion(cout, Math.min(1, (f - (cout.at - cout.h)) / cout.h), true);
   }
   if (op <= 0.001) return null;

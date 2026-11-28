@@ -35,15 +35,17 @@ export const Super: React.FC<{ at: number; out: number; lines: { t: string; size
   const a = interpolate(f, [at, at + 6, out - 6, out], [0, 1, 1, 0], clamp);
   return (
     <AbsoluteFill style={{ alignItems: "center", paddingTop: y, opacity: a }}>
+      <div style={{ background: "rgba(8,10,14,0.55)", padding: "18px 30px", borderRadius: 10, display: "flex", flexDirection: "column", alignItems: "center" }}>
       {lines.map((l, i) => {
         const shown = Math.floor(interpolate(f, [at + i * 4, at + i * 4 + 14], [0, l.t.length], clamp));
         return (
-          <div key={i} style={{ fontFamily: FONT.mono, fontWeight: 500, fontSize: l.size ?? 30, color: l.color ?? "#f2e6d2", letterSpacing: "0.12em",
+          <div key={i} style={{ fontFamily: FONT.mono, fontWeight: 500, fontSize: l.size ?? 30, color: l.color ?? "#ffffff", letterSpacing: "0.12em",
             textShadow: "0 0 8px rgba(0,0,0,0.9), 0 2px 6px rgba(0,0,0,0.8)", marginTop: i ? 10 : 0, whiteSpace: "pre" }}>
             {l.t.slice(0, shown)}
           </div>
         );
       })}
+      </div>
     </AbsoluteFill>
   );
 };
