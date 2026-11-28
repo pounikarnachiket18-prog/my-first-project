@@ -132,10 +132,25 @@ def callout(ev, trk, k0, k1, anchor, title, hindi, align=7):
     # label (an7 = text hangs right of the anchor, an9 = left of it)
     st, en = t_ass(fr(k0 + 7)), t_ass(fr(k1))
     off = 14 if align == 7 else -14
-    ev.append(f"Dialogue: 5,{st},{en},Callout,,0,0,0,,{{\\an{align}\\pos({ax + off},{ay - 30})"
-              f"\\fad(180,220)\\fsp14\\t(0,350,\\fsp4)}}{title}")
-    ev.append(f"Dialogue: 5,{t_ass(fr(k0 + 11))},{en},CalloutHi,,0,0,0,,{{\\an{align}"
-              f"\\pos({ax + off},{ay + 22})\\fad(220,220)}}{hindi}")
+    # brand panel: wipes open from the leader-line side, with a white leading edge
+    w = text_w(title) + 30
+    y0, y1 = ay - 36, ay + 16
+    if align == 7:
+        x0, x1 = ax + off - 14, ax + off - 14 + w
+        c0, edge = rf"\clip({x0:.0f},{y0},{x0:.0f},{y1})", rect(x0, y0, 5, y1 - y0)
+    else:
+        x0, x1 = ax + off + 14 - w, ax + off + 14
+        c0, edge = rf"\clip({x1:.0f},{y0},{x1:.0f},{y1})", rect(x1 - 5, y0, 5, y1 - y0)
+    full = rf"\clip({x0:.0f},{y0},{x1:.0f},{y1})"
+    ev.append(rf"Dialogue: 5,{st},{en},Draw,,0,0,0,,{{\an7\pos(0,0)\p1\bord0\shad2\4c&H000000&"
+              rf"\4a&H90&\c{BRAND}\alpha&H18&\fad(0,220){c0}\t(0,240,0.6,{full})}}"
+              rf"{rect(x0, y0, x1 - x0, y1 - y0)}{{\p0}}")
+    ev.append(rf"Dialogue: 5,{st},{en},Draw,,0,0,0,,{{\an7\pos(0,0)\p1\bord0\shad0"
+              rf"\c&HFFFFFF&\fad(0,220)}}{edge}{{\p0}}")
+    ev.append(rf"Dialogue: 6,{t_ass(fr(k0 + 10))},{en},Callout,,0,0,0,,{{\an{align}"
+              rf"\pos({ax + off},{ay - 30})\fad(160,220)\bord0\shad0\fsp14\t(0,350,\fsp4)}}{title}")
+    ev.append(rf"Dialogue: 6,{t_ass(fr(k0 + 13))},{en},CalloutBox,,0,0,0,,{{\an{align}"
+              rf"\pos({ax + off + (6 if align == 7 else -6)},{ay + 28})\fad(220,220)\blur3\t(0,260,\blur0)}}{hindi}")
 
 
 # --------------------------------------------------------------------------- holographic HUD
@@ -188,6 +203,21 @@ def brackets(cx, cy, hw, hh, arm, t=4.0):
 
 def rect(x, y, w, h):
     return f"m {x:.1f} {y:.1f} l {x + w:.1f} {y:.1f} l {x + w:.1f} {y + h:.1f} l {x:.1f} {y + h:.1f}"
+
+
+def pill_shape(cx, cy, hw, hh):
+    """Stadium (rounded pill) centred on (cx, cy), absolute coordinates."""
+    r = hh
+    x0, x1 = cx - hw + r, cx + hw - r
+    if x1 < x0:
+        x0 = x1 = cx
+    c = 0.5523 * r
+    return (f"m {x0:.1f} {cy - r:.1f} l {x1:.1f} {cy - r:.1f} "
+            f"b {x1 + c:.1f} {cy - r:.1f} {x1 + r:.1f} {cy - c:.1f} {x1 + r:.1f} {cy:.1f} "
+            f"b {x1 + r:.1f} {cy + c:.1f} {x1 + c:.1f} {cy + r:.1f} {x1:.1f} {cy + r:.1f} "
+            f"l {x0:.1f} {cy + r:.1f} "
+            f"b {x0 - c:.1f} {cy + r:.1f} {x0 - r:.1f} {cy + c:.1f} {x0 - r:.1f} {cy:.1f} "
+            f"b {x0 - r:.1f} {cy - c:.1f} {x0 - c:.1f} {cy - r:.1f} {x0:.1f} {cy - r:.1f}")
 
 
 def hud_lock(ev, trk, k0, k1, label, half_mm=(0.85, 0.55)):
@@ -244,6 +274,75 @@ def hud_scan(ev, k0, k1, x=90, y=1212, w=330):
                   rf"\3c&H3A2A10&\alpha&H{alpha:02X}&}}{label}")
 
 
+# --------------------------------------------------------------------------- brand motion graphics
+BRAND = r"&H2012D6&"    # Just KnowIt red (BGR of #D61220)
+CHAPTERS = [(1, 60, "00", "ALERT"), (61, 180, "01", "THE JAR"), (181, 390, "02", "THE INVADER"),
+            (391, 630, "03", "THE SECRET EGG"), (631, 930, "04", "INSIDE THE GRAIN"),
+            (931, 1200, "05", "METAMORPHOSIS"), (1201, 1410, "06", "THE ESCAPE"),
+            (1411, 1500, "07", "PROTECT YOUR RICE")]
+
+
+def text_w(t, size=40, sp=4.0):
+    """Rough advance width of Inter Bold caps text (for panels behind labels)."""
+    w = 0.0
+    for c in t:
+        w += (0.40 if c == " " else 0.56 if c.islower() or c in "~•.-" else
+              0.36 if c in "I1" else 0.70) * size + sp
+    return w
+
+
+def ease(t):
+    t = max(0.0, min(1.0, t))
+    return t * t * (3 - 2 * t)
+
+
+def chapter_hud(ev):
+    """Top-right: chapter number tile + title (types on at each chapter) and an 8-segment
+    progress bar that fills through the film. Motion graphics present in every frame."""
+    R, Y = 1044, 166
+    seg_w, gap, n = 30, 5, len(CHAPTERS)
+    x_first = R - n * seg_w - (n - 1) * gap
+    for ci, (a, b, num, title) in enumerate(CHAPTERS):
+        # number tile springs in on every chapter change
+        ev.append(rf"Dialogue: 6,{t_ass(fr(a))},{t_ass(fr(b + 1))},Draw,,0,0,0,,"
+                  rf"{{\an5\pos({R - 22},{Y})\p1\bord0\shad0\c{BRAND}\fscx40\fscy40"
+                  rf"\t(0,180,\fscx108\fscy108)\t(180,300,\fscx100\fscy100)}}"
+                  r"m 4 0 l 48 0 b 52 0 52 0 52 4 l 52 36 b 52 40 52 40 48 40 "
+                  r"l 4 40 b 0 40 0 40 0 36 l 0 4 b 0 0 0 0 4 0{\p0}")
+        blink = r"\t(0,120,\alpha&H80&)\t(120,240,\alpha&H00&)" if num == "00" else ""
+        ev.append(rf"Dialogue: 7,{t_ass(fr(a))},{t_ass(fr(b + 1))},Small,,0,0,0,,"
+                  rf"{{\an5\pos({R - 22},{Y + 1})\fs26\fsp1\b1\c&HFFFFFF&\bord0\shad0{blink}}}{num}")
+        # title types on, a red caret blinks while typing
+        for k in range(a, b + 1):
+            m = min(len(title), int((k - a + 1) * len(title) / 10.0))
+            if m >= len(title) and k > a + 12:
+                ev.append(rf"Dialogue: 7,{t_ass(fr(k))},{t_ass(fr(b + 1))},Small,,0,0,0,,"
+                          rf"{{\an6\pos({R - 58},{Y})\fs26\fsp5\b1\c&HFFFFFF&\bord1.6"
+                          rf"\3c&H101010&\shad0}}{title}")
+                break
+            caret = r"{\c" + BRAND + r"}▍" if (k - a) % 4 < 3 else ""
+            ev.append(rf"Dialogue: 7,{t_ass(fr(k))},{t_ass(fr(k + 1))},Small,,0,0,0,,"
+                      rf"{{\an6\pos({R - 58},{Y})\fs26\fsp5\b1\c&HFFFFFF&\bord1.6"
+                      rf"\3c&H101010&\shad0}}{title[:m]}{caret}")
+    # progress segments: done = white, current = red fill, upcoming = dim track
+    for k in range(1, 1501):
+        shapes_dim, shapes_done, shapes_red = [], [], []
+        for ci, (a, b, _n, _t) in enumerate(CHAPTERS):
+            x = x_first + ci * (seg_w + gap)
+            if k > b:
+                shapes_done.append(rect(x, Y + 32, seg_w, 4))
+            else:
+                shapes_dim.append(rect(x, Y + 32, seg_w, 4))
+                if k >= a:
+                    shapes_red.append(rect(x, Y + 31, seg_w * (k - a + 1) / (b - a + 1), 6))
+        t0, t1 = t_ass(fr(k)), t_ass(fr(k + 1))
+        for shp, col, al in ((shapes_dim, "&HFFFFFF&", "&HB0&"), (shapes_done, "&HFFFFFF&", "&H30&"),
+                             (shapes_red, BRAND, "&H00&")):
+            if shp:
+                ev.append(rf"Dialogue: 6,{t0},{t1},Draw,,0,0,0,,{{\an7\pos(0,0)\p1\bord0"
+                          rf"\shad0\c{col}\alpha{al}}}{' '.join(shp)}{{\p0}}")
+
+
 def build_ass(path, classic=False):
     subs = json.load(open(os.path.join(AUDIO, "subtitles.json"), encoding="utf-8"))
     head = f"""[Script Info]
@@ -264,6 +363,7 @@ Style: Title,Cinzel,92,&H00FFFFFF,&H00FFFFFF,&H000A0A0A,&H78000000,1,0,0,0,100,1
 Style: Card,Inter,44,&H00E9F4FF,&H00FFFFFF,&H000A0A0A,&H78000000,1,0,0,0,100,100,5,0,1,2.2,1,8,90,130,650,1
 Style: Callout,Inter,40,&H00FFFFFF,&H00FFFFFF,&H00101010,&H78000000,1,0,0,0,100,100,4,0,1,2.2,1.2,7,0,0,0,1
 Style: CalloutHi,Noto Sans Devanagari,40,&H00D9D9D9,&H00FFFFFF,&H00101010,&H78000000,0,0,0,0,100,100,0,0,1,2.0,1,7,0,0,0,1
+Style: CalloutBox,Noto Sans Devanagari,36,&H00FFFFFF,&H00FFFFFF,&H50141414,&H00000000,0,0,0,0,100,100,0,0,3,6,0,7,0,0,0,1
 Style: Draw,Inter,20,&H00FFFFFF,&H00FFFFFF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,0,0,7,0,0,0,1
 
 [Events]
@@ -284,26 +384,48 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
                   r"{\fad(250,250)\an8\pos(540,250)}EXIT HOLE  •  ~1 mm")
     # species card (scene 2) with a hairline rule that draws on
     ev.append(f"Dialogue: 1,{t_ass(fr(232))},{t_ass(fr(330))},Label,,0,0,0,,"
-              r"{\fad(300,300)\i1\fsp22\t(0,500,\fsp6)}SITOPHILUS ORYZAE")
+              r"{\fad(200,300)\i1\fsp22\t(0,500,\fsp6)\clip(160,0,160,1920)"
+              r"\t(0,550,0.7,\clip(160,0,920,1920))}SITOPHILUS ORYZAE")
     ev.append(f"Dialogue: 1,{t_ass(fr(240))},{t_ass(fr(330))},Small,,0,0,0,,"
               r"{\fad(400,300)}RICE WEEVIL  •  ADULT LENGTH 2–4 mm")
     ev.append(f"Dialogue: 1,{t_ass(fr(236))},{t_ass(fr(330))},Small,,0,0,0,,"
-              r"{\fad(200,300)\an7\pos(390,318)\p1\bord0\shad0\c&HD8D8D8&\fscx0"
-              r"\t(0,450,\fscx100)}m 0 0 l 300 0 l 300 3 l 0 3{\p0}")
+              r"{\fad(200,300)\an7\pos(390,318)\p1\bord0\shad0\c" + BRAND + r"\fscx0"
+              r"\t(0,450,\fscx100)}m 0 0 l 300 0 l 300 4 l 0 4{\p0}")
     # life-cycle tracker: egg -> larva -> pupa -> adult; the active stage pops when it changes
     stages = ["EGG", "LARVA", "PUPA", "ADULT"]
     spans = [(590, 676, 0), (676, 998, 1), (998, 1104, 2), (1104, 1345, 3)]
+    slots = [202, 427, 652, 877]
+    labels = [f"{i + 1} {nm}" for i, nm in enumerate(stages)]
+    widths = [text_w(t, 30, 4) + 30 for t in labels]
     for a, b, k in spans:
-        parts = []
-        for i, nm in enumerate(stages):
+        fad = r"\fad(250,0)" if a == 590 else (r"\fad(0,300)" if b == 1345 else "")
+        for i, t in enumerate(labels):
             if i == k:
-                parts.append(r"{\c" + AMBER + r"\alpha&H00&\fscx125\fscy125\t(0,300,\fscx100"
-                             r"\fscy100)}" + f"{i + 1} {nm}" + r"{\fscx100\fscy100}")
+                style = r"\c&HFFFFFF&\alpha&H00&\fscx122\fscy122\t(80,380,\fscx100\fscy100)"
             else:
-                parts.append(r"{\c&HFFFFFF&\alpha&H90&}" + f"{i + 1} {nm}")
-        fad = r"{\fad(250,0)}" if a == 590 else (r"{\fad(0,300)}" if b == 1345 else "")
-        line = fad + r"{\alpha&H90&}   ›   ".join(parts)
-        ev.append(f"Dialogue: 2,{t_ass(fr(a))},{t_ass(fr(b))},Stage,,0,0,0,,{line}")
+                style = r"\c&HFFFFFF&\alpha&H70&" if i < k else r"\c&HFFFFFF&\alpha&HA8&"
+            ev.append(rf"Dialogue: 3,{t_ass(fr(a))},{t_ass(fr(b))},Stage,,0,0,0,,"
+                      rf"{{\an5\pos({slots[i]},258)\bord1.2\shad0{fad}{style}}}{t}")
+        for i in range(3):
+            ev.append(rf"Dialogue: 3,{t_ass(fr(a))},{t_ass(fr(b))},Stage,,0,0,0,,"
+                      rf"{{\an5\pos({(slots[i] + slots[i + 1]) // 2},256)\alpha&HA0&{fad}}}›")
+    # the pill glides to the new stage with a little overshoot
+    prev = 0
+    for a, b, k in spans:
+        for f in range(a, b):
+            u = (f - a) / 10.0
+            e = ease(u) + (0.06 * math.sin(math.pi * min(1.0, u * 1.25)) if 0 < u < 1 else 0)
+            src = prev if a != 590 else k
+            cx = slots[src] + (slots[k] - slots[src]) * e
+            wd = widths[src] + (widths[k] - widths[src]) * ease(u)
+            grow = ease((f - 590) / 8.0) if a == 590 else 1.0
+            fade = ease((1345 - f) / 9.0)
+            al = f"&H{int(255 * (1 - min(grow, fade))):02X}&"
+            hw, hh = wd / 2 * (0.6 + 0.4 * grow), 22
+            ev.append(rf"Dialogue: 2,{t_ass(fr(f))},{t_ass(fr(f + 1))},Draw,,0,0,0,,"
+                      rf"{{\an7\pos(0,0)\p1\bord0\shad0\c{BRAND}\alpha{al}}}"
+                      rf"{pill_shape(cx, 257, hw, hh)}{{\p0}}")
+        prev = k
     # day counter (approximate development at ~28 °C): egg ~4 d, larva ~20 d, pupa ~6 d,
     # the new adult hardens inside the grain for a few days before it chews its way out
     days = [(590, 0), (662, 4), (990, 24), (1105, 30), (1290, 33), (1345, 33)]
@@ -315,8 +437,19 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
                 ev.append(_day(start, k, prev))
             prev, start = d, k
     ev.append(_day(start, 1346, prev, last=True))
+    for k in range(590, 1346):
+        dd = float(_interp(k, days)) / 33.0
+        al = int(255 * (1 - min(ease((k - 590) / 8.0), ease((1345 - k) / 9.0))))
+        a1, a2 = f"&H{al:02X}&", f"&H{min(255, al + 150):02X}&"
+        t0, t1 = t_ass(fr(k)), t_ass(fr(k + 1))
+        ev.append(rf"Dialogue: 2,{t0},{t1},Draw,,0,0,0,,{{\an7\pos(0,0)\p1\bord0\shad0"
+                  rf"\c&HFFFFFF&\alpha{a2}}}{rect(390, 366, 300, 3)}{{\p0}}")
+        ev.append(rf"Dialogue: 2,{t0},{t1},Draw,,0,0,0,,{{\an7\pos(0,0)\p1\bord0\shad0"
+                  rf"\c{BRAND}\alpha{a1}}}{rect(390, 365, 300 * dd, 5)}{{\p0}}")
+        ev.append(rf"Dialogue: 2,{t0},{t1},Draw,,0,0,0,,{{\an7\pos(0,0)\p1\bord3\blur3\shad0"
+                  rf"\c&HFFFFFF&\3c{BRAND}\alpha{a1}}}{circle(390 + 300 * dd, 367.5, 4)}{{\p0}}")
     ev.append(f"Dialogue: 2,{t_ass(fr(596))},{t_ass(fr(700))},Small,,0,0,0,,"
-              r"{\fad(300,300)\an8\pos(540,372)\fs26\alpha&H40&}APPROX. AT ~28 °C")
+              r"{\fad(300,300)\an8\pos(540,382)\fs26\alpha&H40&}APPROX. AT ~28 °C")
     if not classic:  # tracked scientific callouts (one at a time)
         callout(ev, "rostrum", 304, 352, (900, 820), "ROSTRUM", "लंबी सूंड — सिरे पर जबड़े",
                 align=9)
@@ -332,6 +465,8 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
                 "धीरे-धीरे सख्त और गहरा होता है", align=9)
         callout(ev, "exit", 1292, 1345, (840, 800), "EXIT HOLE  •  ~1 mm", "बाहर निकलने का छेद",
                 align=9)
+    if not classic:  # brand motion graphics: chapter tag + progress, every frame
+        chapter_hud(ev)
     if not classic:  # holographic HUD: four restrained moments, never alongside a callout
         hud_lock(ev, "body2", 194, 236, "SPECIMEN DETECTED")
         hud_scale(ev, "body2", 238, 330)
@@ -426,14 +561,22 @@ def cinematic():
     else:
         out = os.path.join(FINAL, "the_invisible_invader_50s.mp4")
     t0, dur = (k0 - 1) / FPS, (k1 - k0 + 1) / FPS
-    vf = (f"[0:v]{GRADE.format(w=W, h=H)},setpts=PTS+{t0}/TB,"
+    import brand
+    if not os.path.exists(brand.OUT):
+        brand.main()
+    bx, by = brand.BUG_POS
+    # the Just KnowIt badge goes on after the grade (crisp, true brand colour), under the type
+    vf = (f"[0:v]{GRADE.format(w=W, h=H)},setpts=PTS+{t0}/TB[gv];"
+          f"[2:v]setpts=PTS-STARTPTS+{t0}/TB,format=rgba[bug];"
+          f"[gv][bug]overlay={bx}:{by}:eof_action=pass:format=auto,"
           f"subtitles='{ass}':fontsdir='{FONTS}',setpts=PTS-STARTPTS,"
           f"fade=t=out:st={49.55 - t0}:d=0.45,format=yuv420p[v]")
     af = (f"[1:a]atrim=start={t0}:duration={dur},asetpts=PTS-STARTPTS,"
           "loudnorm=I=-14:TP=-1.5:LRA=11,aresample=48000[a]")
     cmd = ["ffmpeg", "-v", "error", "-y", "-f", "rawvideo", "-pix_fmt", "rgb24",
            "-s", f"{finish.W}x{finish.H}", "-r", str(FPS), "-i", "-",
-           "-i", os.path.join(AUDIO, "mix.wav"), "-filter_complex", f"{vf};{af}",
+           "-i", os.path.join(AUDIO, "mix.wav"), "-ss", f"{t0}", "-i", brand.OUT,
+           "-filter_complex", f"{vf};{af}",
            "-map", "[v]", "-map", "[a]", "-c:v", "libx264", "-profile:v", "high",
            "-preset", "slow", "-crf", "17", "-r", str(FPS), "-c:a", "aac", "-b:a", "192k",
            "-t", f"{dur}", "-movflags", "+faststart", out]

@@ -119,3 +119,14 @@ Florida/IFAS “Featured Creatures” rice weevil profile) and CABI’s compendi
 *S. oryzae*. Visual simplifications are deliberate where exact motion could not be animated
 reliably (e.g. oviposition is shown as the egg sliding into the cavity rather than an
 anatomically modelled ovipositor).
+
+## Channel branding and motion graphics
+
+- `tools/brand.py` keys the supplied logo (`assets/textures/justknowit_logo.png`) into clean
+  mattes and builds an animated Just KnowIt badge (spring intro, brain pulse on story beats,
+  light-sweep glint every ~5 s and on chapter cuts) -> `renders/brand/bug.mov`. `assemble.py`
+  overlays it after the grade on every frame (built automatically if missing).
+- Every frame also carries a chapter tag (number tile + typed title) and an 8-segment progress
+  bar, top right. Labels are animated: brand-red callout panels wipe in from the leader line,
+  the species name wipes on over a red underline, a red pill glides between life-cycle stages
+  and a day-progress bar runs under the day counter.
